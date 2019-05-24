@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<div id="gallery" class="grid_view">
+
+</div>
+
+<script>
+  function search(query, callback) {
+    $.ajax({
+      url: '{% url "search" %}',
+      data: {
+        'query': JSON.stringify(query)
+      },
+      contentType: 'application/x-www-form-urlencoded',
+      dataType: 'json',
+      type: 'POST',
+      success: callback
+    });
+  }
+
+  function create_list(entries) {
+    console.log('test');
+    var grid_items = d3.select('#gallery').selectAll('div').data(entries).enter().append('div').classed('grid_item', true);
+
+    grid_items.attr("class", function(d) {
+      w = d.image.width / d.image.height * 2;
+      console.log(w)
+      h_class = Math.min(Math.round(w), 4);
+      v_class = 2;
+      return d3.select(this).attr("class") + ' h' + h_class + ' v' + v_class;
+    });
+
+    grid_items.append('img').attr('src', function(d) {
+      return d.path;
+    }).classed('grid_image', true);
+
+  }
+
+
+  $(document).ready(function() {
+    search(query, function(data) {
+      if (data.status == "ok") {
+        create_list(data.entries);
+      }
+    });
+    console.log("ready!");
+  });
+
+
+  /* beautify preserve:start */
+  var query = {{ query|safe }}
+  /* beautify preserve:end */
+</script>
+
+{% endblock %}
