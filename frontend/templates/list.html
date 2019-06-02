@@ -25,20 +25,25 @@
     console.log('test');
     var grid_items = d3.select('#gallery').selectAll('div').data(entries).enter().append('div').classed('grid_item', true);
 
-    grid_items.attr("class", function(d) {
-      w = d.image.width / d.image.height * 2;
-      console.log(w)
-      h_class = Math.min(Math.round(w), 4);
-      v_class = 2;
-      return d3.select(this).attr("class") + ' h' + h_class + ' v' + v_class;
-    });
 
-    grid_items.append('img').attr('src', function(d) {
+    var image = grid_items.append('img').attr('src', function(d) {
       return d.path;
-    }).classed('grid_image', true);
+    }).classed('grid_item_image', true);
 
+    var overlay = grid_items.append('div').classed('grid_item_overlay', true);
+
+    // classifier
+    var classifier = overlay.selectAll('div').data(function(d) {
+      return d.classifier;
+    }).enter().append('div');
+
+    // annotations
+    classifier.selectAll('p').data(function(d) {
+      return d.annotations;
+    }).enter().append('span').classed('badge', true).text(function(d) {
+      return d.name;
+    });
   }
-
 
   $(document).ready(function() {
     search(query, function(data) {

@@ -29,20 +29,61 @@ def index_view(request):
     return render(request, 'index.html', context)
 
 
-def list_view(request):
-    context = {'query': json.dumps({'tag': 'landscape'})}
-    return render(request, 'list.html', context)
+#
+# def list_view(request):
+#     context = {'query': json.dumps({'tag': 'landscape'})}
+#     return render(request, 'list.html', context)
+
+
+def suggestion_view(request):
+    if not request.is_ajax():
+        return Http404()
+
+    if 'query' not in request.POST:
+        #TODO error
+        return JsonResponse({'status': 'error'})
+
+    query = request.POST['query']
+    query = 'land'
+    print(query)
+    db = ElasticSearchDatabase()
+    entries = db.suggestion(
+        {"suggest": {
+            "tag_suggestion": {
+                "text": query,
+                "term": {
+                    "field": "classifier.annotations.name"
+                }
+            }
+        }}, size=200)
+    print('a')
+    print(list(entries))
+    for x in entries:
+        print(x)
+    context = {'status': 'ok', 'entries': entries, 'entries_json': json.dumps(entries)}
+    print('search6')
+    return JsonResponse(context)
 
 
 def search_view(request):
     print('search1')
 
     if not request.is_ajax():
-        return
+        return Http404()
+
+    if 'query' not in request.POST:
+        #TODO error
+        return JsonResponse({'status': 'error'})
+
+    query = request.POST['query']
+    if isinstance(query, (list, set)):
+        query = query[0]
+
+    print(query)
 
     print('search2')
     db = ElasticSearchDatabase()
-    entries = db.search({"query": {"match": {"classifier.annotations.name": "landscape"}}}, size=200)
+    entries = db.search({"query": {"match": {"classifier.annotations.name": query}}}, size=200)
 
     print('search3')
     entries = list(entries)
