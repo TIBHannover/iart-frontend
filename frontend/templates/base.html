@@ -234,6 +234,13 @@
       });
       console.log("ready!");
     });
+
+    $(document).ready(function() {
+      $(".details-button").on('click', function() { // trigger
+        $('.side-fixed').slideToggle("fast"); // blendet beim Klick auf "dt" die nächste "dd" ein.
+        $(this).children("a").toggleClass("closed open"); // wechselt beim Klick auf "dt" die Klasse des enthaltenen a-Tags von "closed" zu "open".
+      });
+    });
   </script>
 
 </html>
