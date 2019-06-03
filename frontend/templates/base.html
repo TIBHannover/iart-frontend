@@ -59,6 +59,11 @@
       var url_suggestion = '{% url "suggestion" %}';
 
       var current_element = null;
+
+
+      /* beautify preserve:start */
+      var query = {{ query|safe }}
+        /* beautify preserve:end */
     </script>
 
   </head>
@@ -78,10 +83,64 @@
     {% block content %} {% endblock %}
   </body>
   <script>
+    function create_detail(entry) {
+      console.log('create_detail');
+      console.log(entry);
+      var container = d3.select('#detail-view').append('div');
+      var image = container.append('div').attr('class', 'detail-item').append('img').attr('src', function(d) {
+        return entry.path;
+      }).classed('detail-image', true);
+      // Infobox
+      if (entry.hasOwnProperty('meta')) {
+        var info = container.append('div').attr('class', 'detail-item detail-info');
+        meta = entry.meta;
+        if (meta.hasOwnProperty('title')) {
+          info.append('h1').text(entry.meta.title);
+        } else {
+          info.append('h1').text('unknown');
+        }
+        if (meta.hasOwnProperty('artist_name')) {
+          info.append('spam').text('by ' + entry.meta.artist_name);
+        }
+      }
+      console.log(JSON.stringify(entry));
+      if (entry.hasOwnProperty('classifier')) {
+        console.log('####################');
+        var tags = container.append('div').attr('class', 'detail-item detail-tags');
+        // classifier
+        var classifier = tags.selectAll('div').data(entry.classifier).enter().append('div');
+
+        // annotations
+        classifier.selectAll('p').data(function(d) {
+          return d.annotations;
+        }).enter().append('span').classed('badge', true).text(function(d) {
+          return d.name;
+        });
+
+
+      }
+      var menu = container.append('div').attr('class', 'detail-item detail-menu');
+    }
+
+    function clean_detail() {
+      console.log('clean_detail');
+      d3.select('#detail-view').selectAll('div').remove();
+    }
+
+
     function create_list(entries) {
       console.log('create_list');
       console.log(entries);
       var grid_items = d3.select('#gallery').selectAll('div').data(entries).enter().append('div').classed('grid_item', true);
+
+      grid_items.on("click", function(d) {
+        get_entry(d.id, function(e) {
+          clean_detail();
+          if (e.status == "ok") {
+            create_detail(e.entry);
+          }
+        });
+      });
 
 
       var image = grid_items.append('img').attr('src', function(d) {
@@ -134,6 +193,19 @@
       });
     }
 
+    function get_entry(id, callback) {
+      $.ajax({
+        url: '{% url "detail" %}',
+        data: {
+          'id': id
+        },
+        contentType: 'application/x-www-form-urlencoded',
+        dataType: 'json',
+        type: 'POST',
+        success: callback
+      });
+    }
+
     $("#search-bar").submit(function(e) {
       console.log('search');
       e.preventDefault();
@@ -152,6 +224,15 @@
       suggestion({
         'tag': $('#search-input').val()
       });
+    });
+
+    $(document).ready(function() {
+      search(query, function(data) {
+        if (data.status == "ok") {
+          create_list(data.entries);
+        }
+      });
+      console.log("ready!");
     });
   </script>
 

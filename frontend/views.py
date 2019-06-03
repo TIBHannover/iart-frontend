@@ -25,7 +25,7 @@ def index_view(request):
     entries = list(entries)
     for i, entry in enumerate(entries):
         entries[i]['path'] = relative_media_path(entry['path'])
-    context = {'entries': entries, 'entries_json': json.dumps(entries)}
+    context = {'query': {'tag': 'landscape'}, 'entries': entries, 'entries_json': json.dumps(entries)}
     return render(request, 'index.html', context)
 
 
@@ -33,6 +33,23 @@ def index_view(request):
 # def list_view(request):
 #     context = {'query': json.dumps({'tag': 'landscape'})}
 #     return render(request, 'list.html', context)
+
+
+def detail_view(request):
+    if not request.is_ajax():
+        return Http404()
+
+    if 'id' not in request.POST:
+        #TODO error
+        return JsonResponse({'status': 'error'})
+
+    id = request.POST['id']
+    db = ElasticSearchDatabase()
+    entry = db.get_entry(id)
+    print(entry)
+    entry['path'] = relative_media_path(entry['path'])
+    context = {'status': 'ok', 'entry': entry, 'entry_json': json.dumps(entry)}
+    return JsonResponse(context)
 
 
 def suggestion_view(request):
@@ -83,7 +100,7 @@ def search_view(request):
 
     print('search2')
     db = ElasticSearchDatabase()
-    entries = db.search({"query": {"match": {"classifier.annotations.name": query}}}, size=200)
+    entries = db.search({"query": {"match": {"classifier.annotations.name": query}}}, size=100)
 
     print('search3')
     entries = list(entries)
