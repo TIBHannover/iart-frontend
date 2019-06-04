@@ -35,7 +35,7 @@ def index_view(request):
 #     return render(request, 'list.html', context)
 
 
-def detail_view(request):
+def details_view(request):
     if not request.is_ajax():
         return Http404()
 

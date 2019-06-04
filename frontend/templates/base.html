@@ -8,7 +8,7 @@
     <title></title>
     <!-- CSS -->
 
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <!-- <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}"> -->
     <!-- <link rel="stylesheet" href="{% static 'css/dashboard.css' %}"> -->
     <link rel="stylesheet" href="{% static 'css/iart.css' %}">
 
@@ -83,16 +83,16 @@
     {% block content %} {% endblock %}
   </body>
   <script>
-    function create_detail(entry) {
-      console.log('create_detail');
+    function create_details(entry) {
+      console.log('create_details');
       console.log(entry);
-      var container = d3.select('#detail-view').append('div');
-      var image = container.append('div').attr('class', 'detail-item').append('img').attr('src', function(d) {
+      var container = d3.select('#details-view').append('div');
+      var image = container.append('div').attr('class', 'details-item').append('img').attr('src', function(d) {
         return entry.path;
-      }).classed('detail-image', true);
+      }).classed('details-image', true);
       // Infobox
       if (entry.hasOwnProperty('meta')) {
-        var info = container.append('div').attr('class', 'detail-item detail-info');
+        var info = container.append('div').attr('class', 'details-item details-info');
         meta = entry.meta;
         if (meta.hasOwnProperty('title')) {
           info.append('h1').text(entry.meta.title);
@@ -105,8 +105,7 @@
       }
       console.log(JSON.stringify(entry));
       if (entry.hasOwnProperty('classifier')) {
-        console.log('####################');
-        var tags = container.append('div').attr('class', 'detail-item detail-tags');
+        var tags = container.append('div').attr('class', 'details-item details-tags');
         // classifier
         var classifier = tags.selectAll('div').data(entry.classifier).enter().append('div');
 
@@ -119,25 +118,25 @@
 
 
       }
-      var menu = container.append('div').attr('class', 'detail-item detail-menu');
+      var menu = container.append('div').attr('class', 'details-item details-menu');
     }
 
-    function clean_detail() {
-      console.log('clean_detail');
-      d3.select('#detail-view').selectAll('div').remove();
+    function clean_details() {
+      console.log('clean_details');
+      d3.select('#details-view').selectAll('div').remove();
     }
 
 
     function create_list(entries) {
       console.log('create_list');
       console.log(entries);
-      var grid_items = d3.select('#gallery').selectAll('div').data(entries).enter().append('div').classed('grid_item', true);
+      var grid_items = d3.select('#gallery').selectAll('div').data(entries).enter().append('div').classed('grid-item', true);
 
       grid_items.on("click", function(d) {
         get_entry(d.id, function(e) {
-          clean_detail();
+          clean_details();
           if (e.status == "ok") {
-            create_detail(e.entry);
+            create_details(e.entry);
           }
         });
       });
@@ -145,9 +144,9 @@
 
       var image = grid_items.append('img').attr('src', function(d) {
         return d.path;
-      }).classed('grid_item_image', true);
+      }).classed('grid-item-image', true);
 
-      var overlay = grid_items.append('div').classed('grid_item_overlay', true);
+      var overlay = grid_items.append('div').classed('grid-item-overlay', true);
 
       // classifier
       var classifier = overlay.selectAll('div').data(function(d) {
@@ -195,7 +194,7 @@
 
     function get_entry(id, callback) {
       $.ajax({
-        url: '{% url "detail" %}',
+        url: '{% url "details" %}',
         data: {
           'id': id
         },
@@ -237,8 +236,9 @@
 
     $(document).ready(function() {
       $(".details-button").on('click', function() { // trigger
-        $('.side-fixed').slideToggle("fast"); // blendet beim Klick auf "dt" die nächste "dd" ein.
-        $(this).children("a").toggleClass("closed open"); // wechselt beim Klick auf "dt" die Klasse des enthaltenen a-Tags von "closed" zu "open".
+        $('.side-fixed').toggleClass("open close"); // blendet beim Klick auf "dt" die
+        $('.grid-view').toggleClass("open close"); // blendet beim Klick auf "dt" die
+
       });
     });
   </script>

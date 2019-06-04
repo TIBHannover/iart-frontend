@@ -1,18 +1,20 @@
 {% extends 'base.html' %} {% block content %}
-<div class="content">
-  <div class="side-menu">
-    <div class="side-fixed" data-descr="Hallo">
-      <div id="detail-view" class="detail-view">
-      </div>
-      <div class="details-button">
-        <i class="fa fa-angle-left"></i>
-      </div>
-
-
+<div class="side-menu">
+  <div class="side-fixed close">
+    <div id="details-view" class="details-view">
+    </div>
+    <div class="details-button">
+      <i class="fa fa-angle-left"></i>
+      <i class="fa fa-angle-right"></i>
     </div>
 
+
   </div>
-  <div id="gallery" class="grid_view">
+</div>
+
+<div class="content">
+
+  <div id="gallery" class="grid-view open">
 
   </div>
 </div>
