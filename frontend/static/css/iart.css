@@ -5,6 +5,8 @@
   margin-top: 60px;
   padding-left: 10px;
   padding-right: 10px;
+
+  transition: flex-basis .2s ease;
 }
 
 .grid-view.open {
@@ -258,9 +260,10 @@ body {
 }
 
 .details-button {
+  display: none;
   border-radius: 0 5px 5px 0;
   right: -1.25em;
-  display: block;
+  /* display: block; */
   font-size: 1.5em;
   width: 1.5em;
   line-height: 1.5em;
