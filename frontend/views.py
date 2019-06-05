@@ -6,6 +6,7 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(__file__))
 from database.elasticsearch_database import ElasticSearchDatabase
+from database.elasticsearch_suggester import ElasticSearchSuggester
 
 import json
 
@@ -18,7 +19,7 @@ def relative_media_path(path):
 
 def index_view(request):
     db = ElasticSearchDatabase()
-    entries = db.search({"query": {"match": {"classifier.annotations.name": "landscape"}}}, size=100)
+    entries = db.search(annotations='landscape', sort='annotations', size=5)
     # latest_question_list = Question.objects.order_by('-pub_date')[:5]
 
     # TODO fix path
@@ -46,13 +47,12 @@ def details_view(request):
     id = request.POST['id']
     db = ElasticSearchDatabase()
     entry = db.get_entry(id)
-    print(entry)
     entry['path'] = relative_media_path(entry['path'])
     context = {'status': 'ok', 'entry': entry, 'entry_json': json.dumps(entry)}
     return JsonResponse(context)
 
 
-def suggestion_view(request):
+def autocomplete_view(request):
     if not request.is_ajax():
         return Http404()
 
@@ -61,29 +61,19 @@ def suggestion_view(request):
         return JsonResponse({'status': 'error'})
 
     query = request.POST['query']
-    query = 'land'
     print(query)
-    db = ElasticSearchDatabase()
-    entries = db.suggestion(
-        {"suggest": {
-            "tag_suggestion": {
-                "text": query,
-                "term": {
-                    "field": "classifier.annotations.name"
-                }
-            }
-        }}, size=200)
-    print('a')
-    print(list(entries))
-    for x in entries:
-        print(x)
-    context = {'status': 'ok', 'entries': entries, 'entries_json': json.dumps(entries)}
+    suggester = ElasticSearchSuggester()
+    autocompletion = suggester.complete(query)
+
+    # todo filter features
+    autocompletion = [entry for entry in autocompletion if entry['type'] != 'features']
+    print(autocompletion)
+    context = {'status': 'ok', 'autocompletion': autocompletion, 'autocompletion_json': json.dumps(autocompletion)}
     print('search6')
     return JsonResponse(context)
 
 
 def search_view(request):
-    print('search1')
 
     if not request.is_ajax():
         return Http404()
@@ -96,21 +86,14 @@ def search_view(request):
     if isinstance(query, (list, set)):
         query = query[0]
 
-    print(query)
-
-    print('search2')
     db = ElasticSearchDatabase()
-    entries = db.search({"query": {"match": {"classifier.annotations.name": query}}}, size=100)
+    entries = db.search(annotations=query, sort='annotations', size=5)
 
-    print('search3')
     entries = list(entries)
 
-    print('search4')
     for i, entry in enumerate(entries):
         entries[i]['path'] = relative_media_path(entry['path'])
-    print('search5')
     context = {'status': 'ok', 'entries': entries, 'entries_json': json.dumps(entries)}
-    print('search6')
     return JsonResponse(context)
 
 

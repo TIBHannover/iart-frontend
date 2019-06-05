@@ -56,13 +56,14 @@
 
 
       var url_search = '{% url "search" %}';
-      var url_suggestion = '{% url "suggestion" %}';
+      var url_autocomplete = '{% url "autocomplete" %}';
 
       var current_element = null;
 
 
       /* beautify preserve:start */
       var query = {{ query|safe }}
+      var search_val = null;
         /* beautify preserve:end */
     </script>
 
@@ -76,8 +77,12 @@
           <button type="submit"><i class="fa fa-search"></i></button>
           <div class="space"></div>
           <input id="search-input" type="text" placeholder="Search.." name="query" autocomplete="off"></input>
+
+          <div class="autocompletion-list">
         </form>
+
       </div>
+    </div>
     </div>
 
     {% block content %} {% endblock %}
@@ -192,9 +197,9 @@
       });
     }
 
-    function suggestion(query, callback) {
+    function autocomplete(query, callback) {
       $.ajax({
-        url: '{% url "suggestion" %}',
+        url: '{% url "autocomplete" %}',
         data: {
           'query': JSON.stringify(query)
         },
@@ -203,6 +208,50 @@
         type: 'POST',
         success: callback
       });
+    }
+
+    function create_autocompletion(entries) {
+      console.log('create_autocompletion');
+      var lists = d3.select('.autocompletion-list').append('ul').selectAll('li').data(entries).enter().append('li').append('ul');
+
+      var categories = lists.append('li').attr('class', 'autocompletion-list-categories');
+
+      categories.append('div').attr('class', 'cat-symbol').append('i').attr('class', function(d) {
+        if (d.type == 'annotations') {
+          return 'fa fa-tags';
+        }
+        if (d.type == 'meta') {
+          return 'fa fa-info';
+        }
+
+      });
+
+      categories.append('span').text(function(d) {
+        if (d.type == 'annotations') {
+          return 'Tags';
+        }
+        if (d.type == 'meta') {
+          return 'Info';
+        }
+      });
+      var suggestions = lists.append('li').append('ul').selectAll('li').data(function(d) {
+        console.log(JSON.stringify(d));
+        return d.options;
+      }).enter().append('li').attr('class', function(d) {
+        if (d.active) {
+          return 'autocompletion-item active'
+
+        }
+        return 'autocompletion-item'
+      }).text(function(d) {
+        return d.value;
+      });
+
+    }
+
+    function clean_autocompletion() {
+      console.log('clean_autocompletion');
+      d3.select('.autocompletion-list').selectAll('ul').remove();
     }
 
     function get_entry(id, callback) {
@@ -231,13 +280,75 @@
       });
     });
 
-    $("#search-input").on("change paste keyup", function() {
-      console.log('suggestion');
-      suggestion({
-        'tag': $('#search-input').val()
-      });
+
+
+
+
+    $("#search-input").on("change paste keyup", function(e) {
+      console.log('autocomplete');
+
+      current_serch_val = $('#search-input').val()
+      if (search_val != current_serch_val && current_serch_val) {
+        autocomplete($('#search-input').val(), function(data) {
+          clean_autocompletion();
+          if (data.status == "ok") {
+            // append current input for all
+            current = [{
+              'type': null,
+              'options': [current_serch_val]
+            }];
+            current = current.concat(data.autocompletion);
+
+            var result = [];
+            for (var i = 0; i < current.length; i++) {
+              var options = [];
+              for (var j = 0; j < current[i].options.length; j++) {
+                var active = false;
+                if (!current[i].type) {
+                  active = true;
+                }
+                options.push({
+                  'type': current[i].type,
+                  'active': active,
+                  'value': current[i].options[j]
+                })
+              }
+              result.push({
+                'type': current[i].type,
+                'options': options
+              })
+            }
+
+            create_autocompletion(result);
+          }
+        });
+      }
+
+      console.log(current_serch_val);
+      if (!current_serch_val) {
+        console.log('delete');
+        clean_autocompletion();
+      }
+
+
+      if (e.which == 38) {
+        console.log('up');
+        $('.autocompletion-item').next('.active').addClass('.active');
+      } // up
+
+
+      if (e.which == 40) {
+        console.log('down');
+      } // up
     });
 
+    $(".details-button").on('click', function() { // trigger
+      $('.side-fixed').toggleClass("open close"); // blendet beim Klick auf "dt" die
+      $('.grid-view').toggleClass("open close"); // blendet beim Klick auf "dt" die
+    });
+
+
+    //  todo find a better way to do that
     $(document).ready(function() {
       search(query, function(data) {
         if (data.status == "ok") {
@@ -245,14 +356,6 @@
         }
       });
       console.log("ready!");
-    });
-
-    $(document).ready(function() {
-      $(".details-button").on('click', function() { // trigger
-        $('.side-fixed').toggleClass("open close"); // blendet beim Klick auf "dt" die
-        $('.grid-view').toggleClass("open close"); // blendet beim Klick auf "dt" die
-
-      });
     });
   </script>
 
