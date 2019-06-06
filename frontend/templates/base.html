@@ -270,6 +270,9 @@
     $("#search-bar").submit(function(e) {
       console.log('search');
       e.preventDefault();
+      // delete autocompletion
+      clean_autocompletion();
+      search_val = $('#search-input').val();
       search({
         'tag': $('#search-input').val()
       }, function(data) {
@@ -284,18 +287,55 @@
 
 
 
-    $("#search-input").on("change paste keyup", function(e) {
+    $("#search-input").on("paste keyup", function(e) {
       console.log('autocomplete');
+      if (e.which == 38) {
+        console.log('up');
+        var current = $('.autocompletion-item.active:last');
+        var old_index = 0;
+        $('.autocompletion-item').each(function(i, e) {
+          if ($('.autocompletion-item:eq(' + i + ')').is(current)) {
+            old_index = i;
+          }
+        });
+        new_index = Math.max(old_index - 1, 0);
+        $('.autocompletion-item:eq(' + old_index + ')').toggleClass('active');
+        $('.autocompletion-item:eq(' + new_index + ')').toggleClass('active');
+        $('#search-input').val($('.autocompletion-item:eq(' + new_index + ')').text());
 
-      current_serch_val = $('#search-input').val()
-      if (search_val != current_serch_val && current_serch_val) {
+        return;
+      } // up
+
+
+      if (e.which == 40) {
+        console.log('down');
+        var current = $('.autocompletion-item.active:last');
+        var old_index = 0;
+        $('.autocompletion-item').each(function(i, e) {
+          if ($('.autocompletion-item:eq(' + i + ')').is(current)) {
+            old_index = i;
+          }
+        });
+        new_index = Math.min(old_index + 1, $('.autocompletion-item').length - 1);
+        $('.autocompletion-item:eq(' + old_index + ')').toggleClass('active');
+        $('.autocompletion-item:eq(' + new_index + ')').toggleClass('active');
+        $('#search-input').val($('.autocompletion-item:eq(' + new_index + ')').text());
+        console.log('down_end');
+        return;
+      } // up
+
+      current_search_val = $('#search-input').val()
+      if (search_val != current_search_val && current_search_val) {
+        console.log('SSSSSSUUSUSUSSUSUSUSUSUUS');
+        console.log(search_val);
+        console.log(current_search_val);
         autocomplete($('#search-input').val(), function(data) {
           clean_autocompletion();
           if (data.status == "ok") {
             // append current input for all
             current = [{
               'type': null,
-              'options': [current_serch_val]
+              'options': [current_search_val]
             }];
             current = current.concat(data.autocompletion);
 
@@ -318,28 +358,20 @@
                 'options': options
               })
             }
-
+            search_val = current_search_val;
             create_autocompletion(result);
           }
         });
       }
 
-      console.log(current_serch_val);
-      if (!current_serch_val) {
+      console.log(current_search_val);
+      if (!current_search_val) {
         console.log('delete');
         clean_autocompletion();
       }
 
 
-      if (e.which == 38) {
-        console.log('up');
-        $('.autocompletion-item').next('.active').addClass('.active');
-      } // up
 
-
-      if (e.which == 40) {
-        console.log('down');
-      } // up
     });
 
     $(".details-button").on('click', function() { // trigger
