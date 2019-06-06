@@ -77,6 +77,7 @@
           <button type="submit"><i class="fa fa-search"></i></button>
           <div class="space"></div>
           <input id="search-input" type="text" placeholder="Search.." name="query" autocomplete="off"></input>
+          <input type="hidden" id="category-input" name="category" value=""></input>
 
           <div class="autocompletion-list">
         </form>
@@ -239,10 +240,11 @@
         return d.options;
       }).enter().append('li').attr('class', function(d) {
         if (d.active) {
-          return 'autocompletion-item active'
-
+          return 'autocompletion-item active';
         }
-        return 'autocompletion-item'
+        return 'autocompletion-item';
+      }).attr('data-handler', function(d) {
+        return d.type;
       }).text(function(d) {
         return d.value;
       });
@@ -302,7 +304,7 @@
         $('.autocompletion-item:eq(' + old_index + ')').toggleClass('active');
         $('.autocompletion-item:eq(' + new_index + ')').toggleClass('active');
         $('#search-input').val($('.autocompletion-item:eq(' + new_index + ')').text());
-
+        $('#category-input').val($('.autocompletion-item:eq(' + new_index + ')').attr('data-handler'));
         return;
       } // up
 
@@ -320,7 +322,7 @@
         $('.autocompletion-item:eq(' + old_index + ')').toggleClass('active');
         $('.autocompletion-item:eq(' + new_index + ')').toggleClass('active');
         $('#search-input').val($('.autocompletion-item:eq(' + new_index + ')').text());
-        console.log('down_end');
+        $('#category-input').val($('.autocompletion-item:eq(' + new_index + ')').attr('data-handler'));
         return;
       } // up
 
