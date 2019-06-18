@@ -62,7 +62,8 @@
 
 
       /* beautify preserve:start */
-      var query = {{ query|safe }}
+      var query = "{{ query|safe }}";
+      var category = "{{ category|safe }}";
       var search_val = null;
         /* beautify preserve:end */
     </script>
@@ -185,11 +186,12 @@
       d3.select('#gallery').selectAll('div').remove();
     }
 
-    function search(query, callback) {
+    function search(query, category, callback) {
       $.ajax({
         url: '{% url "search" %}',
         data: {
-          'query': JSON.stringify(query)
+          'query': query,
+          'category': category
         },
         contentType: 'application/x-www-form-urlencoded',
         dataType: 'json',
@@ -274,10 +276,9 @@
       e.preventDefault();
       // delete autocompletion
       clean_autocompletion();
+      category_val = $('#category-input').val();
       search_val = $('#search-input').val();
-      search({
-        'tag': $('#search-input').val()
-      }, function(data) {
+      search(search_val, category_val, function(data) {
         clean_list();
         if (data.status == "ok") {
           create_list(data.entries);
@@ -384,7 +385,7 @@
 
     //  todo find a better way to do that
     $(document).ready(function() {
-      search(query, function(data) {
+      search(query, category, function(data) {
         if (data.status == "ok") {
           create_list(data.entries);
         }

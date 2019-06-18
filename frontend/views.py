@@ -26,7 +26,7 @@ def index_view(request):
     entries = list(entries)
     for i, entry in enumerate(entries):
         entries[i]['path'] = relative_media_path(entry['path'])
-    context = {'query': {'tag': 'landscape'}, 'entries': entries, 'entries_json': json.dumps(entries)}
+    context = {'query': 'landscape', 'category': None, 'entries': entries, 'entries_json': json.dumps(entries)}
     return render(request, 'index.html', context)
 
 
@@ -82,12 +82,38 @@ def search_view(request):
         #TODO error
         return JsonResponse({'status': 'error'})
 
+    category = None
+    if 'category' in request.POST:
+        category_req = request.POST['category']
+        if not isinstance(category_req, str):
+            return JsonResponse({'status': 'error'})
+
+        if category_req.lower() == 'meta':
+            category = 'meta'
+        if category_req.lower() == 'annotations':
+            category = 'annotations'
+
+    print(request.POST)
     query = request.POST['query']
+
+    print(query)
+    print(category)
     if isinstance(query, (list, set)):
         query = query[0]
 
     db = ElasticSearchDatabase()
-    entries = db.search(annotations=query, sort='annotations', size=5)
+    if category == 'annotations':
+        print('annotations')
+        entries = db.search(annotations=query, sort='annotations', size=100)
+
+    if category == 'meta':
+        print('meta')
+        entries = db.search(meta=query, size=100)
+
+    if category is None:
+        print('############')
+        print('None')
+        entries = db.search(meta=query, annotations=query, size=100)
 
     entries = list(entries)
 
