@@ -192,6 +192,16 @@ button:focus {
   background-color: #00000020;
 }
 
+.autocompletion-item:hover {
+  color: #4b4b4b;
+  background-color: #cdcdcd;
+  border-color: #aeaeae
+}
+
+.autocompletion-item {
+  cursor: pointer;
+}
+
 .side-menu {
   height: 100%;
   width: 20%;

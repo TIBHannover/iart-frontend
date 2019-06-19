@@ -247,8 +247,16 @@
         return 'autocompletion-item';
       }).attr('data-handler', function(d) {
         return d.type;
-      }).text(function(d) {
+      });
+
+      suggestions.text(function(d) {
         return d.value;
+      });
+
+
+      suggestions.on('click', function(d) {
+        update_search_entry(d.type, d.value);
+        $("#search-bar").submit();
       });
 
     }
@@ -287,7 +295,10 @@
     });
 
 
-
+    function update_search_entry(type, value) {
+      $('#search-input').val(value);
+      $('#category-input').val(type);
+    }
 
 
     $("#search-input").on("paste keyup", function(e) {
@@ -329,7 +340,6 @@
 
       current_search_val = $('#search-input').val()
       if (search_val != current_search_val && current_search_val) {
-        console.log('SSSSSSUUSUSUSSUSUSUSUSUUS');
         console.log(search_val);
         console.log(current_search_val);
         autocomplete($('#search-input').val(), function(data) {
@@ -373,15 +383,21 @@
         clean_autocompletion();
       }
 
-
-
     });
 
+    // Toggle detail view
     $(".details-button").on('click', function() { // trigger
       $('.side-fixed').toggleClass("open close"); // blendet beim Klick auf "dt" die
       $('.grid-view').toggleClass("open close"); // blendet beim Klick auf "dt" die
     });
 
+    // Delete autocompletion list if somebody click outside
+    $(document).click(function(event) {
+      $target = $(event.target);
+      if (!$target.closest('.autocompletion-list').length) {
+        clean_autocompletion();
+      }
+    });
 
     //  todo find a better way to do that
     $(document).ready(function() {
