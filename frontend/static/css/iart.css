@@ -47,6 +47,9 @@
 }
 
 .badge {
+  margin-left: 2px;
+border-radius: 2px;
+  padding: 4px;
   color: #e6e6e6;
   background-color: #4b4b4b
 }
