@@ -24,7 +24,15 @@ SECRET_KEY = 'wrmnr_)ffvihaem(^1vf4*&^n3mthvi-x$74kco07azh0-feb5'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+FORCE_SCRIPT_NAME = '/'
+# FORCE_SCRIPT_NAME = '/iart'
+
+ALLOWED_HOSTS = [
+    'iart21.labs.tib.eu', 'labs.tib.eu/iart', 'iart01.develop.labs.tib.eu', 'labs.develop.tib.eu/iart', '127.0.0.1',
+    'localhost'
+]
+
+CSRF_TRUSTED_ORIGINS = ['.tib.eu']
 
 # Application definition
 
@@ -112,7 +120,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "frontend", "static")]
+
+STATIC_URL = FORCE_SCRIPT_NAME + 'static/'
 
 MEDIA_ROOT = os.path.join(os.path.dirname(__file__), '..', 'media')
-MEDIA_URL = 'media/'
+MEDIA_URL = FORCE_SCRIPT_NAME + 'media/'

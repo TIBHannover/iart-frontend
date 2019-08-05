@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, Http404
+from django.conf import settings
 
 # TODO
 import sys
@@ -10,11 +11,16 @@ from database.elasticsearch_suggester import ElasticSearchSuggester
 
 import json
 
+# def relative_media_url(path):
+#     # todo
+#     index = path.rfind('/media/')
+#     return path[index:]
 
-def relative_media_path(path):
+
+def relative_media_url(path):
     # todo
-    index = path.rfind('/media/')
-    return path[index:]
+    index = path.rfind('/media/') + len('/media/')
+    return settings.MEDIA_URL + path[index:]
 
 
 def index_view(request):
@@ -25,7 +31,7 @@ def index_view(request):
     # TODO fix path
     entries = list(entries)
     for i, entry in enumerate(entries):
-        entries[i]['path'] = relative_media_path(entry['path'])
+        entries[i]['path'] = relative_media_url(entry['path'])
     context = {'query': 'landscape', 'category': None, 'entries': entries, 'entries_json': json.dumps(entries)}
     return render(request, 'index.html', context)
 
@@ -47,7 +53,7 @@ def details_view(request):
     id = request.POST['id']
     db = ElasticSearchDatabase()
     entry = db.get_entry(id)
-    entry['path'] = relative_media_path(entry['path'])
+    entry['path'] = relative_media_url(entry['path'])
     context = {'status': 'ok', 'entry': entry, 'entry_json': json.dumps(entry)}
     return JsonResponse(context)
 
@@ -118,7 +124,7 @@ def search_view(request):
     entries = list(entries)
 
     for i, entry in enumerate(entries):
-        entries[i]['path'] = relative_media_path(entry['path'])
+        entries[i]['path'] = relative_media_url(entry['path'])
     context = {'status': 'ok', 'entries': entries, 'entries_json': json.dumps(entries)}
     return JsonResponse(context)
 
