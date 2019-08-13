@@ -18,9 +18,10 @@ import json
 
 
 def relative_media_url(path):
+    hash_value = os.path.splitext(os.path.basename(path))[0]
     # todo
     index = path.rfind('/media/') + len('/media/')
-    return settings.MEDIA_URL + path[index:]
+    return settings.MEDIA_URL + hash_value[0:2] + '/' + hash_value[2:4] + '/' + hash_value + '.jpg'
 
 
 def index_view(request):
