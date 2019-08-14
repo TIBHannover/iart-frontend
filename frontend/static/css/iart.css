@@ -260,10 +260,15 @@ body {
 
 /* Detail */
 .details-view {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-content: flex-start;
+  flex-wrap: wrap;
   padding-left: 10px;
   padding-right: 10px;
   transition: width .2s ease;
-  height: 100%;
+  height: 50%;
 }
 
 .details-view.open {
@@ -277,6 +282,7 @@ body {
 .details-item {
   padding-top: 10px;
   overflow: hidden;
+  width: 100%;
 }
 
 .details-item * {
@@ -322,6 +328,11 @@ body {
   border-color: #aeaeae
 }
 
+.details-menu {
+  margin-top: auto;
+  align-self: flex-end;
+  background-color: #ff00ff;
+}
 /* Button */
 .btn {
   display: inline-block;

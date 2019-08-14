@@ -93,7 +93,7 @@
     function create_details(entry) {
       console.log('create_details');
       console.log(entry);
-      var container = d3.select('#details-view').append('div');
+      var container = d3.select('#details-view');
       var image = container.append('div').attr('class', 'details-item').append('img').attr('src', function(d) {
         return entry.path;
       }).classed('details-image', true);
@@ -110,7 +110,6 @@
           info.append('spam').text('by ' + entry.meta.artist_name);
         }
       }
-      console.log(JSON.stringify(entry));
       if (entry.hasOwnProperty('classifier')) {
         var tags = container.append('div').attr('class', 'details-item details-tags');
         // classifier
@@ -126,6 +125,12 @@
 
       }
       var menu = container.append('div').attr('class', 'details-item details-menu');
+      menu.append('div').attr('data-src', JSON.stringify(entry));
+      // menu.text('TEST');
+      menu.append('button').on('click', function() {
+        // query = null, category = null, features = null, reference_id = null, hide_details = true
+        search_similary();
+      }).text('find similar')
     }
 
     function clean_details() {
@@ -186,17 +191,34 @@
       d3.select('#gallery').selectAll('div').remove();
     }
 
-    function search(query, category, callback) {
+
+    function search_query(query = null, category = null, hide_details = true) {
+      search(query, category, hide_details)
+    }
+
+    function search_similary() {
+
+    }
+
+    function search(query = null, category = null, features = null, reference_id = null, hide_details = true) {
       $.ajax({
         url: '{% url "search" %}',
         data: {
           'query': query,
-          'category': category
+          'category': category,
+          'features': features,
+          'id': reference_id
         },
         contentType: 'application/x-www-form-urlencoded',
         dataType: 'json',
         type: 'POST',
-        success: callback
+        success: function(data) {
+          console.log(data);
+          clean_list();
+          if (data.status == "ok") {
+            create_list(data.entries);
+          }
+        }
       });
     }
 
@@ -286,12 +308,10 @@
       clean_autocompletion();
       category_val = $('#category-input').val();
       search_val = $('#search-input').val();
-      search(search_val, category_val, function(data) {
-        clean_list();
-        if (data.status == "ok") {
-          create_list(data.entries);
-        }
-      });
+      search_query(search_val, category_val);
+
+      $('#category-input').val(null);
+      $('#search-input').val(search_val);
     });
 
 
@@ -401,11 +421,7 @@
 
     //  todo find a better way to do that
     $(document).ready(function() {
-      search(query, category, function(data) {
-        if (data.status == "ok") {
-          create_list(data.entries);
-        }
-      });
+      search_query(query, category);
       console.log("ready!");
     });
   </script>

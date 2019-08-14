@@ -26,7 +26,7 @@ def relative_media_url(path):
 
 def index_view(request):
     db = ElasticSearchDatabase()
-    entries = db.search(annotations='landscape', sort='annotations', size=5)
+    entries = db.search(classifiers=['landscape'], sort='classifier', size=5)
     # latest_question_list = Question.objects.order_by('-pub_date')[:5]
 
     # TODO fix path
@@ -103,24 +103,25 @@ def search_view(request):
     print(request.POST)
     query = request.POST['query']
 
-    print(query)
-    print(category)
     if isinstance(query, (list, set)):
         query = query[0]
 
     db = ElasticSearchDatabase()
+
+    print('#####################################################')
+    print('#####################################################')
+    print('#####################################################')
     if category == 'annotations':
-        print('annotations')
-        entries = db.search(annotations=query, sort='annotations', size=100)
+        print('classifiers')
+        entries = db.search(classifiers=query, sort='classifier', size=100)
 
     if category == 'meta':
         print('meta')
         entries = db.search(meta=query, size=100)
 
     if category is None:
-        print('############')
-        print('None')
-        entries = db.search(meta=query, annotations=query, size=100)
+        print('none')
+        entries = db.search(meta=query, classifiers=query, size=100)
 
     entries = list(entries)
 
