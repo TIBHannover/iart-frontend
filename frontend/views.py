@@ -34,7 +34,7 @@ def index_view(request):
     for i, entry in enumerate(entries):
         entries[i]['path'] = relative_media_url(entry['path'])
     context = {'query': 'landscape', 'category': None, 'entries': entries, 'entries_json': json.dumps(entries)}
-    return render(request, 'index.html', context)
+    return render(request, 'new_index.html', context)
 
 
 #
@@ -60,14 +60,19 @@ def details_view(request):
 
 
 def autocomplete_view(request):
-    if not request.is_ajax():
-        return Http404()
+    # if not request.is_ajax():
+    #     return Http404()
 
-    if 'query' not in request.POST:
+    try:
+        data = json.loads(request.body)
+    except:
+        return JsonResponse({'status': 'error'})
+
+    if 'query' not in data:
         #TODO error
         return JsonResponse({'status': 'error'})
 
-    query = request.POST['query']
+    query = data['query']
     print(query)
     suggester = ElasticSearchSuggester()
     autocompletion = suggester.complete(query)
@@ -81,17 +86,28 @@ def autocomplete_view(request):
 
 
 def search_view(request):
+    #
+    # if not request.is_ajax():
+    #     return Http404()
 
-    if not request.is_ajax():
-        return Http404()
-
-    if 'query' not in request.POST:
-        #TODO error
+    print('search')
+    try:
+        data = json.loads(request.body)
+    except:
+        print('kein json')
         return JsonResponse({'status': 'error'})
 
+    if 'query' not in data:
+        #TODO error
+        print('kein query')
+        return JsonResponse({'status': 'error'})
+
+    print('search-')
+
+    print(data)
     category = None
-    if 'category' in request.POST:
-        category_req = request.POST['category']
+    if 'category' in data and data['category'] is not None:
+        category_req = data['category']
         if not isinstance(category_req, str):
             return JsonResponse({'status': 'error'})
 
@@ -100,8 +116,8 @@ def search_view(request):
         if category_req.lower() == 'annotations':
             category = 'annotations'
 
-    print(request.POST)
-    query = request.POST['query']
+    print(data)
+    query = data['query']
 
     if isinstance(query, (list, set)):
         query = query[0]
