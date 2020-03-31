@@ -1,15 +1,10 @@
 # Installation
 
 ## Required software and tools
+
 - npm
 - django
 - elasticsearch
-
-```
-npm install elasticdump
-```
-
-
 
 ## Installation 
 
@@ -32,7 +27,7 @@ tar -xf media.tar.gz -C ./
 Import Database
 
 ```
-pm install elasticdump --prefix ./    
+npm install elasticdump --prefix ./    
 
 ./node_modules/elasticdump/bin/elasticdump \
   --input=iart_mapping.json \
