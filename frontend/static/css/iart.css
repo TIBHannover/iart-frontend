@@ -12,7 +12,9 @@
 
 .side-menu.open{
   min-width: 300px;
-  max-width: 20%;
+  /* max-width: 20%; */
+
+  flex-basis: 20%;
 }
 
 .side-menu.close{
@@ -33,7 +35,7 @@
 
 .side-fixed.open {
   min-width: 300px;
-  max-width: 20%;
+  width: 20%;
 }
 
 .side-fixed.close {
@@ -49,6 +51,10 @@
   padding-left: 10px;
   padding-right: 10px;
   transition: flex-basis .2s ease;
+}
+
+.grid-view.open{
+  flex-basis: 80%;
 }
 
 .grid-item {
@@ -346,6 +352,10 @@ dl dd {
   text-overflow: ellipsis;
 }
 
+.details-item.details-image {
+  height:40%;
+  min-height: 200px;
+}
 
 
 
@@ -369,12 +379,12 @@ dl dd {
   /* background-color:black; */
 }
 
-.details-item img {
+.details-item.details-image img {
   /* min-width: 100%;
   max-width: 100%; */
   width: 100%;
 
-  height: 200px;
+  height: 100%;
   object-fit: cover;
   transition: .2s ease;
   backface-visibility: hidden;

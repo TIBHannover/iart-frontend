@@ -356,7 +356,7 @@ Vue.component('detail-view', {
   <div v-bind:class="'side-menu ' + (hidden ? 'close': 'open')">
     <div v-if="disabled" v-bind:class="'side-fixed ' + (hidden ? 'close': 'open')">
       <div id="details-view" class="details-view">
-        <div class="details-item">
+        <div class="details-item details-image">
 
           <img v-bind:src="selected.path"/>
           <div class="overlay">
