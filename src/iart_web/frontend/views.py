@@ -1,17 +1,15 @@
+# TODO
+import sys
+import os
+
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, Http404
 from django.conf import settings
 from django.contrib import auth
 from django.views.decorators.http import require_http_methods
 
-
-# TODO
-import sys
-import os
-
-sys.path.insert(0, os.path.dirname(__file__))
-from database.elasticsearch_database import ElasticSearchDatabase
-from database.elasticsearch_suggester import ElasticSearchSuggester
+from iart_indexer.database.elasticsearch_database import ElasticSearchDatabase
+from iart_indexer.database.elasticsearch_suggester import ElasticSearchSuggester
 
 import json
 
