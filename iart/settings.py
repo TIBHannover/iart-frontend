@@ -32,8 +32,11 @@ ALLOWED_HOSTS = [
     'localhost'
 ]
 
-CSRF_TRUSTED_ORIGINS = ['.tib.eu']
+CSRF_TRUSTED_ORIGINS = ['.tib.eu', 'localhost', '127.0.0.1']
+# CSRF_COOKIE_SECURE = False
 
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_HTTPONLY = False
 # Application definition
 
 INSTALLED_APPS = [

@@ -154,6 +154,7 @@
   border: 0px;
   top: 0px;
   left: 0px;
+  display: flex;
 }
 
 .topnav a {
@@ -197,6 +198,8 @@
   border-bottom-right-radius: 5px;
   background-color: white;
 }
+
+
 
 input:focus,
 select:focus,
@@ -275,6 +278,61 @@ button:focus {
 }
 
 
+.navbar-menu {
+  margin-top: 6px;
+  padding: 0 40px;
+  display: flex;
+  /* or inline-flex */
+  flex-wrap: nowrap;
+  padding: 0px;
+  width: 40px;
+  height: 40px;
+  /* margin-left: 40px;
+  margin-right: 40px; */
+  margin-top: 6px;
+  margin-bottom: 6px;
+
+  position: relative;
+}
+
+.navbar-menu button{
+  height: 100%;
+  width: 100%;
+}
+
+.navbar-menu .navbar-content{
+  top: 100%;
+  right: 0;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.navbar-menu .navbar-content.close{
+  display: none;
+}
+
+.navbar-menu .navbar-content.open{
+  display: block;
+}
+
+.navbar-content a {
+  color: black;
+  /* padding: 12px 16px; */
+  text-decoration: none;
+  display: block;
+}
+
+.navbar-content a:hover {
+  color: black;
+  /* padding: 12px 16px; */
+  text-decoration: none;
+  display: b
+}
+/* navbar-menu
+navbar-content */
 /* .side-fixed[data-descr] {
   position: relative;
   text-decoration: underline;
