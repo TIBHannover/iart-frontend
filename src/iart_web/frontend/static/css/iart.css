@@ -189,8 +189,9 @@
     position: relative;
 }
 
-.search-bar input[type=text] {
+.search-bar .search-input {
   flex-grow: 1;
+  display: flex;
   border: none;
   margin-left: 0px;
   padding-left: 0px;
@@ -199,7 +200,20 @@
   background-color: white;
 }
 
+.search-bar .search-input span {
+   margin-top: auto;
+   margin-bottom: auto;
+   text-align: center;
+   vertical-align: middle;
+}
 
+.search-bar .search-input input[type=text] {
+  flex-grow: 1;
+   margin-top: auto;
+   margin-bottom: auto;
+  background-color: transparent;
+  border-color: transparent;
+}
 
 input:focus,
 select:focus,

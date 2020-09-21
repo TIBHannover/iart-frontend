@@ -473,8 +473,6 @@ Vue.component('detail-view', {
         <i class="fa fa-angle-right"></i>
       </div>
     </div>
-
-
   </div>`,
   data: function () {
     return {
@@ -556,20 +554,24 @@ Vue.component('gallery', {
 Vue.component('search-bar', {
   template: `
     <div class="search-bar">
-
       <button v-on:click="submit"><i class="fa fa-search"></i></button>
       <div class="space"></div>
-      <input
-        v-model="query"
-        v-on:paste="suggest"
-        v-on:keyup="suggest"
-        v-on:keydown="submit"
-        id="search-input"
-        type="text"
-        placeholder="search"
-        name="query"
-        autocomplete="off"
-      ></input>
+      
+      <div class="search-input">
+      
+      <span class="badge">landscape <i class="fa fa-times-circle"></i></span>
+        <input
+          v-model="query"
+          v-on:paste="suggest"
+          v-on:keyup="suggest"
+          v-on:keydown="submit"
+          id="search-input"
+          type="text"
+          placeholder="search"
+          name="query"
+          autocomplete="off"
+        ></input>
+      </div>
 
       <div v-if="visible" v-click-outside="hideAutocompletion" class="autocompletion-list">
         <ul v-for="(type, type_index) in suggestions">
