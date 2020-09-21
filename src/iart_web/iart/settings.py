@@ -131,6 +131,7 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "frontend", "static")]
 
 STATIC_URL = FORCE_SCRIPT_NAME + "static/"
 
-MEDIA_ROOT = os.path.join(os.path.dirname(__file__), "..", "media")
-print(MEDIA_ROOT)
+# MEDIA_ROOT = os.path.join(os.path.dirname(__file__), "..", "media")
+
+MEDIA_ROOT = os.path.join("/data/1/data/iart/web/media/")
 MEDIA_URL = FORCE_SCRIPT_NAME + "media/"

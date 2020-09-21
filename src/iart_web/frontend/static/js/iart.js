@@ -114,7 +114,7 @@ function argMin(array) {
   return array.map((x, i) => [x, i]).reduce((r, a) => (a[0] < r[0] ? a : r))[1];
 }
 
-Vue.component('feature-selector', {
+Vue.component('feature-selector-circle', {
   template: `
   <div class="svg-container">
     <svg
@@ -348,6 +348,92 @@ Vue.component('feature-selector', {
   }
 })
 
+
+
+Vue.component('feature-slider', {
+  template: `
+    <div class="row feature">
+      <label class="col-25">{{name}}</label>
+      <input type="checkbox" v-model="actived" v-on:change="process()"></input>
+      <input type="range" min="0" max="100" value="50" class="slider" v-model="value" v-bind:disabled="!actived" v-on:change="process()"></input>
+    </div>`,
+  // props:['features'],
+  props: ['plugin', 'update'],
+  data: function () {
+    return {
+      value: 0,
+      actived: false,
+    }
+  },
+  methods: {
+    process: function () {
+      if (this.actived) {
+        this.update(this.plugin, this.value)
+      }
+      else {
+        this.update(this.plugin, 0)
+      }
+    }
+  },
+  computed: {
+    name: function () {
+      console.log(this.plugin);
+      feature_name = {
+        yuv_histogram_feature: "color",
+        byol_embedding_feature: "content"
+      }
+
+      return feature_name[this.plugin]
+    },
+  },
+})
+
+
+Vue.component('feature-selector-slider', {
+  template: `
+  <form class="feature-selector">
+    <feature-slider 
+      v-for="feature in selected.feature" 
+      v-bind:plugin="feature.plugin" 
+      v-bind:key="feature.id"
+      v-bind:update="update">
+    </feature-slider>
+    <button v-on:click="search">Search</button>
+  </form>`,
+  // props:['features'],
+  data: function () {
+    return {
+      weights: {}
+    }
+  },
+  methods: {
+    search: function (event) {
+
+      event.preventDefault();
+      // features
+      // reference_id
+
+
+      this.$store.dispatch('refreshResults', {
+        features: this.weights,
+        reference_id: this.$store.state.selected.id
+      });
+    },
+    update: function (plugin, value) {
+      this.weights[plugin] = value / 100;
+      if (this.weights[plugin] == 0.0) {
+        delete this.weights[plugin];
+      }
+      console.log(this.weights);
+    }
+  },
+  computed: {
+    selected: function () {
+      return this.$store.state.selected;
+    },
+  }
+})
+
 // {{selected}}
 // {{disabled}}
 
@@ -371,7 +457,6 @@ Vue.component('detail-view', {
           <dl>
             <dt>Artist</dt><dd>{{selected.meta.artist_name}}</dd>
             <dt>Location</dt><dd>{{selected.meta.location}}</dd>
-            <dt>Size</dt><dd>{{selected.image.width}} x {{selected.image.height}}</dd>
           </dl>
         </div>
         <div class="details-item">
@@ -380,9 +465,8 @@ Vue.component('detail-view', {
           </div>
         </div>
         <div class="details-item">
-          <feature-selector/>
+          <feature-selector-slider/>
         </div>
-
       </div>
       <div v-bind:disabled="disabled" v-on:click="toggle" class="details-button">
         <i class="fa fa-angle-left"></i>

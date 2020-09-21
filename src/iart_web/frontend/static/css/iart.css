@@ -506,11 +506,33 @@ dl dd {
 }
 
 .feature-selector{
-  display: inline-block;
-  position: absolute;
-  top: 10px;
-  left: 0;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  width: 100%;
 }
+
+.row{
+  width: 100%;
+}
+
+.feature-selector .feature{
+  display: flex;
+  flex-direction: row;
+}
+
+.feature-selector label{
+  width: 25%;
+}
+
+.feature-selector .slider{
+  flex-grow: 4;
+}
+
+.feature-selector button{
+  margin-top: 10px;
+}
+
 
 .feature-selector .drag-point{
     fill: #5a96c4;

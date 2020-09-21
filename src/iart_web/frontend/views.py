@@ -11,6 +11,10 @@ from django.views.decorators.http import require_http_methods
 from iart_indexer.database.elasticsearch_database import ElasticSearchDatabase
 from iart_indexer.database.elasticsearch_suggester import ElasticSearchSuggester
 
+
+from elasticsearch import Elasticsearch, exceptions
+
+
 import json
 
 # def relative_media_url(path):
@@ -19,11 +23,14 @@ import json
 #     return path[index:]
 
 
-def relative_media_url(path):
-    hash_value = os.path.splitext(os.path.basename(path))[0]
+def url_to_image(id):
     # todo
-    index = path.rfind("/media/") + len("/media/")
-    return settings.MEDIA_URL + hash_value[0:2] + "/" + hash_value[2:4] + "/" + hash_value + ".jpg"
+    return settings.MEDIA_URL + id[0:2] + "/" + id[2:4] + "/" + id + ".jpg"
+
+
+def url_to_preview(id):
+    # todo
+    return settings.MEDIA_URL + id[0:2] + "/" + id[2:4] + "/" + id + "_m.jpg"
 
 
 def index_view(request):
@@ -33,8 +40,10 @@ def index_view(request):
 
     # TODO fix path
     entries = list(entries)
+
+    print(entries)
     for i, entry in enumerate(entries):
-        entries[i]["path"] = relative_media_url(entry["path"])
+        entries[i]["path"] = url_to_preview(entry["id"])
     context = {"query": "landscape", "category": None, "entries": entries, "entries_json": json.dumps(entries)}
     return render(request, "new_index.html", context)
 
@@ -56,7 +65,7 @@ def details_view(request):
     id = request.POST["id"]
     db = ElasticSearchDatabase()
     entry = db.get_entry(id)
-    entry["path"] = relative_media_url(entry["path"])
+    entry["path"] = url_to_image(entry["id"])
     context = {"status": "ok", "entry": entry, "entry_json": json.dumps(entry)}
     return JsonResponse(context)
 
@@ -99,10 +108,47 @@ def search_view(request):
         print("kein json")
         return JsonResponse({"status": "error"})
 
-    if "query" not in data:
-        # TODO error
-        print("kein query")
-        return JsonResponse({"status": "error"})
+    print(data)
+
+    query_feature = None
+    if "id" in data:
+        query_feature = []
+
+        db = ElasticSearchDatabase()
+        entry = db.get_entry(data["id"])
+
+        if entry is None:
+            return JsonResponse({"status": "error"})
+
+        es = Elasticsearch()
+
+        for f in entry["feature"]:
+            # TODO add weight
+            if "features" in data and f["plugin"] in data["features"]:
+
+                if f["plugin"] == "yuv_histogram_feature":
+                    fuzziness = 2
+                    minimum_should_match = 4
+
+                if f["plugin"] == "byol_embedding_feature":
+                    fuzziness = 2
+                    minimum_should_match = 1
+                query_feature.append(
+                    {
+                        "plugin": f["plugin"],
+                        "annotations": f["annotations"],
+                        "fuzziness": fuzziness,
+                        "minimum_should_match": minimum_should_match,
+                    }
+                )
+
+    query = None
+    if "query" in data:
+
+        query = data["query"]
+
+        if isinstance(query, (list, set)):
+            query = query[0]
 
     print("search-")
 
@@ -119,10 +165,6 @@ def search_view(request):
             category = "annotations"
 
     print(data)
-    query = data["query"]
-
-    if isinstance(query, (list, set)):
-        query = query[0]
 
     db = ElasticSearchDatabase()
 
@@ -131,20 +173,20 @@ def search_view(request):
     print("#####################################################")
     if category == "annotations":
         print("classifiers")
-        entries = db.search(classifiers=query, sort="classifier", size=100)
+        entries = db.search(classifiers=query, features=query_feature, sort="classifier", size=100)
 
     if category == "meta":
         print("meta")
-        entries = db.search(meta=query, size=100)
+        entries = db.search(meta=query, features=query_feature, size=100)
 
     if category is None:
         print("none")
-        entries = db.search(meta=query, classifiers=query, size=100)
+        entries = db.search(meta=query, classifiers=query, features=query_feature, size=100)
 
     entries = list(entries)
 
     for i, entry in enumerate(entries):
-        entries[i]["path"] = relative_media_url(entry["path"])
+        entries[i]["path"] = url_to_preview(entry["id"])
     context = {"status": "ok", "entries": entries, "entries_json": json.dumps(entries)}
     return JsonResponse(context)
 
