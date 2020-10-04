@@ -7,24 +7,31 @@ function delay(ms) {
 
 store = new Vuex.Store({
   state: {
-    query: {},
+    // query: {},
     suggestions: [],
     entries: [],
     user: null,
-    selected: null
+    selected: null,
+
+    categories: [],
+    features: [],
+    reference: [],
   },
   mutations: {
     updateSuggestions(state, suggestions) {
       state.suggestions = suggestions;
     },
-    updateQuery(state, query) {
-      state.query = query;
-    },
+    // updateQuery(state, query) {
+    //   state.query = query;
+    // },
     updateEntries(state, entries) {
       state.entries = entries;
     },
     updateSelected(state, entry) {
       state.selected = entry;
+    },
+    updateReference(state, entry) {
+      state.reference = [entry];
     }
   },
   actions: {
@@ -57,8 +64,11 @@ store = new Vuex.Store({
         })
     },
     refreshResults(context, parameter) {
-      console.log('start search');
-      console.log(parameter.query);
+      reference_id = null
+      if ('reference' in parameter && 'id' in parameter.reference) {
+        reference_id = parameter.reference.id
+      }
+      console.log(reference_id)
       fetch(url_search, {
         method: 'POST',
         headers: {
@@ -70,13 +80,13 @@ store = new Vuex.Store({
           query: parameter.query,
           category: parameter.category,
           features: parameter.features,
-          id: parameter.reference_id
+          id: reference_id
         })
       }).then(function (res) {
         return res.json();
       }).then(function (data) {
         if (data.status == 'ok') {
-          console.log('update entries');
+          context.commit('updateReference', parameter.reference)
           context.commit('updateEntries', data['entries']);
         } else {
           console.log('error');
@@ -348,8 +358,6 @@ Vue.component('feature-selector-circle', {
   }
 })
 
-
-
 Vue.component('feature-slider', {
   template: `
     <div class="row feature">
@@ -361,8 +369,17 @@ Vue.component('feature-slider', {
   props: ['plugin', 'update'],
   data: function () {
     return {
-      value: 0,
-      actived: false,
+      value: 50,
+      actived: true,
+    }
+  },
+  created: function () {
+
+    if (this.actived) {
+      this.update(this.plugin, this.value)
+    }
+    else {
+      this.update(this.plugin, 0)
     }
   },
   methods: {
@@ -379,15 +396,15 @@ Vue.component('feature-slider', {
     name: function () {
       console.log(this.plugin);
       feature_name = {
-        yuv_histogram_feature: "color",
-        byol_embedding_feature: "content"
+        yuv_histogram_feature: "Color",
+        byol_embedding_feature: "Wikimedia",
+        image_net_inception_feature: "ImageNet"
       }
 
       return feature_name[this.plugin]
     },
   },
 })
-
 
 Vue.component('feature-selector-slider', {
   template: `
@@ -416,7 +433,7 @@ Vue.component('feature-selector-slider', {
 
       this.$store.dispatch('refreshResults', {
         features: this.weights,
-        reference_id: this.$store.state.selected.id
+        reference: this.$store.state.selected
       });
     },
     update: function (plugin, value) {
@@ -433,9 +450,6 @@ Vue.component('feature-selector-slider', {
     },
   }
 })
-
-// {{selected}}
-// {{disabled}}
 
 
 Vue.component('detail-view', {
@@ -459,12 +473,12 @@ Vue.component('detail-view', {
             <dt>Location</dt><dd>{{selected.meta.location}}</dd>
           </dl>
         </div>
-        <div class="details-item">
+        <div class="details-item tags">
           <div class="badge-wall">
             <span v-for="(tag, tag_index) in tags" class="badge">{{tag.name}}</span>
           </div>
         </div>
-        <div class="details-item">
+        <div class="details-item toolbox">
           <feature-selector-slider/>
         </div>
       </div>
@@ -551,6 +565,12 @@ Vue.component('gallery', {
   }
 })
 
+Vue.component('search-bar-badge', {
+  template: `
+    <span class="badge">landscape <i class="fa fa-times-circle"></i></span>`,
+  props: []
+})
+
 Vue.component('search-bar', {
   template: `
     <div class="search-bar">
@@ -558,8 +578,10 @@ Vue.component('search-bar', {
       <div class="space"></div>
       
       <div class="search-input">
-      
-      <span class="badge">landscape <i class="fa fa-times-circle"></i></span>
+        <search-bar-badge
+          v-for="badge in badges"  
+          v-bind:key="badge.id">
+        </search-bar-badge>
         <input
           v-model="query"
           v-on:paste="suggest"
@@ -598,6 +620,9 @@ Vue.component('search-bar', {
     }
   },
   computed: {
+    badges: function () {
+      return []
+    },
     suggestions: function () {
       return this.$store.state.suggestions;
     },
@@ -697,7 +722,6 @@ Vue.component('search-bar', {
       options = this.suggestionQuery(this.currentSuggestion);
       this.search(type, options);
     },
-
     search(type, query) {
       this.hidden = true;
 

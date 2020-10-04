@@ -2,6 +2,8 @@
 import sys
 import os
 
+import numpy as np
+
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, Http404
 from django.conf import settings
@@ -296,18 +298,38 @@ class ElasticSearchDatabase:
                 }
                 terms.append(term)
         # if features is not None:
+        #     print("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFf")
+        #     # for feature in features:
+        #     #     print(feature)
+        #     feature = features[0]["annotations"][0]
+        #     # print(feature)
+        #     if "val_256" in feature:
+        #         script = {
+        #             # "source": "randomScore(100)"
+        #             "source": "cosineSimilarity(params.query_vector, 'feature.annotations.val_256') + 1.0",
+        #             "params": {"query_vector": feature["val_256"]},
+        #         }
+
+        #     if "val_128" in feature:
+        #         script = {
+        #             # "source": "randomScore(100)"
+        #             # cosineSimilarity(params.queryVector, doc['gpdcluster'])+1.0
+        #             "source": "cosineSimilarity(params.query_vector, doc['feature.annotations.val_128']) + 1.0",
+        #             "params": {"query_vector": feature["val_128"]},
+        #         }
+
+        #     if "val_64" in feature:
+        #         script = {
+        #             # "source": "randomScore(100)"
+        #             "source": "(cosineSimilarity(params.query_vector, doc['feature.annotations.val_64']) + 1.0)",
+        #             "params": {"query_vector": feature["val_64"]},
+        #         }
+
         #     body = {
-        #         "query": {
-        #             "script_score": {
-        #                 "query": {"bool": {"should": terms}},
-        #                 "script": {
-        #                     # "source": "randomScore(100)"
-        #                     "source": "cosineSimilarity(params.query_vector, 'feature.annotations.value') + 1.0",
-        #                     "params": {"query_vector": [4, 3.4, -0.2]},
-        #                 },
-        #             }
-        #         },
+        #         "query": {"script_score": {"query": {"bool": {"should": terms}}, "script": script}},
         #     }
+
+        #     print(body)
 
         # else:
         body = {"query": {"bool": {"should": terms}}}
@@ -446,16 +468,15 @@ def search_view(request):
     #     return Http404()
 
     print("search")
+
     try:
         data = json.loads(request.body)
     except:
         print("kein json")
         return JsonResponse({"status": "error"})
 
-    print(data)
-
     query_feature = None
-    if "id" in data:
+    if "id" in data and data["id"] is not None:
         query_feature = []
 
         db = ElasticSearchDatabase()
@@ -467,6 +488,8 @@ def search_view(request):
         es = Elasticsearch()
 
         for f in entry["feature"]:
+            print("#########")
+            print(f)
             # TODO add weight
             if "features" in data and f["plugin"] in data["features"]:
 
@@ -477,12 +500,18 @@ def search_view(request):
                 if f["plugin"] == "byol_embedding_feature":
                     fuzziness = 2
                     minimum_should_match = 1
+
+                if f["plugin"] == "image_net_inception_feature":
+                    fuzziness = 2
+                    minimum_should_match = 1
+
                 query_feature.append(
                     {
                         "plugin": f["plugin"],
                         "annotations": f["annotations"],
                         "fuzziness": fuzziness,
                         "minimum_should_match": minimum_should_match,
+                        "weight": data["features"][f["plugin"]],
                     }
                 )
 
@@ -494,7 +523,7 @@ def search_view(request):
         if isinstance(query, (list, set)):
             query = query[0]
 
-    print("search-")
+    print("search")
 
     print(data)
     category = None
@@ -517,17 +546,46 @@ def search_view(request):
     print("#####################################################")
     if category == "annotations":
         print("classifiers")
-        entries = db.search(classifiers=query, features=query_feature, sort="classifier", size=100)
+        entries = db.search(classifiers=query, features=query_feature, sort="classifier", size=500)
 
     if category == "meta":
         print("meta")
-        entries = db.search(meta=query, features=query_feature, size=100)
+        entries = db.search(meta=query, features=query_feature, size=500)
 
     if category is None:
         print("none")
-        entries = db.search(meta=query, classifiers=query, features=query_feature, size=100)
+        entries = db.search(meta=query, classifiers=query, features=query_feature, size=500)
 
     entries = list(entries)
+
+    # TODO move to elasticsearch
+    if query_feature is not None:
+        new_entries = []
+        for e in entries:
+            score = 0
+            for q_f in query_feature:
+                for e_f in e["feature"]:
+                    if q_f["plugin"] != e_f["plugin"]:
+                        continue
+                    if "val_64" in e_f["annotations"][0]:
+                        a = e_f["annotations"][0]["val_64"]
+                        b = q_f["annotations"][0]["val_64"]
+                        score += np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)) * q_f["weight"]
+                    if "val_128" in e_f["annotations"][0]:
+                        a = e_f["annotations"][0]["val_128"]
+                        b = q_f["annotations"][0]["val_128"]
+                        score += np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)) * q_f["weight"]
+                    if "val_256" in e_f["annotations"][0]:
+                        a = e_f["annotations"][0]["val_256"]
+                        b = q_f["annotations"][0]["val_256"]
+                        score += np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)) * q_f["weight"]
+            print(score)
+            new_entries.append((score, e))
+
+        new_entries = sorted(new_entries, key=lambda x: -x[0])
+        entries = [x[1] for x in new_entries]
+        print("++++++++++++++++++++")
+        print(entries[0])
 
     for i, entry in enumerate(entries):
         entries[i]["path"] = url_to_preview(entry["id"])
