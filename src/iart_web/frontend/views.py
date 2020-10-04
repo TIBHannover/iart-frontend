@@ -474,7 +474,7 @@ def search_view(request):
     except:
         print("kein json")
         return JsonResponse({"status": "error"})
-
+    print(f"search {data}")
     query_feature = None
     if "id" in data and data["id"] is not None:
         query_feature = []
@@ -494,7 +494,7 @@ def search_view(request):
             if "features" in data and f["plugin"] in data["features"]:
 
                 if f["plugin"] == "yuv_histogram_feature":
-                    fuzziness = 2
+                    fuzziness = 1
                     minimum_should_match = 4
 
                 if f["plugin"] == "byol_embedding_feature":

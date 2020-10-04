@@ -88,6 +88,7 @@ store = new Vuex.Store({
         if (data.status == 'ok') {
           context.commit('updateReference', parameter.reference)
           context.commit('updateEntries', data['entries']);
+          window.scrollTo(0, 0);
         } else {
           console.log('error');
         }
@@ -535,8 +536,8 @@ Vue.component('detail-view', {
 
 Vue.component('gallery-item', {
   template: `
-  <div v-on:click="showDetail" class="grid-item">
-    <img v-bind:src="entry.path" class="grid-item-image"></img>
+  <div v-on:click="showDetail" class="grid-item" v-bind:disabled="disabled" v-bind:style="disabled? 'display:none' : ''">
+    <img v-bind:src="entry.path" class="grid-item-image" v-on:error="onError"></img>
     <div class="grid-item-overlay">
       <div class="info">
         <div v-if="entry.meta.title" class="title">{{entry.meta.title}}</div>
@@ -546,9 +547,18 @@ Vue.component('gallery-item', {
   </div>`,
 
   props: ['entry'],
+  data: function () {
+    return {
+      disabled: false
+    }
+  },
   methods: {
     showDetail: function () {
       this.$store.commit('updateSelected', this.entry);
+    },
+    onError: function (element) {
+      this.disabled = true;
+
     }
   }
 })
