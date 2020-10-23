@@ -211,7 +211,7 @@ class ElasticSearchDatabase:
         if not self.es.indices.exists(index=self.index):
             return []
         print("#########################")
-        print(f"{meta} {features} {classifiers} {sort} {size}")
+        print(f"m:{meta} f:{features} c:{classifiers} s:{sort} #:{size}")
         print("#########################")
         terms = []
 
@@ -350,6 +350,9 @@ class ElasticSearchDatabase:
                     )
 
             body.update({"sort": sort_list})
+        print("####################################")
+        print(json.dumps(body, indent=2))
+        print("####################################")
         try:
             results = self.es.search(index=self.index, body=body, size=size)
             for x in results["hits"]["hits"]:
@@ -467,8 +470,6 @@ def search_view(request):
     # if not request.is_ajax():
     #     return Http404()
 
-    print("search")
-
     try:
         data = json.loads(request.body)
     except:
@@ -488,8 +489,6 @@ def search_view(request):
         es = Elasticsearch()
 
         for f in entry["feature"]:
-            print("#########")
-            print(f)
             # TODO add weight
             if "features" in data and f["plugin"] in data["features"]:
 
@@ -523,9 +522,6 @@ def search_view(request):
         if isinstance(query, (list, set)):
             query = query[0]
 
-    print("search")
-
-    print(data)
     category = None
     if "category" in data and data["category"] is not None:
         category_req = data["category"]
@@ -537,26 +533,21 @@ def search_view(request):
         if category_req.lower() == "annotations":
             category = "annotations"
 
-    print(data)
-
     db = ElasticSearchDatabase()
 
-    print("#####################################################")
-    print("#####################################################")
-    print("#####################################################")
     if category == "annotations":
-        print("classifiers")
         entries = db.search(classifiers=query, features=query_feature, sort="classifier", size=500)
 
     if category == "meta":
-        print("meta")
         entries = db.search(meta=query, features=query_feature, size=500)
 
     if category is None:
-        print("none")
         entries = db.search(meta=query, classifiers=query, features=query_feature, size=500)
 
     entries = list(entries)
+
+    for e in entries[:5]:
+        print(e)
 
     # TODO move to elasticsearch
     if query_feature is not None:

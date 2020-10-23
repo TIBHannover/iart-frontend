@@ -713,8 +713,8 @@ Vue.component('search-bar', {
           suggestion_index += 1;
         }
       }
-
-      index += options_index;
+      //TODO 
+      // index += options_index;
       // console.log('######################################')
       // console.log(index)
       // console.log(this.currentSuggestion)
@@ -734,6 +734,7 @@ Vue.component('search-bar', {
     },
     search(type, query) {
       this.hidden = true;
+      this.query = query
 
       this.$store.dispatch('refreshResults', {
         query: query,
