@@ -7,23 +7,31 @@ function delay(ms) {
 
 store = new Vuex.Store({
   state: {
-    query: {},
+    // query: {},
     suggestions: [],
     entries: [],
-    selected: null
+    user: null,
+    selected: null,
+
+    categories: [],
+    features: [],
+    reference: [],
   },
   mutations: {
     updateSuggestions(state, suggestions) {
       state.suggestions = suggestions;
     },
-    updateQuery(state, query) {
-      state.query = query;
-    },
+    // updateQuery(state, query) {
+    //   state.query = query;
+    // },
     updateEntries(state, entries) {
       state.entries = entries;
     },
     updateSelected(state, entry) {
       state.selected = entry;
+    },
+    updateReference(state, entry) {
+      state.reference = [entry];
     }
   },
   actions: {
@@ -31,56 +39,60 @@ store = new Vuex.Store({
       // console.log('start fetch');
       // console.log(parameter.query);
       fetch(url_autocomplete, {
-          method: 'POST',
-          headers: {
-            "X-CSRFToken": csrftoken,
-            'Content-Type': 'application/json'
-            // 'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: JSON.stringify({
-            query: parameter.query
-          })
-        }).then(function(res) {
-          return res.json();
-        }).then(function(data) {
-          if (data.status == 'ok') {
-            // console.log('update suggestions');
-            context.commit('updateSuggestions', data['autocompletion']);
-          } else {
-            console.log('error');
-          }
+        method: 'POST',
+        headers: {
+          "X-CSRFToken": csrftoken,
+          'Content-Type': 'application/json'
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: JSON.stringify({
+          query: parameter.query
         })
+      }).then(function (res) {
+        return res.json();
+      }).then(function (data) {
+        if (data.status == 'ok') {
+          // console.log('update suggestions');
+          context.commit('updateSuggestions', data['autocompletion']);
+        } else {
+          console.log('error');
+        }
+      })
         .catch(error => {
           // console.log('error');
           // console.log(error);
         })
     },
     refreshResults(context, parameter) {
-      console.log('start search');
-      console.log(parameter.query);
+      reference_id = null
+      if ('reference' in parameter && 'id' in parameter.reference) {
+        reference_id = parameter.reference.id
+      }
+      console.log(reference_id)
       fetch(url_search, {
-          method: 'POST',
-          headers: {
-            "X-CSRFToken": csrftoken,
-            'Content-Type': 'application/json'
-            // 'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: JSON.stringify({
-            query: parameter.query,
-            category: parameter.category,
-            features: parameter.features,
-            id: parameter.reference_id
-          })
-        }).then(function(res) {
-          return res.json();
-        }).then(function(data) {
-          if (data.status == 'ok') {
-            console.log('update entries');
-            context.commit('updateEntries', data['entries']);
-          } else {
-            console.log('error');
-          }
+        method: 'POST',
+        headers: {
+          "X-CSRFToken": csrftoken,
+          'Content-Type': 'application/json'
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: JSON.stringify({
+          query: parameter.query,
+          category: parameter.category,
+          features: parameter.features,
+          id: reference_id
         })
+      }).then(function (res) {
+        return res.json();
+      }).then(function (data) {
+        if (data.status == 'ok') {
+          context.commit('updateReference', parameter.reference)
+          context.commit('updateEntries', data['entries']);
+          window.scrollTo(0, 0);
+        } else {
+          console.log('error');
+        }
+      })
         .catch(error => {
           console.log('error');
           console.log(error);
@@ -90,8 +102,8 @@ store = new Vuex.Store({
 });
 
 Vue.directive('click-outside', {
-  bind: function(el, binding, vnode) {
-    el.clickOutsideEvent = function(event) {
+  bind: function (el, binding, vnode) {
+    el.clickOutsideEvent = function (event) {
       // here I check that click was outside the el and his childrens
       if (!(el == event.target || el.contains(event.target))) {
         // and if it did, call method provided in attribute value
@@ -100,7 +112,7 @@ Vue.directive('click-outside', {
     };
     document.body.addEventListener('click', el.clickOutsideEvent)
   },
-  unbind: function(el) {
+  unbind: function (el) {
     document.body.removeEventListener('click', el.clickOutsideEvent)
   },
 });
@@ -113,7 +125,7 @@ function argMin(array) {
   return array.map((x, i) => [x, i]).reduce((r, a) => (a[0] < r[0] ? a : r))[1];
 }
 
-Vue.component('feature-selector', {
+Vue.component('feature-selector-circle', {
   template: `
   <div class="svg-container">
     <svg
@@ -149,7 +161,7 @@ Vue.component('feature-selector', {
     </svg>
   </div>`,
   // props:['features'],
-  data: function() {
+  data: function () {
     return {
       features: [{
         name: 'color',
@@ -188,7 +200,7 @@ Vue.component('feature-selector', {
     }
   },
   methods: {
-    startDrag: function(event) {
+    startDrag: function (event) {
       // found point
       this.dragging = true;
       console.log('start');
@@ -204,7 +216,7 @@ Vue.component('feature-selector', {
 
       this.features[this.selectedFeature].weight = Math.min(radial_new.value / this.radius, 1.0);
     },
-    moveDrag: function(event) {
+    moveDrag: function (event) {
       // console.log('move');
       //   console.log(this.dragging);
       if (!this.dragging) {
@@ -247,24 +259,24 @@ Vue.component('feature-selector', {
       //debug
       this.mousePoint = point;
     },
-    stopDrag: function(event) {
+    stopDrag: function (event) {
       this.dragging = false;
       console.log('stop');
     },
-    featureToPoint: function(index, value) {
+    featureToPoint: function (index, value) {
       var scale = this.radius * value
       var angle = Math.PI * 2 / this.features.length * index
       var cos = Math.cos(angle)
       var sin = Math.sin(angle)
-      var tx = scale * sin + this.width/2
-      var ty = scale * cos + this.height/2
+      var tx = scale * sin + this.width / 2
+      var ty = scale * cos + this.height / 2
       return {
         x: tx,
         y: ty
       }
 
     },
-    pointToRadial: function(point) {
+    pointToRadial: function (point) {
 
       var rel_y = point.y - this.height / 2;
       var rel_x = point.x - this.width / 2;
@@ -284,18 +296,18 @@ Vue.component('feature-selector', {
         value: value
       }
     },
-    pointToFeature: function(point) {
+    pointToFeature: function (point) {
       radial = this.pointToRadial(point)
 
       featuresLength = this.features.length;
-      dist = this.features.map(function(element, index) {
+      dist = this.features.map(function (element, index) {
 
         var featureAngle = Math.PI * 2 / featuresLength * index
         return Math.abs(Math.atan2(Math.sin(radial.angle - featureAngle), Math.cos(radial.angle - featureAngle)))
       })
       return argMin(dist)
     },
-    mouseToPoint: function(event) {
+    mouseToPoint: function (event) {
       var ctm = event.target.getScreenCTM();
       return {
         x: (event.clientX - ctm.e) / ctm.a,
@@ -304,34 +316,34 @@ Vue.component('feature-selector', {
     }
   },
   computed: {
-    pointsStr: function() {
-      return this.points.map(function(point, index) {
+    pointsStr: function () {
+      return this.points.map(function (point, index) {
         return point.x + ',' + point.y;
       }).join(' ');
     },
-    points: function() {
+    points: function () {
       var results = []
       for (let i = 0; i < this.features.length; i++) {
         results.push(this.featureToPoint(i, this.features[i].weight));
       }
       return results;
     },
-    markers: function() {
+    markers: function () {
       var results = []
       for (let i = 0; i < this.features.length; i++) {
-        var point =  this.featureToPoint(i, 1.1);
+        var point = this.featureToPoint(i, 1.1);
         var baseline = "middle";
-        if(point.y-this.height/2 > 10){
+        if (point.y - this.height / 2 > 10) {
           baseline = "hanging";
         }
-        if(point.y-this.height/2 < -10){
+        if (point.y - this.height / 2 < -10) {
           baseline = "baseline";
         }
         var anchor = "middle";
-        if(point.x-this.width/2> 10){
+        if (point.x - this.width / 2 > 10) {
           anchor = "start";
         }
-        if(point.x-this.width/2 < -10){
+        if (point.x - this.width / 2 < -10) {
           anchor = "end";
         }
         results.push({
@@ -347,8 +359,98 @@ Vue.component('feature-selector', {
   }
 })
 
-// {{selected}}
-// {{disabled}}
+Vue.component('feature-slider', {
+  template: `
+    <div class="row feature">
+      <label class="col-25">{{name}}</label>
+      <input type="checkbox" v-model="actived" v-on:change="process()"></input>
+      <input type="range" min="0" max="100" value="50" class="slider" v-model="value" v-bind:disabled="!actived" v-on:change="process()"></input>
+    </div>`,
+  // props:['features'],
+  props: ['plugin', 'update'],
+  data: function () {
+    return {
+      value: 50,
+      actived: true,
+    }
+  },
+  created: function () {
+
+    if (this.actived) {
+      this.update(this.plugin, this.value)
+    }
+    else {
+      this.update(this.plugin, 0)
+    }
+  },
+  methods: {
+    process: function () {
+      if (this.actived) {
+        this.update(this.plugin, this.value)
+      }
+      else {
+        this.update(this.plugin, 0)
+      }
+    }
+  },
+  computed: {
+    name: function () {
+      console.log(this.plugin);
+      feature_name = {
+        yuv_histogram_feature: "Color",
+        byol_embedding_feature: "Wikimedia",
+        image_net_inception_feature: "ImageNet"
+      }
+
+      return feature_name[this.plugin]
+    },
+  },
+})
+
+Vue.component('feature-selector-slider', {
+  template: `
+  <form class="feature-selector">
+    <feature-slider 
+      v-for="feature in selected.feature" 
+      v-bind:plugin="feature.plugin" 
+      v-bind:key="feature.id"
+      v-bind:update="update">
+    </feature-slider>
+    <button v-on:click="search">Search</button>
+  </form>`,
+  // props:['features'],
+  data: function () {
+    return {
+      weights: {}
+    }
+  },
+  methods: {
+    search: function (event) {
+
+      event.preventDefault();
+      // features
+      // reference_id
+
+
+      this.$store.dispatch('refreshResults', {
+        features: this.weights,
+        reference: this.$store.state.selected
+      });
+    },
+    update: function (plugin, value) {
+      this.weights[plugin] = value / 100;
+      if (this.weights[plugin] == 0.0) {
+        delete this.weights[plugin];
+      }
+      console.log(this.weights);
+    }
+  },
+  computed: {
+    selected: function () {
+      return this.$store.state.selected;
+    },
+  }
+})
 
 
 Vue.component('detail-view', {
@@ -356,7 +458,7 @@ Vue.component('detail-view', {
   <div v-bind:class="'side-menu ' + (hidden ? 'close': 'open')">
     <div v-if="disabled" v-bind:class="'side-fixed ' + (hidden ? 'close': 'open')">
       <div id="details-view" class="details-view">
-        <div class="details-item">
+        <div class="details-item details-image">
 
           <img v-bind:src="selected.path"/>
           <div class="overlay">
@@ -370,40 +472,36 @@ Vue.component('detail-view', {
           <dl>
             <dt>Artist</dt><dd>{{selected.meta.artist_name}}</dd>
             <dt>Location</dt><dd>{{selected.meta.location}}</dd>
-            <dt>Size</dt><dd>{{selected.image.width}} x {{selected.image.height}}</dd>
           </dl>
         </div>
-        <div class="details-item">
+        <div class="details-item tags">
           <div class="badge-wall">
             <span v-for="(tag, tag_index) in tags" class="badge">{{tag.name}}</span>
           </div>
         </div>
-        <div class="details-item">
-          <feature-selector/>
+        <div class="details-item toolbox">
+          <feature-selector-slider/>
         </div>
-
       </div>
       <div v-bind:disabled="disabled" v-on:click="toggle" class="details-button">
         <i class="fa fa-angle-left"></i>
         <i class="fa fa-angle-right"></i>
       </div>
     </div>
-
-
   </div>`,
-  data: function() {
+  data: function () {
     return {
       hidden: true
     }
   },
   computed: {
-    selected: function() {
+    selected: function () {
       return this.$store.state.selected;
     },
-    disabled: function() {
+    disabled: function () {
       return (this.$store.state.selected != null);
     },
-    tags: function() {
+    tags: function () {
       tags = []
       var i = 0;
       for (let i = 0; i < this.selected.classifier.length; i++) {
@@ -420,16 +518,16 @@ Vue.component('detail-view', {
     }
   },
   methods: {
-    toggle: function() {
+    toggle: function () {
       console.log(this.hidden);
       this.hidden = !this.hidden;
     },
-    expand: function() {
+    expand: function () {
       console.log('expand');
     }
   },
   watch: {
-    selected: function() {
+    selected: function () {
       console.log('show');
       this.hidden = false;
     }
@@ -438,8 +536,8 @@ Vue.component('detail-view', {
 
 Vue.component('gallery-item', {
   template: `
-  <div v-on:click="showDetail" class="grid-item">
-    <img v-bind:src="entry.path" class="grid-item-image"></img>
+  <div v-on:click="showDetail" class="grid-item" v-bind:disabled="disabled" v-bind:style="disabled? 'display:none' : ''">
+    <img v-bind:src="entry.path" class="grid-item-image" v-on:error="onError"></img>
     <div class="grid-item-overlay">
       <div class="info">
         <div v-if="entry.meta.title" class="title">{{entry.meta.title}}</div>
@@ -449,9 +547,18 @@ Vue.component('gallery-item', {
   </div>`,
 
   props: ['entry'],
+  data: function () {
+    return {
+      disabled: false
+    }
+  },
   methods: {
-    showDetail: function() {
+    showDetail: function () {
       this.$store.commit('updateSelected', this.entry);
+    },
+    onError: function (element) {
+      this.disabled = true;
+
     }
   }
 })
@@ -462,29 +569,41 @@ Vue.component('gallery', {
     <gallery-item v-for="(entry, entry_index) in entries" v-bind:key="entry.id" v-bind:entry="entry"/>
   </div>`,
   computed: {
-    entries: function() {
+    entries: function () {
       return this.$store.state.entries;
     }
   }
 })
 
+Vue.component('search-bar-badge', {
+  template: `
+    <span class="badge">landscape <i class="fa fa-times-circle"></i></span>`,
+  props: []
+})
+
 Vue.component('search-bar', {
   template: `
     <div class="search-bar">
-
       <button v-on:click="submit"><i class="fa fa-search"></i></button>
       <div class="space"></div>
-      <input
-        v-model="query"
-        v-on:paste="suggest"
-        v-on:keyup="suggest"
-        v-on:keydown="submit"
-        id="search-input"
-        type="text"
-        placeholder="search"
-        name="query"
-        autocomplete="off"
-      ></input>
+      
+      <div class="search-input">
+        <search-bar-badge
+          v-for="badge in badges"  
+          v-bind:key="badge.id">
+        </search-bar-badge>
+        <input
+          v-model="query"
+          v-on:paste="suggest"
+          v-on:keyup="suggest"
+          v-on:keydown="submit"
+          id="search-input"
+          type="text"
+          placeholder="search"
+          name="query"
+          autocomplete="off"
+        ></input>
+      </div>
 
       <div v-if="visible" v-click-outside="hideAutocompletion" class="autocompletion-list">
         <ul v-for="(type, type_index) in suggestions">
@@ -502,7 +621,7 @@ Vue.component('search-bar', {
         </ul>
       </div>
     </div>`,
-  data: function() {
+  data: function () {
     return {
       query: '',
       queryHidden: '',
@@ -511,10 +630,13 @@ Vue.component('search-bar', {
     }
   },
   computed: {
-    suggestions: function() {
+    badges: function () {
+      return []
+    },
+    suggestions: function () {
       return this.$store.state.suggestions;
     },
-    maxSuggestion: function() {
+    maxSuggestion: function () {
 
       var index = 0;
       for (let i = 0; i < this.suggestions.length; i++) {
@@ -522,7 +644,7 @@ Vue.component('search-bar', {
       }
       return index;
     },
-    visible: function() {
+    visible: function () {
       if (this.maxSuggestion === 0) {
         return false;
       }
@@ -591,8 +713,8 @@ Vue.component('search-bar', {
           suggestion_index += 1;
         }
       }
-
-      index += options_index;
+      //TODO 
+      // index += options_index;
       // console.log('######################################')
       // console.log(index)
       // console.log(this.currentSuggestion)
@@ -610,9 +732,9 @@ Vue.component('search-bar', {
       options = this.suggestionQuery(this.currentSuggestion);
       this.search(type, options);
     },
-
     search(type, query) {
       this.hidden = true;
+      this.query = query
 
       this.$store.dispatch('refreshResults', {
         query: query,
@@ -651,6 +773,35 @@ Vue.component('search-bar', {
   },
 })
 
+Vue.component('navbar-menu', {
+  template: `
+  <div class="navbar-menu">
+
+    <button v-on:click="toggle"><i class="fa fa-bars"></i></button>
+    <div v-bind:class="'navbar-content ' + (hidden ? 'close': 'open')"">
+      <a v-on:click="register" href="javascript:void(0)">Register</a>
+      <a href="#">Login</a>
+    </div>
+  </div>
+  `,
+  data: function () {
+    return {
+      hidden: true
+    }
+  },
+  methods: {
+    toggle(event) {
+      this.hidden = !this.hidden
+      // this.search(type, options);
+    },
+    register(event) {
+      console.log(this.$store.state.user);
+      this.hidden = !this.hidden
+      // this.search(type, options);
+    },
+  },
+})
+
 var app = new Vue({
   el: '#app',
   template: `
@@ -658,6 +809,7 @@ var app = new Vue({
       <div class="topnav">
         <a class="active" href="#home"><img src="static/img/logo.svg" /></a>
         <search-bar/>
+        <navbar-menu/>
       </div>
       <div class="main">
         <detail-view/>
@@ -665,7 +817,7 @@ var app = new Vue({
       </div>
     </div>`,
   store,
-  mounted: function() {
+  mounted: function () {
     // TODO start screen with some cool images :-)
     this.$store.dispatch('refreshResults', {
       query: 'landscape',
