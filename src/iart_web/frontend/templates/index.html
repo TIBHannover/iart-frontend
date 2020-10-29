@@ -1,23 +1,37 @@
-{% extends 'base.html' %} {% block content %}
-<div class="side-menu">
-  <div class="side-fixed close">
-    <div id="details-view" class="details-view">
-    </div>
-    <div class="details-button">
-      <i class="fa fa-angle-left"></i>
-      <i class="fa fa-angle-right"></i>
-    </div>
+{% load static %}
+<!DOCTYPE html>
+<html>
+{% csrf_token %}
+
+<head>
+  <link rel="stylesheet" href="{% static 'css/iart.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+  <script>
+
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    function csrfSafeMethod(method) {
+      // these HTTP methods do not require CSRF protection
+      return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
 
 
+    var url_search = '{% url "search" %}';
+    var url_search_result = '{% url "search_result" %}';
+    var url_autocomplete = '{% url "autocomplete" %}';
+  </script>
+
+  <!-- <script defer src="{% static 'js/fontawesome-all.js' %}"></script> -->
+  <script src="{% static 'js/vue.js' %}"></script>
+  <script src="{% static 'js/vuex.js' %}"></script>
+</head>
+
+<body>
+  <div id="app">
   </div>
-</div>
 
-<div class="content">
+  <script src="{% static 'js/iart.js' %}"></script>
+</body>
 
-  <div id="gallery" class="grid-view open">
-
-  </div>
-</div>
-
-
-{% endblock %}
+</html>

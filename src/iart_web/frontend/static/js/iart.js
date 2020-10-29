@@ -1,8 +1,8 @@
 // import AnchoredHeading from './AnchoredHeading.vue'
-Vue.use(Vuex)
+Vue.use(Vuex);
 
 function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 store = new Vuex.Store({
@@ -13,6 +13,13 @@ store = new Vuex.Store({
     user: null,
     selected: null,
 
+    search: {
+      job_id: null,
+      status: null,
+      polling_job: null,
+    },
+
+    query: {},
     categories: [],
     features: [],
     reference: [],
@@ -32,76 +39,136 @@ store = new Vuex.Store({
     },
     updateReference(state, entry) {
       state.reference = [entry];
-    }
+    },
+    updateSearch(state, search) {
+      if (!!state.search.polling_job) {
+        clearInterval(state.search.polling_job);
+      }
+      state.search = search;
+    },
   },
   actions: {
     refreshAutocompletion(context, parameter) {
       // console.log('start fetch');
       // console.log(parameter.query);
       fetch(url_autocomplete, {
-        method: 'POST',
+        method: "POST",
         headers: {
           "X-CSRFToken": csrftoken,
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
           // 'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: JSON.stringify({
-          query: parameter.query
-        })
-      }).then(function (res) {
-        return res.json();
-      }).then(function (data) {
-        if (data.status == 'ok') {
-          // console.log('update suggestions');
-          context.commit('updateSuggestions', data['autocompletion']);
-        } else {
-          console.log('error');
-        }
+          query: parameter.query,
+        }),
       })
-        .catch(error => {
+        .then(function (res) {
+          return res.json();
+        })
+        .then(function (data) {
+          if (data.status == "ok") {
+            context.commit("updateSuggestions", data["autocompletion"]);
+            // console.log('update suggestions');
+          } else {
+            console.log("error");
+          }
+        })
+        .catch((error) => {
           // console.log('error');
           // console.log(error);
-        })
+        });
     },
-    refreshResults(context, parameter) {
-      reference_id = null
-      if ('reference' in parameter && 'id' in parameter.reference) {
-        reference_id = parameter.reference.id
+    search(context, parameter) {
+      var that = this;
+      var reference_id = null;
+      if ("reference" in parameter && "id" in parameter.reference) {
+        reference_id = parameter.reference.id;
       }
-      console.log(reference_id)
       fetch(url_search, {
-        method: 'POST',
+        method: "POST",
         headers: {
           "X-CSRFToken": csrftoken,
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
           // 'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: JSON.stringify({
           query: parameter.query,
           category: parameter.category,
           features: parameter.features,
-          id: reference_id
-        })
-      }).then(function (res) {
-        return res.json();
-      }).then(function (data) {
-        if (data.status == 'ok') {
-          context.commit('updateReference', parameter.reference)
-          context.commit('updateEntries', data['entries']);
-          window.scrollTo(0, 0);
-        } else {
-          console.log('error');
-        }
+          id: reference_id,
+        }),
       })
-        .catch(error => {
-          console.log('error');
-          console.log(error);
+        .then(function (res) {
+          return res.json();
         })
-    }
-  }
+        .then(function (data) {
+          if (data.status == "ok") {
+            console.log("START SEARCHING");
+            polling_job = setInterval(
+              function () {
+                // that.listSearchResults();
+
+                that.dispatch("listSearchResults", {
+                  // features: this.weights,
+                  // reference: this.$store.state.selected
+                });
+              }.bind(that),
+              1000
+            );
+            console.log("job" + polling_job);
+
+            context.commit("updateSearch", {
+              job_id: data.job_id,
+              status: "running",
+              polling_job: polling_job,
+            });
+          } else {
+            console.log("error");
+          }
+        })
+        .catch((error) => {
+          console.log("error");
+          console.log(error);
+        });
+    },
+    listSearchResults(context, parameter) {
+      console.log("Test");
+      fetch(url_search_result, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrftoken,
+          "Content-Type": "application/json",
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: JSON.stringify({
+          id: this.state.search.job_id,
+        }),
+      })
+        .then(function (res) {
+          return res.json();
+        })
+        .then(function (data) {
+          console.log(data);
+
+          context.commit("updateSearch", {
+            job_id: null,
+            status: null,
+            polling_job: null,
+          });
+
+          // context.commit('updateReference', parameter.reference)
+          context.commit("updateEntries", data["entries"]);
+          window.scrollTo(0, 0);
+        })
+        .catch((error) => {
+          console.log("error");
+          console.log(error);
+        });
+    },
+  },
 });
 
-Vue.directive('click-outside', {
+Vue.directive("click-outside", {
   bind: function (el, binding, vnode) {
     el.clickOutsideEvent = function (event) {
       // here I check that click was outside the el and his childrens
@@ -110,10 +177,10 @@ Vue.directive('click-outside', {
         vnode.context[binding.expression](event);
       }
     };
-    document.body.addEventListener('click', el.clickOutsideEvent)
+    document.body.addEventListener("click", el.clickOutsideEvent);
   },
   unbind: function (el) {
-    document.body.removeEventListener('click', el.clickOutsideEvent)
+    document.body.removeEventListener("click", el.clickOutsideEvent);
   },
 });
 
@@ -125,7 +192,7 @@ function argMin(array) {
   return array.map((x, i) => [x, i]).reduce((r, a) => (a[0] < r[0] ? a : r))[1];
 }
 
-Vue.component('feature-selector-circle', {
+Vue.component("feature-selector-circle", {
   template: `
   <div class="svg-container">
     <svg
@@ -163,29 +230,32 @@ Vue.component('feature-selector-circle', {
   // props:['features'],
   data: function () {
     return {
-      features: [{
-        name: 'color',
-        weight: 0.5
-      }, {
-        name: 'style',
-        weight: 0.5
-      }, {
-        name: 'year',
-        weight: 0.8
-
-      }, {
-        name: 'genre',
-        weight: 0.8
-
-      }, {
-        name: 'genre',
-        weight: 0.8
-
-      }],
+      features: [
+        {
+          name: "color",
+          weight: 0.5,
+        },
+        {
+          name: "style",
+          weight: 0.5,
+        },
+        {
+          name: "year",
+          weight: 0.8,
+        },
+        {
+          name: "genre",
+          weight: 0.8,
+        },
+        {
+          name: "genre",
+          weight: 0.8,
+        },
+      ],
       dragging: false,
       mousePoint: {
         x: 0,
-        y: 0
+        y: 0,
       },
       height: 250,
       width: 300,
@@ -195,26 +265,28 @@ Vue.component('feature-selector-circle', {
       selectedFeature: null,
       startingPoint: {
         x: 0,
-        y: 0
+        y: 0,
       },
-    }
+    };
   },
   methods: {
     startDrag: function (event) {
       // found point
       this.dragging = true;
-      console.log('start');
+      console.log("start");
 
       width = this.width; //this.$refs.svg.getBBox().width;
       height = this.height; // this.$refs.svg.getBBox().height;
-      this.mousePoint = this.mouseToPoint(event)
-      this.startingPoint = this.mousePoint
+      this.mousePoint = this.mouseToPoint(event);
+      this.startingPoint = this.mousePoint;
       this.selectedFeature = this.pointToFeature(this.mousePoint);
 
-      radial_new = this.pointToRadial(this.mousePoint)
+      radial_new = this.pointToRadial(this.mousePoint);
 
-
-      this.features[this.selectedFeature].weight = Math.min(radial_new.value / this.radius, 1.0);
+      this.features[this.selectedFeature].weight = Math.min(
+        radial_new.value / this.radius,
+        1.0
+      );
     },
     moveDrag: function (event) {
       // console.log('move');
@@ -223,25 +295,32 @@ Vue.component('feature-selector-circle', {
         return;
       }
 
-      point = this.mouseToPoint(event)
+      point = this.mouseToPoint(event);
       // console.log(point);
       // console.log(this.mousePoint);
-      radial_new = this.pointToRadial(point)
-      radial_old = this.pointToRadial(this.startingPoint)
+      radial_new = this.pointToRadial(point);
+      radial_old = this.pointToRadial(this.startingPoint);
       // console.log(radial_new.value);
       // console.log(radial_old.value);
       console.log({
         i: this.selectedFeature,
         v: this.features[this.selectedFeature].weight,
-        n: radial_new.value / this.radius
+        n: radial_new.value / this.radius,
       });
-      var delta_angle = Math.abs(Math.atan2(Math.sin(radial_old.angle - radial_new.angle), Math.cos(radial_old.angle - radial_new.angle)));
-      if (delta_angle > 90 / 180 * Math.PI) {
-        return
+      var delta_angle = Math.abs(
+        Math.atan2(
+          Math.sin(radial_old.angle - radial_new.angle),
+          Math.cos(radial_old.angle - radial_new.angle)
+        )
+      );
+      if (delta_angle > (90 / 180) * Math.PI) {
+        return;
       }
 
-
-      this.features[this.selectedFeature].weight = Math.min(radial_new.value / this.radius, 1.0);
+      this.features[this.selectedFeature].weight = Math.min(
+        radial_new.value / this.radius,
+        1.0
+      );
 
       // renorm
       // sum = this.features.reduce(function(all, current) {
@@ -261,31 +340,29 @@ Vue.component('feature-selector-circle', {
     },
     stopDrag: function (event) {
       this.dragging = false;
-      console.log('stop');
+      console.log("stop");
     },
     featureToPoint: function (index, value) {
-      var scale = this.radius * value
-      var angle = Math.PI * 2 / this.features.length * index
-      var cos = Math.cos(angle)
-      var sin = Math.sin(angle)
-      var tx = scale * sin + this.width / 2
-      var ty = scale * cos + this.height / 2
+      var scale = this.radius * value;
+      var angle = ((Math.PI * 2) / this.features.length) * index;
+      var cos = Math.cos(angle);
+      var sin = Math.sin(angle);
+      var tx = scale * sin + this.width / 2;
+      var ty = scale * cos + this.height / 2;
       return {
         x: tx,
-        y: ty
-      }
-
+        y: ty,
+      };
     },
     pointToRadial: function (point) {
-
       var rel_y = point.y - this.height / 2;
       var rel_x = point.x - this.width / 2;
       console.log({
         rel_y: rel_y,
-        rel_x: rel_x
-      })
+        rel_x: rel_x,
+      });
       var angle = Math.atan2(-rel_y, rel_x) + Math.PI / 2;
-      var o = angle % (2 * Math.PI)
+      var o = angle % (2 * Math.PI);
       if (o < 0) {
         angle += 2 * Math.PI;
       }
@@ -293,43 +370,49 @@ Vue.component('feature-selector-circle', {
 
       return {
         angle: angle,
-        value: value
-      }
+        value: value,
+      };
     },
     pointToFeature: function (point) {
-      radial = this.pointToRadial(point)
+      radial = this.pointToRadial(point);
 
       featuresLength = this.features.length;
       dist = this.features.map(function (element, index) {
-
-        var featureAngle = Math.PI * 2 / featuresLength * index
-        return Math.abs(Math.atan2(Math.sin(radial.angle - featureAngle), Math.cos(radial.angle - featureAngle)))
-      })
-      return argMin(dist)
+        var featureAngle = ((Math.PI * 2) / featuresLength) * index;
+        return Math.abs(
+          Math.atan2(
+            Math.sin(radial.angle - featureAngle),
+            Math.cos(radial.angle - featureAngle)
+          )
+        );
+      });
+      return argMin(dist);
     },
     mouseToPoint: function (event) {
       var ctm = event.target.getScreenCTM();
       return {
         x: (event.clientX - ctm.e) / ctm.a,
-        y: (event.clientY - ctm.f) / ctm.d
+        y: (event.clientY - ctm.f) / ctm.d,
       };
-    }
+    },
   },
   computed: {
     pointsStr: function () {
-      return this.points.map(function (point, index) {
-        return point.x + ',' + point.y;
-      }).join(' ');
+      return this.points
+        .map(function (point, index) {
+          return point.x + "," + point.y;
+        })
+        .join(" ");
     },
     points: function () {
-      var results = []
+      var results = [];
       for (let i = 0; i < this.features.length; i++) {
         results.push(this.featureToPoint(i, this.features[i].weight));
       }
       return results;
     },
     markers: function () {
-      var results = []
+      var results = [];
       for (let i = 0; i < this.features.length; i++) {
         var point = this.featureToPoint(i, 1.1);
         var baseline = "middle";
@@ -351,15 +434,15 @@ Vue.component('feature-selector-circle', {
           weight: this.features[i].weight,
           point: point,
           baseline: baseline,
-          anchor: anchor
+          anchor: anchor,
         });
       }
       return results;
-    }
-  }
-})
+    },
+  },
+});
 
-Vue.component('feature-slider', {
+Vue.component("feature-slider", {
   template: `
     <div class="row feature">
       <label class="col-25">{{name}}</label>
@@ -367,31 +450,28 @@ Vue.component('feature-slider', {
       <input type="range" min="0" max="100" value="50" class="slider" v-model="value" v-bind:disabled="!actived" v-on:change="process()"></input>
     </div>`,
   // props:['features'],
-  props: ['plugin', 'update'],
+  props: ["plugin", "update"],
   data: function () {
     return {
       value: 50,
       actived: true,
-    }
+    };
   },
   created: function () {
-
     if (this.actived) {
-      this.update(this.plugin, this.value)
-    }
-    else {
-      this.update(this.plugin, 0)
+      this.update(this.plugin, this.value);
+    } else {
+      this.update(this.plugin, 0);
     }
   },
   methods: {
     process: function () {
       if (this.actived) {
-        this.update(this.plugin, this.value)
+        this.update(this.plugin, this.value);
+      } else {
+        this.update(this.plugin, 0);
       }
-      else {
-        this.update(this.plugin, 0)
-      }
-    }
+    },
   },
   computed: {
     name: function () {
@@ -399,15 +479,15 @@ Vue.component('feature-slider', {
       feature_name = {
         yuv_histogram_feature: "Color",
         byol_embedding_feature: "Wikimedia",
-        image_net_inception_feature: "ImageNet"
-      }
+        image_net_inception_feature: "ImageNet",
+      };
 
-      return feature_name[this.plugin]
+      return feature_name[this.plugin];
     },
   },
-})
+});
 
-Vue.component('feature-selector-slider', {
+Vue.component("feature-selector-slider", {
   template: `
   <form class="feature-selector">
     <feature-slider 
@@ -421,20 +501,18 @@ Vue.component('feature-selector-slider', {
   // props:['features'],
   data: function () {
     return {
-      weights: {}
-    }
+      weights: {},
+    };
   },
   methods: {
     search: function (event) {
-
       event.preventDefault();
       // features
       // reference_id
 
-
-      this.$store.dispatch('refreshResults', {
+      this.$store.dispatch("search", {
         features: this.weights,
-        reference: this.$store.state.selected
+        reference: this.$store.state.selected,
       });
     },
     update: function (plugin, value) {
@@ -443,17 +521,16 @@ Vue.component('feature-selector-slider', {
         delete this.weights[plugin];
       }
       console.log(this.weights);
-    }
+    },
   },
   computed: {
     selected: function () {
       return this.$store.state.selected;
     },
-  }
-})
+  },
+});
 
-
-Vue.component('detail-view', {
+Vue.component("detail-view", {
   template: `
   <div v-bind:class="'side-menu ' + (hidden ? 'close': 'open')">
     <div v-if="disabled" v-bind:class="'side-fixed ' + (hidden ? 'close': 'open')">
@@ -491,31 +568,35 @@ Vue.component('detail-view', {
   </div>`,
   data: function () {
     return {
-      hidden: true
-    }
+      hidden: true,
+    };
   },
   computed: {
     selected: function () {
       return this.$store.state.selected;
     },
     disabled: function () {
-      return (this.$store.state.selected != null);
+      return this.$store.state.selected != null;
     },
     tags: function () {
-      tags = []
+      console.log(this.selected.classifier);
+      tags = [];
       var i = 0;
       for (let i = 0; i < this.selected.classifier.length; i++) {
         var j = 0;
-        for (let j = 0; j < this.selected.classifier[i].annotations.length; j++) {
+        for (
+          let j = 0;
+          j < this.selected.classifier[i].annotations.length;
+          j++
+        ) {
           tags.push({
             name: this.selected.classifier[i].annotations[j].name,
-            value: this.selected.classifier[i].annotations[j].value
+            value: this.selected.classifier[i].annotations[j].value,
           });
         }
         return tags;
-
       }
-    }
+    },
   },
   methods: {
     toggle: function () {
@@ -523,18 +604,18 @@ Vue.component('detail-view', {
       this.hidden = !this.hidden;
     },
     expand: function () {
-      console.log('expand');
-    }
+      console.log("expand");
+    },
   },
   watch: {
     selected: function () {
-      console.log('show');
+      console.log("show");
       this.hidden = false;
-    }
-  }
-})
+    },
+  },
+});
 
-Vue.component('gallery-item', {
+Vue.component("gallery-item", {
   template: `
   <div v-on:click="showDetail" class="grid-item" v-bind:disabled="disabled" v-bind:style="disabled? 'display:none' : ''">
     <img v-bind:src="entry.path" class="grid-item-image" v-on:error="onError"></img>
@@ -546,24 +627,23 @@ Vue.component('gallery-item', {
     </div>
   </div>`,
 
-  props: ['entry'],
+  props: ["entry"],
   data: function () {
     return {
-      disabled: false
-    }
+      disabled: false,
+    };
   },
   methods: {
     showDetail: function () {
-      this.$store.commit('updateSelected', this.entry);
+      this.$store.commit("updateSelected", this.entry);
     },
     onError: function (element) {
       this.disabled = true;
+    },
+  },
+});
 
-    }
-  }
-})
-
-Vue.component('gallery', {
+Vue.component("gallery", {
   template: `
   <div class="grid-view open">
     <gallery-item v-for="(entry, entry_index) in entries" v-bind:key="entry.id" v-bind:entry="entry"/>
@@ -571,17 +651,17 @@ Vue.component('gallery', {
   computed: {
     entries: function () {
       return this.$store.state.entries;
-    }
-  }
-})
+    },
+  },
+});
 
-Vue.component('search-bar-badge', {
+Vue.component("search-bar-badge", {
   template: `
     <span class="badge">landscape <i class="fa fa-times-circle"></i></span>`,
-  props: []
-})
+  props: [],
+});
 
-Vue.component('search-bar', {
+Vue.component("search-bar", {
   template: `
     <div class="search-bar">
       <button v-on:click="submit"><i class="fa fa-search"></i></button>
@@ -623,21 +703,20 @@ Vue.component('search-bar', {
     </div>`,
   data: function () {
     return {
-      query: '',
-      queryHidden: '',
+      query: "",
+      queryHidden: "",
       currentSuggestion: -1,
-      hidden: false
-    }
+      hidden: false,
+    };
   },
   computed: {
     badges: function () {
-      return []
+      return [];
     },
     suggestions: function () {
       return this.$store.state.suggestions;
     },
     maxSuggestion: function () {
-
       var index = 0;
       for (let i = 0; i < this.suggestions.length; i++) {
         index += this.suggestions[i].options.length;
@@ -648,14 +727,14 @@ Vue.component('search-bar', {
       if (this.maxSuggestion === 0) {
         return false;
       }
-      if (this.queryHidden === '') {
+      if (this.queryHidden === "") {
         return false;
       }
       if (this.hidden) {
         return false;
       }
       return true;
-    }
+    },
   },
   methods: {
     hideAutocompletion() {
@@ -678,7 +757,7 @@ Vue.component('search-bar', {
       // console.log('######################################')
       // console.log(index)
       // console.log(this.currentSuggestion)
-      result = (index === this.currentSuggestion);
+      result = index === this.currentSuggestion;
       // console.log(result)
       return result;
     },
@@ -713,19 +792,19 @@ Vue.component('search-bar', {
           suggestion_index += 1;
         }
       }
-      //TODO 
+      //TODO
       // index += options_index;
       // console.log('######################################')
       // console.log(index)
       // console.log(this.currentSuggestion)
-      result = (index === this.currentSuggestion);
+      result = index === this.currentSuggestion;
       // console.log(result)
       return result;
     },
     submit(event) {
       if (event instanceof KeyboardEvent) {
         if (event.which != 13) {
-          return
+          return;
         }
       }
       type = this.suggestionType(this.currentSuggestion);
@@ -734,26 +813,28 @@ Vue.component('search-bar', {
     },
     search(type, query) {
       this.hidden = true;
-      this.query = query
+      this.query = query;
 
-      this.$store.dispatch('refreshResults', {
+      this.$store.dispatch("search", {
         query: query,
-        category: type
+        category: type,
       });
       // console.log(JSON.stringify({type:type, options:options}));
     },
     suggest(event) {
-
       if (event.which == 38) {
         this.currentSuggestion = Math.max(this.currentSuggestion - 1, -1);
         this.query = this.suggestionQuery(this.currentSuggestion);
-        return
+        return;
       }
 
       if (event.which == 40) {
-        this.currentSuggestion = Math.min(this.currentSuggestion + 1, this.maxSuggestion - 1);
+        this.currentSuggestion = Math.min(
+          this.currentSuggestion + 1,
+          this.maxSuggestion - 1
+        );
         this.query = this.suggestionQuery(this.currentSuggestion);
-        return
+        return;
       }
 
       // TODO im not sure if this is the best solution
@@ -763,17 +844,16 @@ Vue.component('search-bar', {
         }
       }
 
-
       // TODO optimize this
-      this.$store.dispatch('refreshAutocompletion', {
-        query: this.query
+      this.$store.dispatch("refreshAutocompletion", {
+        query: this.query,
       });
       this.queryHidden = this.query;
     },
   },
-})
+});
 
-Vue.component('navbar-menu', {
+Vue.component("navbar-menu", {
   template: `
   <div class="navbar-menu">
 
@@ -786,24 +866,24 @@ Vue.component('navbar-menu', {
   `,
   data: function () {
     return {
-      hidden: true
-    }
+      hidden: true,
+    };
   },
   methods: {
     toggle(event) {
-      this.hidden = !this.hidden
+      this.hidden = !this.hidden;
       // this.search(type, options);
     },
     register(event) {
       console.log(this.$store.state.user);
-      this.hidden = !this.hidden
+      this.hidden = !this.hidden;
       // this.search(type, options);
     },
   },
-})
+});
 
 var app = new Vue({
-  el: '#app',
+  el: "#app",
   template: `
     <div>
       <div class="topnav">
@@ -819,9 +899,9 @@ var app = new Vue({
   store,
   mounted: function () {
     // TODO start screen with some cool images :-)
-    this.$store.dispatch('refreshResults', {
-      query: 'landscape',
-      category: null
+    this.$store.dispatch("search", {
+      query: "landscape",
+      category: null,
     });
-  }
-})
+  },
+});

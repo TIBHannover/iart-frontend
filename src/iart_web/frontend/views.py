@@ -11,8 +11,13 @@ from django.contrib import auth
 from django.views.decorators.http import require_http_methods
 
 # from iart_indexer.database.elasticsearch_database import ElasticSearchDatabase
-from iart_indexer.database.elasticsearch_suggester import ElasticSearchSuggester
+# from iart_indexer.database.elasticsearch_suggester import ElasticSearchSuggester
 
+import grpc
+from iart_indexer import indexer_pb2, indexer_pb2_grpc
+from iart_indexer.utils import meta_from_proto, classifier_from_proto, feature_from_proto
+
+print(indexer_pb2.__file__)
 
 from elasticsearch import Elasticsearch, exceptions
 
@@ -386,11 +391,6 @@ class ElasticSearchDatabase:
 
 import json
 
-# def relative_media_url(path):
-#     # todo
-#     index = path.rfind('/media/')
-#     return path[index:]
-
 
 def url_to_image(id):
     # todo
@@ -414,7 +414,7 @@ def index_view(request):
     for i, entry in enumerate(entries):
         entries[i]["path"] = url_to_preview(entry["id"])
     context = {"query": "landscape", "category": None, "entries": entries, "entries_json": json.dumps(entries)}
-    return render(request, "new_index.html", context)
+    return render(request, "index.html", context)
 
 
 #
@@ -472,55 +472,21 @@ def search_view(request):
 
     try:
         data = json.loads(request.body)
+        print(data)
     except:
         print("kein json")
         return JsonResponse({"status": "error"})
-    print(f"search {data}")
-    query_feature = None
-    if "id" in data and data["id"] is not None:
-        query_feature = []
-
-        db = ElasticSearchDatabase()
-        entry = db.get_entry(data["id"])
-
-        if entry is None:
-            return JsonResponse({"status": "error"})
-
-        es = Elasticsearch()
-
-        for f in entry["feature"]:
-            # TODO add weight
-            if "features" in data and f["plugin"] in data["features"]:
-
-                if f["plugin"] == "yuv_histogram_feature":
-                    fuzziness = 1
-                    minimum_should_match = 4
-
-                if f["plugin"] == "byol_embedding_feature":
-                    fuzziness = 2
-                    minimum_should_match = 1
-
-                if f["plugin"] == "image_net_inception_feature":
-                    fuzziness = 2
-                    minimum_should_match = 1
-
-                query_feature.append(
-                    {
-                        "plugin": f["plugin"],
-                        "annotations": f["annotations"],
-                        "fuzziness": fuzziness,
-                        "minimum_should_match": minimum_should_match,
-                        "weight": data["features"][f["plugin"]],
-                    }
-                )
-
-    query = None
-    if "query" in data:
-
-        query = data["query"]
-
-        if isinstance(query, (list, set)):
-            query = query[0]
+    host = "localhost"
+    port = 50051
+    channel = grpc.insecure_channel(
+        f"{host}:{port}",
+        options=[
+            ("grpc.max_send_message_length", 50 * 1024 * 1024),
+            ("grpc.max_receive_message_length", 50 * 1024 * 1024),
+        ],
+    )
+    stub = indexer_pb2_grpc.IndexerStub(channel)
+    request = indexer_pb2.SearchRequest()
 
     category = None
     if "category" in data and data["category"] is not None:
@@ -529,59 +495,85 @@ def search_view(request):
             return JsonResponse({"status": "error"})
 
         if category_req.lower() == "meta":
-            category = "meta"
+            term.meta.query = data["query"]
         if category_req.lower() == "annotations":
-            category = "annotations"
+            term.classifier.query = data["query"]
+            request.sorting = indexer_pb2.SearchRequest.Sorting.CLASSIFIER
 
-    db = ElasticSearchDatabase()
+    elif "query" in data and data["query"] is not None:
+        term = request.terms.add()
+        term.meta.query = data["query"]
 
-    if category == "annotations":
-        entries = db.search(classifiers=query, features=query_feature, sort="classifier", size=500)
+        term = request.terms.add()
+        term.classifier.query = data["query"]
 
-    if category == "meta":
-        entries = db.search(meta=query, features=query_feature, size=500)
+    if "id" in data and data["id"] is not None:
+        request.sorting = indexer_pb2.SearchRequest.Sorting.FEATURE
 
-    if category is None:
-        entries = db.search(meta=query, classifiers=query, features=query_feature, size=500)
+        term = request.terms.add()
+        term.feature.image.id = data["id"]
 
-    entries = list(entries)
+        if "features" in data:
+            plugins = data["features"]
+            if not isinstance(data["features"], (list, set)):
+                plugins = [data["features"]]
+            print(data["features"])
+            for p in plugins:
+                for k, v in p.items():
+                    plugins = term.feature.plugins.add()
+                    plugins.name = k.lower()
+                    plugins.weight = v
 
-    for e in entries[:5]:
+    response = stub.search(request)
+
+    return JsonResponse({"status": "ok", "job_id": response.id})
+
+
+def search_result_view(request):
+    #
+    # if not request.is_ajax():
+    #     return Http404()
+
+    try:
+        data = json.loads(request.body)
+        print(data)
+    except:
+        print("kein json")
+        return JsonResponse({"status": "error"})
+    host = "localhost"
+    port = 50051
+    channel = grpc.insecure_channel(
+        f"{host}:{port}",
+        options=[
+            ("grpc.max_send_message_length", 50 * 1024 * 1024),
+            ("grpc.max_receive_message_length", 50 * 1024 * 1024),
+        ],
+    )
+    stub = indexer_pb2_grpc.IndexerStub(channel)
+
+    if "id" not in data:
+        return JsonResponse({"status": "error"})
+
+    request = indexer_pb2.ListSearchResultRequest(id=data["id"])
+
+    try:
+        response = stub.list_search_result(request)
+        entries = []
+        for e in response.entries:
+            entry = {"id": e.id}
+
+            entry["meta"] = meta_from_proto(e.meta)
+            entry["origin"] = meta_from_proto(e.origin)
+            entry["classifier"] = classifier_from_proto(e.classifier)
+            entry["feature"] = feature_from_proto(e.feature)
+
+            entry["path"] = url_to_preview(e.id)
+
+            entries.append(entry)
+        return JsonResponse({"status": "ok", "entries": entries})
+    except grpc.RpcError as e:
         print(e)
-
-    # TODO move to elasticsearch
-    if query_feature is not None:
-        new_entries = []
-        for e in entries:
-            score = 0
-            for q_f in query_feature:
-                for e_f in e["feature"]:
-                    if q_f["plugin"] != e_f["plugin"]:
-                        continue
-                    if "val_64" in e_f["annotations"][0]:
-                        a = e_f["annotations"][0]["val_64"]
-                        b = q_f["annotations"][0]["val_64"]
-                        score += np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)) * q_f["weight"]
-                    if "val_128" in e_f["annotations"][0]:
-                        a = e_f["annotations"][0]["val_128"]
-                        b = q_f["annotations"][0]["val_128"]
-                        score += np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)) * q_f["weight"]
-                    if "val_256" in e_f["annotations"][0]:
-                        a = e_f["annotations"][0]["val_256"]
-                        b = q_f["annotations"][0]["val_256"]
-                        score += np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)) * q_f["weight"]
-            print(score)
-            new_entries.append((score, e))
-
-        new_entries = sorted(new_entries, key=lambda x: -x[0])
-        entries = [x[1] for x in new_entries]
-        print("++++++++++++++++++++")
-        print(entries[0])
-
-    for i, entry in enumerate(entries):
-        entries[i]["path"] = url_to_preview(entry["id"])
-    context = {"status": "ok", "entries": entries, "entries_json": json.dumps(entries)}
-    return JsonResponse(context)
+    return JsonResponse({"status": "error"})
 
 
 def upload(request):
