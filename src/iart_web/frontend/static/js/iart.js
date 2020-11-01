@@ -67,7 +67,7 @@ store = new Vuex.Store({
         })
         .then(function (data) {
           if (data.status == "ok") {
-            context.commit("updateSuggestions", data["autocompletion"]);
+            context.commit("updateSuggestions", data["suggestions"]);
             // console.log('update suggestions');
           } else {
             console.log("error");
@@ -687,14 +687,14 @@ Vue.component("search-bar", {
 
       <div v-if="visible" v-click-outside="hideAutocompletion" class="autocompletion-list">
         <ul v-for="(type, type_index) in suggestions">
-          <li v-if="type.type=='annotations'" class="cat-symbol">
+          <li v-if="type.group=='annotations'" class="cat-symbol">
             <i v-bind:class="'fa fa-tags'"><span>Tags</span></i>
           </li>
-          <li v-if="type.type=='meta'" class="cat-symbol">
+          <li v-if="type.group=='meta'" class="cat-symbol">
             <i v-bind:class="'fa fa-info'"></i><span>Info</span>
           </li>
           <li
-            v-for="(option, suggestion_index) in type.options"
+            v-for="(option, suggestion_index) in type.suggestions"
             v-bind:class="'autocompletion-item ' + (isItemActive(type_index, suggestion_index)? 'active' : '')"
             v-on:click="search(type.type,option)"
           >{{ option }}</li>
@@ -714,12 +714,13 @@ Vue.component("search-bar", {
       return [];
     },
     suggestions: function () {
+      console.log(this.$store.state.suggestions);
       return this.$store.state.suggestions;
     },
     maxSuggestion: function () {
       var index = 0;
       for (let i = 0; i < this.suggestions.length; i++) {
-        index += this.suggestions[i].options.length;
+        index += this.suggestions[i].suggestions.length;
       }
       return index;
     },
@@ -750,7 +751,7 @@ Vue.component("search-bar", {
       var index = 0;
       var i;
       for (let i = 0; i < type_index; i++) {
-        index += this.suggestions[i].options.length;
+        index += this.suggestions[i].suggestions.length;
       }
 
       index += options_index;
@@ -769,9 +770,9 @@ Vue.component("search-bar", {
       var suggestion_index = 0;
       var i;
       for (let i = 0; i < this.suggestions.length; i++) {
-        for (let j = 0; j < this.suggestions[i].options.length; j++) {
+        for (let j = 0; j < this.suggestions[i].suggestions.length; j++) {
           if (suggestion_index === index) {
-            return this.suggestions[i].options[j];
+            return this.suggestions[i].suggestions[j];
           }
           suggestion_index += 1;
         }
@@ -785,7 +786,7 @@ Vue.component("search-bar", {
       var suggestion_index = 0;
       var i;
       for (let i = 0; i < this.suggestions.length; i++) {
-        for (let j = 0; j < this.suggestions[i].options.length; j++) {
+        for (let j = 0; j < this.suggestions[i].suggestions.length; j++) {
           if (suggestion_index === index) {
             return this.suggestions[i].type;
           }
