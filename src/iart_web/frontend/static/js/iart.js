@@ -664,7 +664,8 @@ Vue.component("search-bar-badge", {
 Vue.component("search-bar", {
   template: `
     <div class="search-bar">
-      <button v-on:click="submit"><i class="fa fa-search"></i></button>
+      <button class="search-start"v-on:click="submit"><i class="fa fa-search"></i></button>
+      <button v-on:click="upload"><i class="fa fa-upload"></i></button>
       <div class="space"></div>
       
       <div class="search-input">
@@ -685,6 +686,7 @@ Vue.component("search-bar", {
         ></input>
       </div>
 
+
       <div v-if="visible" v-click-outside="hideAutocompletion" class="autocompletion-list">
         <ul v-for="(type, type_index) in suggestions">
           <li v-if="type.group=='annotations'" class="cat-symbol">
@@ -703,9 +705,12 @@ Vue.component("search-bar", {
     </div>`,
   data: function () {
     return {
-      query: "",
-      queryHidden: "",
-      currentSuggestion: -1,
+      current: {
+        group: 0,
+        index: 0,
+      },
+      queries: [],
+      input: "",
       hidden: false,
     };
   },
@@ -728,7 +733,7 @@ Vue.component("search-bar", {
       if (this.maxSuggestion === 0) {
         return false;
       }
-      if (this.queryHidden === "") {
+      if (this.input === "") {
         return false;
       }
       if (this.hidden) {
@@ -812,6 +817,7 @@ Vue.component("search-bar", {
       options = this.suggestionQuery(this.currentSuggestion);
       this.search(type, options);
     },
+    upload(event) {},
     search(type, query) {
       this.hidden = true;
       this.query = query;
