@@ -1,0 +1,20 @@
+version: "2.0"
+services:
+  web:
+    image: iart/web
+    build:
+      context: .
+    ports:
+      - 8000:8000
+    # networks:
+    #   - indexer_net
+
+    network_mode: "host"
+    volumes:
+      - type: bind
+        source: /home/matthias/tmp/indexer/data/images/
+        target: /media
+# networks:
+#   indexer_net:
+#     external: true
+#     name: indexer_network
