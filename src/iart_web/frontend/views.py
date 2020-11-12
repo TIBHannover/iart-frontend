@@ -1,6 +1,7 @@
 # TODO
 import sys
 import os
+import json
 
 import numpy as np
 
@@ -10,14 +11,9 @@ from django.conf import settings
 from django.contrib import auth
 from django.views.decorators.http import require_http_methods
 
-# from iart_indexer.database.elasticsearch_database import ElasticSearchDatabase
-# from iart_indexer.database.elasticsearch_suggester import ElasticSearchSuggester
-
 import grpc
 from iart_indexer import indexer_pb2, indexer_pb2_grpc
 from iart_indexer.utils import meta_from_proto, classifier_from_proto, feature_from_proto, suggestions_from_proto
-
-import json
 
 
 def url_to_image(id):
@@ -34,12 +30,6 @@ def index_view(request):
 
     context = {}
     return render(request, "index.html", context)
-
-
-#
-# def list_view(request):
-#     context = {'query': json.dumps({'tag': 'landscape'})}
-#     return render(request, 'list.html', context)
 
 
 def details_view(request):
@@ -102,6 +92,9 @@ def search_view(request):
     except:
         print("kein json")
         return JsonResponse({"status": "error"})
+
+    if "queries" not in data:
+        return JsonResponse({"status": "error"})
     host = "localhost"
     port = 50051
     channel = grpc.insecure_channel(
@@ -114,41 +107,44 @@ def search_view(request):
     stub = indexer_pb2_grpc.IndexerStub(channel)
     request = indexer_pb2.SearchRequest()
 
-    category = None
-    if "category" in data and data["category"] is not None:
-        category_req = data["category"]
-        if not isinstance(category_req, str):
-            return JsonResponse({"status": "error"})
+    print("BUILD QUERY")
+    for q in data["queries"]:
+        print(q)
 
-        if category_req.lower() == "meta":
-            term.meta.query = data["query"]
-        if category_req.lower() == "annotations":
-            term.classifier.query = data["query"]
-            request.sorting = indexer_pb2.SearchRequest.Sorting.CLASSIFIER
+        if "type" in q and q["type"] is not None:
+            type_req = q["type"]
+            if not isinstance(type_req, str):
+                return JsonResponse({"status": "error"})
 
-    elif "query" in data and data["query"] is not None:
-        term = request.terms.add()
-        term.meta.query = data["query"]
+            term = request.terms.add()
+            if type_req.lower() == "meta":
+                term.meta.query = q["query"]
+            if type_req.lower() == "annotations":
+                term.classifier.query = q["query"]
+                request.sorting = indexer_pb2.SearchRequest.Sorting.CLASSIFIER
 
-        term = request.terms.add()
-        term.classifier.query = data["query"]
+        elif "query" in q and q["query"] is not None:
+            term = request.terms.add()
+            term.meta.query = q["query"]
 
-    if "id" in data and data["id"] is not None:
-        request.sorting = indexer_pb2.SearchRequest.Sorting.FEATURE
+            term = request.terms.add()
+            term.classifier.query = q["query"]
 
-        term = request.terms.add()
-        term.feature.image.id = data["id"]
+        if "reference" in q and q["reference"] is not None:
+            request.sorting = indexer_pb2.SearchRequest.Sorting.FEATURE
 
-        if "features" in data:
-            plugins = data["features"]
-            if not isinstance(data["features"], (list, set)):
-                plugins = [data["features"]]
-            print(data["features"])
-            for p in plugins:
-                for k, v in p.items():
-                    plugins = term.feature.plugins.add()
-                    plugins.name = k.lower()
-                    plugins.weight = v
+            term = request.terms.add()
+            term.feature.image.id = q["reference"]
+
+            if "features" in q:
+                plugins = q["features"]
+                if not isinstance(q["features"], (list, set)):
+                    plugins = [q["features"]]
+                for p in plugins:
+                    for k, v in p.items():
+                        plugins = term.feature.plugins.add()
+                        plugins.name = k.lower()
+                        plugins.weight = v
 
     response = stub.search(request)
 
@@ -198,7 +194,11 @@ def search_result_view(request):
             entries.append(entry)
         return JsonResponse({"status": "ok", "entries": entries})
     except grpc.RpcError as e:
-        print(e)
+
+        # search is still running
+        if e.code() == grpc.StatusCode.FAILED_PRECONDITION:
+            return JsonResponse({"status": "running"})
+
     return JsonResponse({"status": "error"})
 
 
