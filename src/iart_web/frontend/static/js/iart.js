@@ -19,13 +19,14 @@ store = new Vuex.Store({
       polling_job: null,
     },
 
-    query: {},
-    categories: [],
-    features: [],
-    reference: [],
+    // query: {},
+    // categories: [],
+    // features: [],
+    // reference: [],
   },
   mutations: {
     updateSuggestions(state, suggestions) {
+      console.log(suggestions);
       state.suggestions = suggestions;
     },
     // updateQuery(state, query) {
@@ -42,6 +43,7 @@ store = new Vuex.Store({
     },
     updateSearch(state, search) {
       if (!!state.search.polling_job) {
+        console.log('STOP SEARCH');
         clearInterval(state.search.polling_job);
       }
       state.search = search;
@@ -80,10 +82,10 @@ store = new Vuex.Store({
     },
     search(context, parameter) {
       var that = this;
-      var reference_id = null;
-      if ("reference" in parameter && "id" in parameter.reference) {
-        reference_id = parameter.reference.id;
-      }
+      // var reference_id = null;
+      // if ("reference" in parameter && "id" in parameter.reference) {
+      //   reference_id = parameter.reference.id;
+      // }
       fetch(url_search, {
         method: "POST",
         headers: {
@@ -92,10 +94,10 @@ store = new Vuex.Store({
           // 'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: JSON.stringify({
-          query: parameter.query,
-          category: parameter.category,
-          features: parameter.features,
-          id: reference_id,
+          queries: parameter.queries,
+          // category: parameter.category,
+          // features: parameter.features,
+          // id: reference_id,
         }),
       })
         .then(function (res) {
@@ -148,6 +150,9 @@ store = new Vuex.Store({
           return res.json();
         })
         .then(function (data) {
+          if (data.status == "running") {
+            return
+          }
           console.log(data);
 
           context.commit("updateSearch", {
@@ -511,8 +516,10 @@ Vue.component("feature-selector-slider", {
       // reference_id
 
       this.$store.dispatch("search", {
-        features: this.weights,
-        reference: this.$store.state.selected,
+        queries: [{
+          features: this.weights,
+          reference: this.$store.state.selected.id,
+        }]
       });
     },
     update: function (plugin, value) {
@@ -657,32 +664,51 @@ Vue.component("gallery", {
 
 Vue.component("search-bar-badge", {
   template: `
-    <span class="badge">landscape <i class="fa fa-times-circle"></i></span>`,
-  props: [],
+    <span v-bind:class="'badge ' + cssType"> {{text}} <i v-on:click="remove" class="fa fa-times-circle"></i></span>`,
+  props: ["type", "text", "index", "delete", "index"],
+  computed: {
+    cssType: function () {
+      if (this.type) {
+        return 'badge-' + this.type;
+      }
+      return ''
+    }
+  },
+  methods: {
+    remove: function () {
+      this.delete(this.index);
+      console.log('delete')
+    }
+  }
 });
 
 Vue.component("search-bar", {
   template: `
     <div class="search-bar">
-      <button class="search-start"v-on:click="submit"><i class="fa fa-search"></i></button>
+      <button class="search-start" v-on:click="submit"><i class="fa fa-search"></i></button>
       <button v-on:click="upload"><i class="fa fa-upload"></i></button>
       <div class="space"></div>
       
       <div class="search-input">
         <search-bar-badge
-          v-for="badge in badges"  
-          v-bind:key="badge.id">
+          v-for="(badge, index) in badges"  
+          v-bind:key="badge.id"
+          v-bind:type="badge.type"
+          v-bind:text="badge.query"
+          v-bind:index="index"
+          v-bind:delete=deleteQueryPart>
         </search-bar-badge>
         <input
-          v-model="query"
+          v-model="input.shown"
           v-on:paste="suggest"
           v-on:keyup="suggest"
           v-on:keydown="submit"
           id="search-input"
           type="text"
           placeholder="search"
-          name="query"
+          name="input"
           autocomplete="off"
+          autofocus
         ></input>
       </div>
 
@@ -696,166 +722,168 @@ Vue.component("search-bar", {
             <i v-bind:class="'fa fa-info'"></i><span>Info</span>
           </li>
           <li
-            v-for="(option, suggestion_index) in type.suggestions"
+            v-for="(suggestion, suggestion_index) in type.suggestions"
             v-bind:class="'autocompletion-item ' + (isItemActive(type_index, suggestion_index)? 'active' : '')"
-            v-on:click="search(type.type,option)"
-          >{{ option }}</li>
+            v-on:click="addQuery(type_index, suggestion_index)"
+          >{{ suggestion }}</li>
         </ul>
       </div>
     </div>`,
   data: function () {
     return {
-      current: {
-        group: 0,
-        index: 0,
-      },
       queries: [],
-      input: "",
+
+      current: {
+        group: null,
+        index: null,
+      },
+      input: {
+        shown: null,
+        typed: "",
+      },
+
       hidden: false,
     };
   },
   computed: {
     badges: function () {
-      return [];
+      return this.queries;
     },
     suggestions: function () {
-      console.log(this.$store.state.suggestions);
       return this.$store.state.suggestions;
     },
-    maxSuggestion: function () {
-      var index = 0;
-      for (let i = 0; i < this.suggestions.length; i++) {
-        index += this.suggestions[i].suggestions.length;
-      }
-      return index;
-    },
     visible: function () {
-      if (this.maxSuggestion === 0) {
+      // console.log(JSON.stringify(this.suggestions))
+      // console.log('' + this.suggestions.length + ' ' + this.input.typed + ' ' + this.hidden)
+      if (this.suggestions.length == 0) {
         return false;
       }
-      if (this.input === "") {
+      if (this.input.typed === "") {
         return false;
       }
       if (this.hidden) {
         return false;
       }
+      console.log('visible')
       return true;
     },
   },
   methods: {
-    hideAutocompletion() {
+    hideAutocompletion: function () {
       this.hidden = true;
     },
-    isItemActive(type_index, options_index) {
-      // console.log('active');
-      // console.log(type_index);
-      // console.log(options_index);
-      if (type_index >= this.suggestions.length) {
-        return false;
-      }
-      var index = 0;
-      var i;
-      for (let i = 0; i < type_index; i++) {
-        index += this.suggestions[i].suggestions.length;
-      }
-
-      index += options_index;
-      // console.log('######################################')
-      // console.log(index)
-      // console.log(this.currentSuggestion)
-      result = index === this.currentSuggestion;
-      // console.log(result)
-      return result;
+    isItemActive: function (type_index, options_index) {
+      return (type_index == this.current.group && options_index == this.current.index)
     },
-    suggestionQuery(index) {
-      // console.log('active');
-      if (index === -1) {
-        return this.queryHidden;
-      }
-      var suggestion_index = 0;
-      var i;
-      for (let i = 0; i < this.suggestions.length; i++) {
-        for (let j = 0; j < this.suggestions[i].suggestions.length; j++) {
-          if (suggestion_index === index) {
-            return this.suggestions[i].suggestions[j];
-          }
-          suggestion_index += 1;
-        }
-      }
-    },
-    suggestionType(index) {
-      // console.log('active');
-      if (index === -1) {
-        return null;
-      }
-      var suggestion_index = 0;
-      var i;
-      for (let i = 0; i < this.suggestions.length; i++) {
-        for (let j = 0; j < this.suggestions[i].suggestions.length; j++) {
-          if (suggestion_index === index) {
-            return this.suggestions[i].type;
-          }
-          suggestion_index += 1;
-        }
-      }
-      //TODO
-      // index += options_index;
-      // console.log('######################################')
-      // console.log(index)
-      // console.log(this.currentSuggestion)
-      result = index === this.currentSuggestion;
-      // console.log(result)
-      return result;
-    },
-    submit(event) {
+    submit: function (event) {
       if (event instanceof KeyboardEvent) {
-        if (event.which != 13) {
-          return;
+        var key = event.key;
+        if (key == "Enter") {
+          // Add a therm to the query
+          if (this.input.shown) {
+            if (this.current.group === null || this.current.group === undefined) {
+              this.queries.push({ type: null, query: this.input.shown });
+            }
+            else {
+              this.queries.push({ type: this.suggestions[this.current.group].group, query: this.suggestions[this.current.group].suggestions[this.current.index] });
+            }
+            this.input.shown = '';
+            this.input.typed = '';
+            this.current.group = null;
+            this.current.index = null;
+          }
+          else {
+            // var type = null;
+            // if (this.current.group) {
+            //   type = this.suggestions[this.current.group].group;
+            // }
+
+            // var text = null;
+            // if (this.current.group) {
+            //   text = this.suggestions[this.current.group].suggestions[this.current.index];
+            // }
+            this.$store.dispatch("search", {
+              queries: this.queries,
+            });
+
+          }
         }
       }
-      type = this.suggestionType(this.currentSuggestion);
-      options = this.suggestionQuery(this.currentSuggestion);
-      this.search(type, options);
+      console.log('SearchBar: g:' + this.current.group + ' i:' + this.current.index + ' s:' + this.input.shown + ' t:' + this.input.typed + ' q:' + JSON.stringify(this.queries))
     },
-    upload(event) {},
-    search(type, query) {
-      this.hidden = true;
-      this.query = query;
-
-      this.$store.dispatch("search", {
-        query: query,
-        category: type,
-      });
-      // console.log(JSON.stringify({type:type, options:options}));
+    deleteQueryPart: function (index) {
+      this.queries.splice(index, 1);
     },
-    suggest(event) {
-      if (event.which == 38) {
-        this.currentSuggestion = Math.max(this.currentSuggestion - 1, -1);
-        this.query = this.suggestionQuery(this.currentSuggestion);
-        return;
-      }
+    upload: function (event) { },
 
-      if (event.which == 40) {
-        this.currentSuggestion = Math.min(
-          this.currentSuggestion + 1,
-          this.maxSuggestion - 1
-        );
-        this.query = this.suggestionQuery(this.currentSuggestion);
-        return;
-      }
-
-      // TODO im not sure if this is the best solution
+    addQuery: function (group, index) {
+      this.queries.push({ type: this.suggestions[group].group, query: this.suggestions[group].suggestions[index] });
+      this.input.shown = '';
+      this.input.typed = '';
+    },
+    suggest: function (event) {
+      // press down
       if (event instanceof KeyboardEvent) {
-        if (event.which != 13) {
-          this.hidden = false;
+        var key = event.key;
+        if (key == "ArrowUp") {
+          if (this.current.index > 0) {
+            this.current.index -= 1;
+          }
+          else if (this.current.group > 0) {
+            this.current.group -= 1;
+            this.current.index = this.suggestions[this.current.group].suggestions.length - 1;
+          }
+          else if (this.current.group === 0 && this.current.index === 0) {
+            this.current.group = null;
+            this.current.index = null;
+          }
+          console.log(!this.current.group === null)
+
+          if (this.current.group === null || this.current.group === undefined) {
+
+            this.input.shown = this.input.typed;
+          }
+          else {
+            this.input.shown = this.suggestions[this.current.group].suggestions[this.current.index];
+          }
+
+        }
+        //press up
+        else if (key == "ArrowDown") {
+          if (this.current.group === null || this.current.group === undefined) {
+            if (this.suggestions.length > 0) {
+              // TODO check empty group
+              this.current.group = 0
+              this.current.index = 0
+            }
+          }
+          else {
+            if (this.current.index < this.suggestions[this.current.group].suggestions.length - 1) {
+              this.current.index += 1;
+
+            }
+            else if (this.current.group < this.suggestions.length - 1) {
+
+              this.current.group += 1
+              this.current.index = 0
+
+            }
+          }
+
+          this.input.shown = this.suggestions[this.current.group].suggestions[this.current.index]
+        }
+        // change content
+        else {
+          this.input.typed = this.input.shown;
+          this.$store.dispatch("refreshAutocompletion", {
+            query: this.input.shown,
+          });
         }
       }
-
-      // TODO optimize this
-      this.$store.dispatch("refreshAutocompletion", {
-        query: this.query,
-      });
-      this.queryHidden = this.query;
+      if (this.input.shown) {
+        this.hidden = false;
+      }
+      console.log('SearchBar: g:' + this.current.group + ' i:' + this.current.index + ' s:' + this.input.shown + ' t:' + this.input.typed + ' q:' + JSON.stringify(this.queries))
     },
   },
 });
@@ -907,8 +935,9 @@ var app = new Vue({
   mounted: function () {
     // TODO start screen with some cool images :-)
     this.$store.dispatch("search", {
-      query: "landscape",
-      category: null,
+      queries: [{ query: "landscape", type: null }]
+      // query: ,
+      // category: null,
     });
   },
 });

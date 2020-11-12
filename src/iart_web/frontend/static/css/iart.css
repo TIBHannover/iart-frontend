@@ -130,6 +130,18 @@ h3 {
   white-space: nowrap;
 }
 
+
+.badge-annotations {
+  color: #e6e6e6;
+  background-color:#5D737E;
+}
+
+.badge-meta {
+  color: #e6e6e6;
+  background-color:#30292F;
+}
+
+
 .grid-item:hover .grid-item-image {
   opacity: 1;
 }
