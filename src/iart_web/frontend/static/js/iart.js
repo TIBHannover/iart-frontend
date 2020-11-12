@@ -1,6 +1,16 @@
 // import AnchoredHeading from './AnchoredHeading.vue'
 Vue.use(Vuex);
 
+Vue.mixin({
+  data: function() {
+    return {
+      get url_static() {
+        return url_static;
+      }
+    }
+  }
+})
+
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -922,7 +932,7 @@ var app = new Vue({
   template: `
     <div>
       <div class="topnav">
-        <a class="active" href="#home"><img src="static/img/logo.svg" /></a>
+        <a class="active" href="#home"><img v-bind:src="url_static +'/img/logo.svg'" /></a>
         <search-bar/>
         <navbar-menu/>
       </div>
