@@ -13,11 +13,15 @@ store = new Vuex.Store({
     user: null,
     selected: null,
 
+    queries: [],
+
     search: {
       job_id: null,
       status: null,
       polling_job: null,
     },
+
+
 
     // query: {},
     // categories: [],
@@ -26,7 +30,6 @@ store = new Vuex.Store({
   },
   mutations: {
     updateSuggestions(state, suggestions) {
-      console.log(suggestions);
       state.suggestions = suggestions;
     },
     // updateQuery(state, query) {
@@ -41,15 +44,33 @@ store = new Vuex.Store({
     updateReference(state, entry) {
       state.reference = [entry];
     },
+    updateQueries(state, queries) {
+      state.queries = queries;
+    },
     updateSearch(state, search) {
       if (!!state.search.polling_job) {
-        console.log('STOP SEARCH');
         clearInterval(state.search.polling_job);
       }
       state.search = search;
     },
   },
   actions: {
+    addQuery(context, query) {
+      console.log('ADD_QUERY')
+      queries = this.state.queries.concat([query]);
+      context.commit("updateQueries", queries);
+    },
+    removeQuery(context, index) {
+      console.log('REMOVE_QUERY')
+      var queries = this.state.queries.slice();
+      queries.splice(index, 1);
+      context.commit("updateQueries", queries);
+    },
+    removeQueries(context) {
+      console.log('REMOVE_QUERIES')
+      context.commit("updateQueries", []);
+      state.queries = [];
+    },
     refreshAutocompletion(context, parameter) {
       // console.log('start fetch');
       // console.log(parameter.query);
@@ -747,7 +768,7 @@ Vue.component("search-bar", {
   },
   computed: {
     badges: function () {
-      return this.queries;
+      return this.$store.state.queries;
     },
     suggestions: function () {
       return this.$store.state.suggestions;
@@ -782,10 +803,12 @@ Vue.component("search-bar", {
           // Add a therm to the query
           if (this.input.shown) {
             if (this.current.group === null || this.current.group === undefined) {
-              this.queries.push({ type: null, query: this.input.shown });
+              // this.queries.push({ type: null, query: this.input.shown });
+              this.$store.dispatch("addQuery", { type: null, query: this.input.shown });
             }
             else {
-              this.queries.push({ type: this.suggestions[this.current.group].group, query: this.suggestions[this.current.group].suggestions[this.current.index] });
+              // this.queries.push({ type: this.suggestions[this.current.group].group, query: this.suggestions[this.current.group].suggestions[this.current.index] });
+              this.$store.dispatch("addQuery", { type: this.suggestions[this.current.group].group, query: this.suggestions[this.current.group].suggestions[this.current.index] });
             }
             this.input.shown = '';
             this.input.typed = '';
@@ -803,21 +826,22 @@ Vue.component("search-bar", {
             //   text = this.suggestions[this.current.group].suggestions[this.current.index];
             // }
             this.$store.dispatch("search", {
-              queries: this.queries,
+              queries: this.$store.state.queries,
             });
 
           }
         }
       }
-      console.log('SearchBar: g:' + this.current.group + ' i:' + this.current.index + ' s:' + this.input.shown + ' t:' + this.input.typed + ' q:' + JSON.stringify(this.queries))
+      console.log('SearchBar: g:' + this.current.group + ' i:' + this.current.index + ' s:' + this.input.shown + ' t:' + this.input.typed + ' q:' + JSON.stringify(this.$store.state.queries))
     },
     deleteQueryPart: function (index) {
-      this.queries.splice(index, 1);
+      this.$store.dispatch("removeQuery", index);
+      // this.queries.splice(index, 1);
     },
     upload: function (event) { },
 
     addQuery: function (group, index) {
-      this.queries.push({ type: this.suggestions[group].group, query: this.suggestions[group].suggestions[index] });
+      this.$store.dispatch("addQuery", { type: this.suggestions[group].group, query: this.suggestions[group].suggestions[index] });
       this.input.shown = '';
       this.input.typed = '';
     },
@@ -883,7 +907,7 @@ Vue.component("search-bar", {
       if (this.input.shown) {
         this.hidden = false;
       }
-      console.log('SearchBar: g:' + this.current.group + ' i:' + this.current.index + ' s:' + this.input.shown + ' t:' + this.input.typed + ' q:' + JSON.stringify(this.queries))
+      console.log('SearchBar: g:' + this.current.group + ' i:' + this.current.index + ' s:' + this.input.shown + ' t:' + this.input.typed + ' q:' + JSON.stringify(this.$store.state.queries))
     },
   },
 });
