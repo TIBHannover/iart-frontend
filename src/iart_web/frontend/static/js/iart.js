@@ -14,6 +14,7 @@ store = new Vuex.Store({
     selected: null,
 
     queries: [],
+    sorting: null,
 
     search: {
       job_id: null,
@@ -116,6 +117,7 @@ store = new Vuex.Store({
         },
         body: JSON.stringify({
           queries: parameter.queries,
+          sorting: parameter.sorting
           // category: parameter.category,
           // features: parameter.features,
           // id: reference_id,
@@ -540,7 +542,8 @@ Vue.component("feature-selector-slider", {
         queries: [{
           features: this.weights,
           reference: this.$store.state.selected.id,
-        }]
+        }],
+        sorting: null
       });
     },
     update: function (plugin, value) {
@@ -708,6 +711,7 @@ Vue.component("search-bar", {
     <div class="search-bar">
       <button class="search-start" v-on:click="submit"><i class="fa fa-search"></i></button>
       <button v-on:click="upload"><i class="fa fa-upload"></i></button>
+      <button v-on:click="random"><i class="fa fa-random"></i></button>
       <div class="space"></div>
       
       <div class="search-input">
@@ -800,14 +804,12 @@ Vue.component("search-bar", {
       if (event instanceof KeyboardEvent) {
         var key = event.key;
         if (key == "Enter") {
-          // Add a therm to the query
+          // Add a term to the query
           if (this.input.shown) {
             if (this.current.group === null || this.current.group === undefined) {
-              // this.queries.push({ type: null, query: this.input.shown });
               this.$store.dispatch("addQuery", { type: null, query: this.input.shown });
             }
             else {
-              // this.queries.push({ type: this.suggestions[this.current.group].group, query: this.suggestions[this.current.group].suggestions[this.current.index] });
               this.$store.dispatch("addQuery", { type: this.suggestions[this.current.group].group, query: this.suggestions[this.current.group].suggestions[this.current.index] });
             }
             this.input.shown = '';
@@ -815,18 +817,11 @@ Vue.component("search-bar", {
             this.current.group = null;
             this.current.index = null;
           }
+          // Start searching
           else {
-            // var type = null;
-            // if (this.current.group) {
-            //   type = this.suggestions[this.current.group].group;
-            // }
-
-            // var text = null;
-            // if (this.current.group) {
-            //   text = this.suggestions[this.current.group].suggestions[this.current.index];
-            // }
             this.$store.dispatch("search", {
               queries: this.$store.state.queries,
+              sorting: null
             });
 
           }
@@ -839,6 +834,12 @@ Vue.component("search-bar", {
       // this.queries.splice(index, 1);
     },
     upload: function (event) { },
+    random: function (event) {
+      this.$store.dispatch("search", {
+        queries: this.$store.state.queries,
+        sorting: 'random'
+      });
+    },
 
     addQuery: function (group, index) {
       this.$store.dispatch("addQuery", { type: this.suggestions[group].group, query: this.suggestions[group].suggestions[index] });
@@ -959,7 +960,8 @@ var app = new Vue({
   mounted: function () {
     // TODO start screen with some cool images :-)
     this.$store.dispatch("search", {
-      queries: [{ query: "landscape", type: null }]
+      queries: [{ query: "landscape", type: null }],
+      sorting: 'random'
       // query: ,
       // category: null,
     });

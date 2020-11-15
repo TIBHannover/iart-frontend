@@ -146,6 +146,10 @@ def search_view(request):
                         plugins.name = k.lower()
                         plugins.weight = v
 
+    if "sorting" in data and data["sorting"] == "random":
+
+        request.sorting = indexer_pb2.SearchRequest.Sorting.RANDOM
+
     response = stub.search(request)
 
     return JsonResponse({"status": "ok", "job_id": response.id})
