@@ -118,8 +118,10 @@ def search_view(request):
 
             term = request.terms.add()
             if type_req.lower() == "meta":
+                term = request.terms.add()
                 term.meta.query = q["query"]
             if type_req.lower() == "annotations":
+                term = request.terms.add()
                 term.classifier.query = q["query"]
                 request.sorting = indexer_pb2.SearchRequest.Sorting.CLASSIFIER
 
