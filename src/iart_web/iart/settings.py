@@ -133,7 +133,7 @@ STATIC_URL = FORCE_SCRIPT_NAME + "static/"
 
 # MEDIA_ROOT = os.path.join(os.path.dirname(__file__), "..", "media")
 
-MEDIA_ROOT = os.path.join("/media/")
+MEDIA_ROOT = os.path.join("/data/1/iart/web/media/")
 MEDIA_URL = FORCE_SCRIPT_NAME + "media/"
 
 GRPC_HOST = 'devbox1.research.tib.eu'

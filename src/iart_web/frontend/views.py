@@ -136,8 +136,10 @@ def search_view(request):
 
             term = request.terms.add()
             if type_req.lower() == "meta":
+                term = request.terms.add()
                 term.meta.query = q["query"]
             if type_req.lower() == "annotations":
+                term = request.terms.add()
                 term.classifier.query = q["query"]
                 request.sorting = indexer_pb2.SearchRequest.Sorting.CLASSIFIER
 
@@ -163,6 +165,10 @@ def search_view(request):
                         plugins = term.feature.plugins.add()
                         plugins.name = k.lower()
                         plugins.weight = v
+
+    if "sorting" in data and data["sorting"] == "random":
+
+        request.sorting = indexer_pb2.SearchRequest.Sorting.RANDOM
 
     response = stub.search(request)
 
