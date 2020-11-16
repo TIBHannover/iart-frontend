@@ -1,5 +1,6 @@
 // import AnchoredHeading from './AnchoredHeading.vue'
 Vue.use(Vuex);
+Vue.use(Vuetify);
 
 Vue.mixin({
   data: function() {
@@ -17,11 +18,11 @@ function delay(ms) {
 
 store = new Vuex.Store({
   state: {
-    // query: {},
     suggestions: [],
     entries: [],
     user: null,
     selected: null,
+    sorting: null,
 
     search: {
       job_id: null,
@@ -29,19 +30,32 @@ store = new Vuex.Store({
       polling_job: null,
     },
 
-    // query: {},
-    // categories: [],
-    // features: [],
-    // reference: [],
+    weights: {
+      yuv_histogram_feature: 0.2,
+      byol_embedding_feature: 0.7,
+      image_net_inception_feature: 0.4,
+    },
+
+    query: {},
+    categories: [],
+    features: [],
+    reference: [],
+    zoomLevel: 0,
+
+    layout: {
+      width: "auto", 
+      height: 200
+    },
+
+    dialog_search_image: false,
   },
   mutations: {
     updateSuggestions(state, suggestions) {
-      console.log(suggestions);
       state.suggestions = suggestions;
     },
-    // updateQuery(state, query) {
-    //   state.query = query;
-    // },
+    updateQuery(state, query) {
+      state.query = query;
+    },
     updateEntries(state, entries) {
       state.entries = entries;
     },
@@ -53,14 +67,25 @@ store = new Vuex.Store({
     },
     updateSearch(state, search) {
       if (!!state.search.polling_job) {
-        console.log('STOP SEARCH');
         clearInterval(state.search.polling_job);
       }
       state.search = search;
     },
+    updateZoomLevel(state, level) {
+      state.zoomLevel = level;
+    },
+    updateLayout(state, layout) {
+      state.layout = layout;
+    },
+    updateWeights(state, weights) {
+      state.weights = weights;
+    },
+    toggleDialogSearchImage(state) {
+      state.dialog_search_image = !state.dialog_search_image;
+    }
   },
   actions: {
-    refreshAutocompletion(context, parameter) {
+    refreshAutocomplete(context, parameter) {
       // console.log('start fetch');
       // console.log(parameter.query);
       fetch(url_autocomplete, {
@@ -74,10 +99,10 @@ store = new Vuex.Store({
           query: parameter.query,
         }),
       })
-        .then(function (res) {
+        .then(function(res) {
           return res.json();
         })
-        .then(function (data) {
+        .then(function(data) {
           if (data.status == "ok") {
             context.commit("updateSuggestions", data["suggestions"]);
             // console.log('update suggestions');
@@ -92,10 +117,8 @@ store = new Vuex.Store({
     },
     search(context, parameter) {
       var that = this;
-      // var reference_id = null;
-      // if ("reference" in parameter && "id" in parameter.reference) {
-      //   reference_id = parameter.reference.id;
-      // }
+      console.log("search", parameter);
+
       fetch(url_search, {
         method: "POST",
         headers: {
@@ -105,19 +128,16 @@ store = new Vuex.Store({
         },
         body: JSON.stringify({
           queries: parameter.queries,
-          // category: parameter.category,
-          // features: parameter.features,
-          // id: reference_id,
+          sorting: parameter.sorting
         }),
       })
-        .then(function (res) {
+        .then(function(res) {
           return res.json();
         })
-        .then(function (data) {
+        .then(function(data) {
           if (data.status == "ok") {
-            console.log("START SEARCHING");
             polling_job = setInterval(
-              function () {
+              function() {
                 // that.listSearchResults();
 
                 that.dispatch("listSearchResults", {
@@ -127,7 +147,8 @@ store = new Vuex.Store({
               }.bind(that),
               1000
             );
-            console.log("job" + polling_job);
+
+            console.log("job", polling_job);
 
             context.commit("updateSearch", {
               job_id: data.job_id,
@@ -144,7 +165,6 @@ store = new Vuex.Store({
         });
     },
     listSearchResults(context, parameter) {
-      console.log("Test");
       fetch(url_search_result, {
         method: "POST",
         headers: {
@@ -183,28 +203,17 @@ store = new Vuex.Store({
   },
 });
 
-Vue.directive("click-outside", {
-  bind: function (el, binding, vnode) {
-    el.clickOutsideEvent = function (event) {
-      // here I check that click was outside the el and his childrens
-      if (!(el == event.target || el.contains(event.target))) {
-        // and if it did, call method provided in attribute value
-        vnode.context[binding.expression](event);
-      }
-    };
-    document.body.addEventListener("click", el.clickOutsideEvent);
-  },
-  unbind: function (el) {
-    document.body.removeEventListener("click", el.clickOutsideEvent);
-  },
-});
-
 function argMax(array) {
   return array.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1];
 }
 
 function argMin(array) {
   return array.map((x, i) => [x, i]).reduce((r, a) => (a[0] < r[0] ? a : r))[1];
+}
+
+function capitalize(x) {
+  if (typeof x !== "string") return x;
+  return x.charAt(0).toUpperCase() + x.slice(1);
 }
 
 Vue.component("feature-selector-circle", {
@@ -243,7 +252,7 @@ Vue.component("feature-selector-circle", {
     </svg>
   </div>`,
   // props:['features'],
-  data: function () {
+  data: function() {
     return {
       features: [
         {
@@ -285,7 +294,7 @@ Vue.component("feature-selector-circle", {
     };
   },
   methods: {
-    startDrag: function (event) {
+    startDrag: function(event) {
       // found point
       this.dragging = true;
       console.log("start");
@@ -303,7 +312,7 @@ Vue.component("feature-selector-circle", {
         1.0
       );
     },
-    moveDrag: function (event) {
+    moveDrag: function(event) {
       // console.log('move');
       //   console.log(this.dragging);
       if (!this.dragging) {
@@ -353,11 +362,11 @@ Vue.component("feature-selector-circle", {
       //debug
       this.mousePoint = point;
     },
-    stopDrag: function (event) {
+    stopDrag: function(event) {
       this.dragging = false;
       console.log("stop");
     },
-    featureToPoint: function (index, value) {
+    featureToPoint: function(index, value) {
       var scale = this.radius * value;
       var angle = ((Math.PI * 2) / this.features.length) * index;
       var cos = Math.cos(angle);
@@ -369,7 +378,7 @@ Vue.component("feature-selector-circle", {
         y: ty,
       };
     },
-    pointToRadial: function (point) {
+    pointToRadial: function(point) {
       var rel_y = point.y - this.height / 2;
       var rel_x = point.x - this.width / 2;
       console.log({
@@ -388,7 +397,7 @@ Vue.component("feature-selector-circle", {
         value: value,
       };
     },
-    pointToFeature: function (point) {
+    pointToFeature: function(point) {
       radial = this.pointToRadial(point);
 
       featuresLength = this.features.length;
@@ -403,7 +412,7 @@ Vue.component("feature-selector-circle", {
       });
       return argMin(dist);
     },
-    mouseToPoint: function (event) {
+    mouseToPoint: function(event) {
       var ctm = event.target.getScreenCTM();
       return {
         x: (event.clientX - ctm.e) / ctm.a,
@@ -412,21 +421,21 @@ Vue.component("feature-selector-circle", {
     },
   },
   computed: {
-    pointsStr: function () {
+    pointsStr: function() {
       return this.points
         .map(function (point, index) {
           return point.x + "," + point.y;
         })
         .join(" ");
     },
-    points: function () {
+    points: function() {
       var results = [];
       for (let i = 0; i < this.features.length; i++) {
         results.push(this.featureToPoint(i, this.features[i].weight));
       }
       return results;
     },
-    markers: function () {
+    markers: function() {
       var results = [];
       for (let i = 0; i < this.features.length; i++) {
         var point = this.featureToPoint(i, 1.1);
@@ -457,497 +466,823 @@ Vue.component("feature-selector-circle", {
   },
 });
 
-Vue.component("feature-slider", {
+Vue.component("gallery", {
   template: `
-    <div class="row feature">
-      <label class="col-25">{{name}}</label>
-      <input type="checkbox" v-model="actived" v-on:change="process()"></input>
-      <input type="range" min="0" max="100" value="50" class="slider" v-model="value" v-bind:disabled="!actived" v-on:change="process()"></input>
+    <div class="grid-view open pa-1">
+      <gallery-item v-for="entry in entries" :key="entry.id" :entry="entry"/>
     </div>`,
-  // props:['features'],
-  props: ["plugin", "update"],
-  data: function () {
-    return {
-      value: 50,
-      actived: true,
-    };
-  },
-  created: function () {
-    if (this.actived) {
-      this.update(this.plugin, this.value);
-    } else {
-      this.update(this.plugin, 0);
-    }
-  },
-  methods: {
-    process: function () {
-      if (this.actived) {
-        this.update(this.plugin, this.value);
-      } else {
-        this.update(this.plugin, 0);
-      }
-    },
-  },
   computed: {
-    name: function () {
-      console.log(this.plugin);
-      feature_name = {
-        yuv_histogram_feature: "Color",
-        byol_embedding_feature: "Wikimedia",
-        image_net_inception_feature: "ImageNet",
-      };
-
-      return feature_name[this.plugin];
-    },
-  },
-});
-
-Vue.component("feature-selector-slider", {
-  template: `
-  <form class="feature-selector">
-    <feature-slider 
-      v-for="feature in selected.feature" 
-      v-bind:plugin="feature.plugin" 
-      v-bind:key="feature.id"
-      v-bind:update="update">
-    </feature-slider>
-    <button v-on:click="search">Search</button>
-  </form>`,
-  // props:['features'],
-  data: function () {
-    return {
-      weights: {},
-    };
-  },
-  methods: {
-    search: function (event) {
-      event.preventDefault();
-      // features
-      // reference_id
-
-      this.$store.dispatch("search", {
-        queries: [{
-          features: this.weights,
-          reference: this.$store.state.selected.id,
-        }]
-      });
-    },
-    update: function (plugin, value) {
-      this.weights[plugin] = value / 100;
-      if (this.weights[plugin] == 0.0) {
-        delete this.weights[plugin];
-      }
-      console.log(this.weights);
-    },
-  },
-  computed: {
-    selected: function () {
-      return this.$store.state.selected;
-    },
-  },
-});
-
-Vue.component("detail-view", {
-  template: `
-  <div v-bind:class="'side-menu ' + (hidden ? 'close': 'open')">
-    <div v-if="disabled" v-bind:class="'side-fixed ' + (hidden ? 'close': 'open')">
-      <div id="details-view" class="details-view">
-        <div class="details-item details-image">
-
-          <img v-bind:src="selected.path"/>
-          <div class="overlay">
-            <div class="tools">
-              <a v-on:click="expand"><i class="fa fa-expand"></i></a>
-            </div>
-          </div>
-        </div>
-        <div class="details-item">
-          <h3>{{selected.meta.title}}</h3>
-          <dl>
-            <dt>Artist</dt><dd>{{selected.meta.artist_name}}</dd>
-            <dt>Location</dt><dd>{{selected.meta.location}}</dd>
-          </dl>
-        </div>
-        <div class="details-item tags">
-          <div class="badge-wall">
-            <span v-for="(tag, tag_index) in tags" class="badge">{{tag.name}}</span>
-          </div>
-        </div>
-        <div class="details-item toolbox">
-          <feature-selector-slider/>
-        </div>
-      </div>
-      <div v-bind:disabled="disabled" v-on:click="toggle" class="details-button">
-        <i class="fa fa-angle-left"></i>
-        <i class="fa fa-angle-right"></i>
-      </div>
-    </div>
-  </div>`,
-  data: function () {
-    return {
-      hidden: true,
-    };
-  },
-  computed: {
-    selected: function () {
-      return this.$store.state.selected;
-    },
-    disabled: function () {
-      return this.$store.state.selected != null;
-    },
-    tags: function () {
-      console.log(this.selected.classifier);
-      tags = [];
-      var i = 0;
-      for (let i = 0; i < this.selected.classifier.length; i++) {
-        var j = 0;
-        for (
-          let j = 0;
-          j < this.selected.classifier[i].annotations.length;
-          j++
-        ) {
-          tags.push({
-            name: this.selected.classifier[i].annotations[j].name,
-            value: this.selected.classifier[i].annotations[j].value,
-          });
-        }
-        return tags;
-      }
-    },
-  },
-  methods: {
-    toggle: function () {
-      console.log(this.hidden);
-      this.hidden = !this.hidden;
-    },
-    expand: function () {
-      console.log("expand");
-    },
-  },
-  watch: {
-    selected: function () {
-      console.log("show");
-      this.hidden = false;
+    entries: function() {
+      return this.$store.state.entries;
     },
   },
 });
 
 Vue.component("gallery-item", {
   template: `
-  <div v-on:click="showDetail" class="grid-item" v-bind:disabled="disabled" v-bind:style="disabled? 'display:none' : ''">
-    <img v-bind:src="entry.path" class="grid-item-image" v-on:error="onError"></img>
-    <div class="grid-item-overlay">
-      <div class="info">
-        <div v-if="entry.meta.title" class="title">{{entry.meta.title}}</div>
-        <div v-if="entry.meta.artist_name" class="artist">by {{entry.meta.artist_name}}</div>
-      </div>
-    </div>
-  </div>`,
+    <div class="grid-item" :disabled="disabled" :style="getCss">
+      <img :src="entry.path" v-on:error="onError"></img>
 
+      <div class="overlay">
+        <div class="view">
+          <detail-view :key="entry.id" :entry="entry" :isWide="isWide"/>
+        </div>
+
+        <div class="meta">
+          <div v-if="entry.meta.title" class="text-subtitle-1" :title="entry.meta.title">{{entry.meta.title}}</div>
+          <div v-if="entry.meta.artist_name" class="text-caption" :title="entry.meta.artist_name">{{entry.meta.artist_name}}</div>
+        </div>
+      </div>
+    </div>`,
   props: ["entry"],
-  data: function () {
+  data: function() {
     return {
       disabled: false,
+      isWide: true,
     };
   },
-  methods: {
-    showDetail: function () {
-      this.$store.commit("updateSelected", this.entry);
+  computed: {
+    updateHeight: function() {
+      var height = this.$store.state.layout.height;
+
+      return height + this.$store.state.zoomLevel * 25;
     },
-    onError: function (element) {
+    updateWidth: function() {
+      var width = this.$store.state.layout.width;
+      var height = this.$store.state.layout.height;
+
+      if (typeof width === "string") return width;
+
+      if (width == height) {
+        width += this.$store.state.zoomLevel * 25;
+      }
+      
+      return width + "px";
+    },
+    getCss: function() {
+      return {
+        "--item-height": this.updateHeight + "px",
+        "--item-width": this.updateWidth,
+      }
+    },
+  },
+  methods: {
+    onError: function(element) {
       this.disabled = true;
     },
   },
+  mounted: function() {
+    var img = this.$el.querySelector("img");
+    this.isWide = img.naturalWidth > 1.25 * img.naturalHeight;
+  },
 });
 
-Vue.component("gallery", {
+Vue.component("detail-view", {
   template: `
-  <div class="grid-view open">
-    <gallery-item v-for="(entry, entry_index) in entries" v-bind:key="entry.id" v-bind:entry="entry"/>
-  </div>`,
+    <v-dialog v-model="dialog" max-width="800px">
+      <template v-slot:activator="{ attrs, on: dialog }">
+        <v-btn icon v-bind="attrs" v-on="dialog" title="View object">
+          <v-icon color="white" class="shadow">mdi-eye-outline</v-icon>
+        </v-btn>
+      </template>
+
+      <v-card>
+        <div class="img-wrapper">
+          <v-img 
+            :lazy-src="entry.path" class="grey lighten-1" 
+            :max-height="isWide? 'auto' : '500px'" contain
+          ></v-img>
+
+          <v-btn icon @click="close" absolute top right>
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+
+          <v-fab-transition>
+            <v-btn 
+              title="Search for similar objects" color="primary" 
+              @click="searchImage" fab absolute bottom right large
+            >
+              <v-icon>mdi-image-search-outline</v-icon>
+            </v-btn>
+          </v-fab-transition>
+        </div>
+
+        <v-card-title class="mb-2 mr-16">
+          <div class="text-h5 max-w">
+            <span v-if="!entry.meta.title">No title</span>
+
+            <span v-else v-for="word in title" @click="searchTag(word)">
+              <span class="title--click" :title="word">{{word}}</span>
+              <span style="display: inline-block;"> </span>
+            </span>
+          </div>
+
+          <div class="text-h6 max-w font-weight-regular grey--text mt-1">
+            <span v-if="!entry.meta.artist_name">Unknown</span>
+
+            <span v-else>
+              {{entry.meta.artist_name}}
+
+              <v-btn 
+                icon @click="searchArtist(entry.meta.artist_name)" 
+                title="Search for the artist" depressed small
+                class="ml-1"
+              >
+                <v-icon size="20">mdi-link-variant</v-icon>
+              </v-btn>
+            </span>
+          </div>
+        </v-card-title> 
+
+        <v-card-text v-if="dialog">
+          <v-chip v-if="date" class="mr-1 mb-1" :title="date">
+            <v-icon left>mdi-clock-time-four-outline</v-icon>{{date}}
+          </v-chip>
+
+          <v-chip 
+            v-for="tag in tags" :key="tag.id" :title="tag.name" 
+            class="mr-1 mb-1" @click:close="searchTag(tag.name)" 
+            :text-color="tag.disable ? 'grey lighten-1' : ''"
+            outlined close close-icon="mdi-magnify"
+          >
+            {{tag.name}}<v-icon v-if="tag.disable" size="14" right>mdi-help</v-icon>
+          </v-chip>
+        </v-card-text>
+      </v-card>
+    </v-dialog>`,
+  props: ["entry", "isWide"],
+  data: function() {
+    return {
+      dialog: false,
+    };
+  },
   computed: {
-    entries: function () {
-      return this.$store.state.entries;
+    tags: function() {
+      tags = [];
+
+      for (let i = 0; i < this.entry.classifier.length; i++) {
+        var classifier = this.entry.classifier[i];
+
+        for (let j = 0; j < classifier.annotations.length; j++) {
+          tags.push({
+            id: j, disable: classifier.annotations[j].value < 0.6,
+            name: capitalize(classifier.annotations[j].name),
+          });
+        }
+
+        return tags;
+      }
+    },
+    date: function() {
+      var year_min = this.entry.meta.year_min,
+          year_max = this.entry.meta.yaer_max;
+
+      if (year_min && year_max) {
+        if (year_min == year_max) return year_min;
+        return year_min + "–" + year_max;
+      }
+
+      if (year_min) return year_min;
+      if (year_max) return year_max;
+    },
+    title: function() {
+      return this.entry.meta.title.split(' ');
     },
   },
-});
+  methods: {
+    searchTag(value) {
+      this.$store.commit("updateQuery", value);
+      this.close();
 
-Vue.component("search-bar-badge", {
-  template: `
-    <span v-bind:class="'badge ' + cssType"> {{text}} <i v-on:click="remove" class="fa fa-times-circle"></i></span>`,
-  props: ["type", "text", "index", "delete", "index"],
-  computed: {
-    cssType: function () {
-      if (this.type) {
-        return 'badge-' + this.type;
-      }
-      return ''
+      this.$store.dispatch("search", {
+        queries: [{ 
+          query: value, type: null 
+        }],
+        sorting: "random",
+      });
+    },
+    searchArtist(value) {
+      // TODO
+      this.close();
+    },
+    searchImage() {
+      this.$store.commit("updateQuery", this.entry);
+      this.close();
+
+      this.$store.dispatch("search", {
+        queries: [{
+          reference: this.entry.id,
+          features: this.$store.state.weights,
+        }],
+        sorting: null,
+      });
+    },
+    close() {
+      this.dialog = false;
     }
   },
-  methods: {
-    remove: function () {
-      this.delete(this.index);
-      console.log('delete')
-    }
-  }
-});
+})
 
 Vue.component("search-bar", {
   template: `
-    <div class="search-bar">
-      <button class="search-start" v-on:click="submit"><i class="fa fa-search"></i></button>
-      <button v-on:click="upload"><i class="fa fa-upload"></i></button>
-      <div class="space"></div>
-      
-      <div class="search-input">
-        <search-bar-badge
-          v-for="(badge, index) in badges"  
-          v-bind:key="badge.id"
-          v-bind:type="badge.type"
-          v-bind:text="badge.query"
-          v-bind:index="index"
-          v-bind:delete=deleteQueryPart>
-        </search-bar-badge>
-        <input
-          v-model="input.shown"
-          v-on:paste="suggest"
-          v-on:keyup="suggest"
-          v-on:keydown="submit"
-          id="search-input"
-          type="text"
-          placeholder="search"
-          name="input"
-          autocomplete="off"
-          autofocus
-        ></input>
-      </div>
+    <v-container class="py-4 search-bar" align-content="center">
+      <v-combobox
+        v-model="search" :items="items" :search-input.sync="suggest"
+        prepend-inner-icon="mdi-magnify" @click:prepend-inner="submit" 
+        append-icon="mdi-image-search-outline" @click:append="searchImage"
+        placeholder="Start typing to search" @keyup.enter="submit" rounded 
+        item-text="name" item-value="id" clearable solo hide-no-data flat 
+        multiple chips
+      >
+        <template v-slot:item="{ on, item }">
+          <v-list-item v-on="on">
+            <v-list-item-icon class="my-2 mr-3">
+              <v-icon v-if="item.group=='meta'">mdi-information-outline</v-icon>
+              <v-icon v-if="item.group=='annotations'">mdi-tag-text-outline</v-icon>
+            </v-list-item-icon>
 
+            <v-list-item-content>
+              <v-list-item-title>{{item.name}}</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </template>
+      </v-combobox>
 
-      <div v-if="visible" v-click-outside="hideAutocompletion" class="autocompletion-list">
-        <ul v-for="(type, type_index) in suggestions">
-          <li v-if="type.group=='annotations'" class="cat-symbol">
-            <i v-bind:class="'fa fa-tags'"><span>Tags</span></i>
-          </li>
-          <li v-if="type.group=='meta'" class="cat-symbol">
-            <i v-bind:class="'fa fa-info'"></i><span>Info</span>
-          </li>
-          <li
-            v-for="(suggestion, suggestion_index) in type.suggestions"
-            v-bind:class="'autocompletion-item ' + (isItemActive(type_index, suggestion_index)? 'active' : '')"
-            v-on:click="addQuery(type_index, suggestion_index)"
-          >{{ suggestion }}</li>
-        </ul>
-      </div>
-    </div>`,
-  data: function () {
+      <search-image/>
+    </v-container>`,
+  data: function() {
     return {
-      queries: [],
-
-      current: {
-        group: null,
-        index: null,
-      },
-      input: {
-        shown: null,
-        typed: "",
-      },
-
-      hidden: false,
+      search: null,
+      suggest: null,
+      items: [],
     };
   },
   computed: {
-    badges: function () {
-      return this.queries;
-    },
-    suggestions: function () {
-      return this.$store.state.suggestions;
-    },
-    visible: function () {
-      // console.log(JSON.stringify(this.suggestions))
-      // console.log('' + this.suggestions.length + ' ' + this.input.typed + ' ' + this.hidden)
-      if (this.suggestions.length == 0) {
-        return false;
-      }
-      if (this.input.typed === "") {
-        return false;
-      }
-      if (this.hidden) {
-        return false;
-      }
-      console.log('visible')
-      return true;
-    },
-  },
-  methods: {
-    hideAutocompletion: function () {
-      this.hidden = true;
-    },
-    isItemActive: function (type_index, options_index) {
-      return (type_index == this.current.group && options_index == this.current.index)
-    },
-    submit: function (event) {
-      if (event instanceof KeyboardEvent) {
-        var key = event.key;
-        if (key == "Enter") {
-          // Add a therm to the query
-          if (this.input.shown) {
-            if (this.current.group === null || this.current.group === undefined) {
-              this.queries.push({ type: null, query: this.input.shown });
-            }
-            else {
-              this.queries.push({ type: this.suggestions[this.current.group].group, query: this.suggestions[this.current.group].suggestions[this.current.index] });
-            }
-            this.input.shown = '';
-            this.input.typed = '';
-            this.current.group = null;
-            this.current.index = null;
-          }
-          else {
-            // var type = null;
-            // if (this.current.group) {
-            //   type = this.suggestions[this.current.group].group;
-            // }
+    updateItems: function() {
+      var state = this.$store.state.suggestions,
+          entries = [];  // converted suggestions
 
-            // var text = null;
-            // if (this.current.group) {
-            //   text = this.suggestions[this.current.group].suggestions[this.current.index];
-            // }
-            this.$store.dispatch("search", {
-              queries: this.queries,
-            });
 
-          }
-        }
-      }
-      console.log('SearchBar: g:' + this.current.group + ' i:' + this.current.index + ' s:' + this.input.shown + ' t:' + this.input.typed + ' q:' + JSON.stringify(this.queries))
-    },
-    deleteQueryPart: function (index) {
-      this.queries.splice(index, 1);
-    },
-    upload: function (event) { },
+      for (let i = 0; i < state.length; i++) {
+        var values = state[i].suggestions
+            group = state[i].group;
+            type = state[i].type;
 
-    addQuery: function (group, index) {
-      this.queries.push({ type: this.suggestions[group].group, query: this.suggestions[group].suggestions[index] });
-      this.input.shown = '';
-      this.input.typed = '';
-    },
-    suggest: function (event) {
-      // press down
-      if (event instanceof KeyboardEvent) {
-        var key = event.key;
-        if (key == "ArrowUp") {
-          if (this.current.index > 0) {
-            this.current.index -= 1;
-          }
-          else if (this.current.group > 0) {
-            this.current.group -= 1;
-            this.current.index = this.suggestions[this.current.group].suggestions.length - 1;
-          }
-          else if (this.current.group === 0 && this.current.index === 0) {
-            this.current.group = null;
-            this.current.index = null;
-          }
-          console.log(!this.current.group === null)
-
-          if (this.current.group === null || this.current.group === undefined) {
-
-            this.input.shown = this.input.typed;
-          }
-          else {
-            this.input.shown = this.suggestions[this.current.group].suggestions[this.current.index];
-          }
-
-        }
-        //press up
-        else if (key == "ArrowDown") {
-          if (this.current.group === null || this.current.group === undefined) {
-            if (this.suggestions.length > 0) {
-              // TODO check empty group
-              this.current.group = 0
-              this.current.index = 0
-            }
-          }
-          else {
-            if (this.current.index < this.suggestions[this.current.group].suggestions.length - 1) {
-              this.current.index += 1;
-
-            }
-            else if (this.current.group < this.suggestions.length - 1) {
-
-              this.current.group += 1
-              this.current.index = 0
-
-            }
-          }
-
-          this.input.shown = this.suggestions[this.current.group].suggestions[this.current.index]
-        }
-        // change content
-        else {
-          this.input.typed = this.input.shown;
-          this.$store.dispatch("refreshAutocompletion", {
-            query: this.input.shown,
+        for (let j = 0; j < values.length; j++) {
+          entries.push({
+            id: entries.length, group: group,
+            name: capitalize(values[j]),
           });
         }
       }
-      if (this.input.shown) {
-        this.hidden = false;
+
+      return entries;
+    },
+    updateQuery: function() {
+      if (typeof this.$store.state.query === "string") {
+        return this.$store.state.query;
       }
-      console.log('SearchBar: g:' + this.current.group + ' i:' + this.current.index + ' s:' + this.input.shown + ' t:' + this.input.typed + ' q:' + JSON.stringify(this.queries))
+
+      if ("meta" in this.$store.state.query) {
+        // TODO what to do with referenced images?
+        return this.$store.state.query.meta.title;
+      }
+    },
+  },
+  methods: {
+    submit() {
+      var queries = [];
+
+      for (let i = 0; i < this.search.length; i++) {
+        if (typeof this.search[i] === "object") {
+          queries.push({
+            query: this.search[i].name,
+            type: this.search[i].group,
+          });
+        } else {
+          queries.push({
+            query: this.search[i], type: null,
+          });
+        }
+      }
+
+      this.$store.dispatch("search", {
+        queries: queries,
+        sorting: "random",
+      });
+    },
+    searchImage() {
+      this.$store.commit("toggleDialogSearchImage");
+    },
+  },
+  watch: {
+    updateQuery: function(query) {
+      this.search = [query];
+    },
+    updateItems: function(items) {
+      this.items = items;
+    },
+    suggest: function(query) {
+      if (query == null) query = "";  // if empty
+
+      this.$store.dispatch("refreshAutocomplete", {
+        query: query,  // get new suggestion
+      });
     },
   },
 });
 
-Vue.component("navbar-menu", {
+Vue.component("search-image", {
   template: `
-  <div class="navbar-menu">
+    <v-dialog v-model="dialog" max-width="350px" persistent>
+      <v-card>
+        <v-card-title>
+          Image search
 
-    <button v-on:click="toggle"><i class="fa fa-bars"></i></button>
-    <div v-bind:class="'navbar-content ' + (hidden ? 'close': 'open')"">
-      <a v-on:click="register" href="javascript:void(0)">Register</a>
-      <a href="#">Login</a>
-    </div>
-  </div>
-  `,
-  data: function () {
+          <v-btn icon @click="close" absolute right>
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+
+        <v-card-text>
+          <v-switch v-model="selectFile" class="pt-0" inset label="Upload image from my computer"></v-switch>
+          <v-file-input 
+            v-if="selectFile" :rules="[rules.isFile]" accept="image/png, image/jpeg, image/gif"
+            placeholder="Select image file" prepend-icon="mdi-camera" chips show-size filled
+          ></v-file-input>
+          <v-text-field 
+            v-else :rules="[rules.isUrl]" placeholder="Paste URL to image" 
+            prepend-icon="mdi-link-variant" clearable filled
+          ></v-text-field>
+        </v-card-text>
+
+        <v-card-actions class="px-6 pb-6">
+          <v-btn @click="search" color="secondary" block rounded>Search</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>`,
+  data: function() {
     return {
-      hidden: true,
+      dialog: false,
+      selectFile: false,
+      rules: {
+        isFile(value) {
+          if (!value || value.size < 2000000) {
+            return true;
+          }
+
+          return "Image size should be less than 2 MB.";
+        },
+        isUrl(value) {
+          var pattern = new RegExp(
+            "(http|ftp|https)://[\w-]+(\.[\w-]+)+([\w.,@?^" + 
+            "=%&amp;:/~+#-]*[\w@?^=%&amp;/~+#-])?"
+          );
+          
+          if (pattern.test(value)) {
+            return true;
+          }
+
+          return "Requested URL is not valid.";
+        },
+      },
+    };
+  },
+  computed: {
+    updateDialog: function() {
+      return this.$store.state.dialog_search_image;
+    },
+  },
+  methods: {
+    close() {
+      this.$store.commit("toggleDialogSearchImage");
+    },
+    search() {
+      // TODO
+      this.close();
+    },
+  },
+  watch: {
+    updateDialog: function(value) {
+      this.dialog = value;
+    },
+  },
+})
+
+Vue.component("settings", {
+  template: `
+    <div>
+      <v-btn icon @click="toggle">
+        <v-icon>mdi-cog-outline</v-icon>
+      </v-btn>
+
+      <v-navigation-drawer v-model="drawer" width="300" app absolute right temporary hide-overlay>
+        <v-toolbar flat class="v-bar--underline">
+          <v-toolbar-title>Settings</v-toolbar-title>
+
+          <v-btn icon @click="close" absolute right>
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-toolbar>
+
+        <v-container>
+          <layout-settings/>
+          <div class="mt-4 mb-3 mx-n3"><v-divider/></div>
+          <feature-selector/>
+        </v-container>
+      </v-navigation-drawer>
+    </div>`,
+  data: function() {
+    return {
+      drawer: false,
     };
   },
   methods: {
-    toggle(event) {
-      this.hidden = !this.hidden;
-      // this.search(type, options);
+    toggle() {
+      this.drawer = !this.drawer;
     },
-    register(event) {
-      console.log(this.$store.state.user);
-      this.hidden = !this.hidden;
-      // this.search(type, options);
+    close() {
+      this.drawer = false;
+    },
+  },
+})
+
+Vue.component("feature-selector", {
+  template: `
+    <div class="pl-1">
+      <div class="mb-2 text-subtitle-1">Image Search</div>
+
+      <v-row>
+        <feature-slider 
+          v-for="(weight, name, id) in weights" :key="id" :name="name" 
+          :weight="weight" :update="update" hide-details dense
+        />
+      </v-row>
+
+      <v-btn @click="search" color="primary" class="mt-1" block rounded 
+        depressed>Update search</v-btn>
+    </div>`,
+  data: function() {
+    return {
+      weights: this.$store.state.weights,
+    };
+  },
+  methods: {
+    search: function() {
+      if ("id" in this.$store.state.query) {
+        this.$store.dispatch("search", {
+          queries: [{
+            reference: this.$store.state.query.id,
+            features: this.$store.state.weights,
+          }],
+          sorting: null
+        });
+      }
+    },
+    update: function(plugin, value) {
+      this.weights[plugin] = value;
+      this.$store.commit("updateWeights", this.weights);
     },
   },
 });
+
+Vue.component("feature-slider", {
+  template: `
+    <v-col cols="12" class="pt-0" :title="title">
+      <v-slider v-model="value" @change="process" :prepend-icon="icon">
+        <template v-slot:append>
+          <v-text-field v-model="value" class="mt-0 pt-0" type="number"></v-text-field>
+        </template>
+      </v-slider>
+    </v-col>`,
+  props: ["name", "weight", "update"],
+  data: function() {
+    return {
+      value: this.weight * 100,
+    };
+  },
+  computed: {
+    icon: function() {
+      icon = {
+        yuv_histogram_feature: "mdi-palette",
+        byol_embedding_feature: "mdi-bank-outline",
+        image_net_inception_feature: "mdi-earth",
+      };
+
+      return icon[this.name];
+    },
+    title: function() {
+      title = {
+        yuv_histogram_feature: "Color Features",
+        byol_embedding_feature: "Wikimedia Features",
+        image_net_inception_feature: "ImageNet Features",
+      };
+
+      return title[this.name];
+    },
+  },
+  methods: {
+    process: function() {
+      this.update(this.name, this.value / 100);
+    },
+  },
+});
+
+Vue.component("layout-settings", {
+  template: `
+    <div class="pl-1">
+      <div class="mb-2 text-subtitle-1">Layout</div>
+
+      <v-item-group v-model="selected" mandatory>
+        <v-row class="px-2">
+          <v-col v-for="item in items" :key="item.id" @click="update" cols="12" md="6" class="pa-1">
+            <v-item v-slot="{ active, toggle }">
+              <v-card
+                @click="toggle" :color="active ? 'primary' : 'grey lighten-3'"
+                class="d-flex align-center py-3 px-4" height="60" :dark="active" flat
+              >
+                <span>{{item.text}}</span>
+                <v-icon :dark="active" large>{{item.icon}}</v-icon>
+              </v-card>
+            </v-item>
+          </v-col>
+        </v-row>
+      </v-item-group>
+    </div>`,
+  data: function() {
+    return {
+      selected: 0,
+      items: [
+        {
+          id: 1, height: 200, width: "auto", text: "Flexible", 
+          icon: "mdi-view-compact-outline",
+        },
+        {
+          id: 2, height: 200, width: 200, text: "Regular", 
+          icon: "mdi-view-comfy-outline", 
+        },
+      ],
+    };
+  },
+  methods: {
+    update: function() {
+      var layout = {
+        width: this.items[this.selected].width, 
+        height: this.items[this.selected].height,
+      };
+
+      this.$store.commit("updateLayout", layout);
+    },
+  },
+})
+
+Vue.component("user-menu", {
+  template: `
+    <v-menu offset-y bottom left>
+      <template v-slot:activator="{ attrs, on: menu }">
+        <v-btn icon v-bind="attrs" v-on="menu" class="mr-n3">
+          <v-icon>mdi-account-details</v-icon>
+        </v-btn>
+      </template>
+
+      <v-list>
+        <v-list-item><user-login/></v-list-item>
+        <v-list-item><user-register/></v-list-item>
+      </v-list>
+    </v-menu>`,
+})
+
+Vue.component("user-login", {
+  template: `
+    <v-dialog v-model="dialog" max-width="350px" persistent>
+      <template v-slot:activator="{ attrs, on: dialog }">
+        <v-btn text v-bind="attrs" v-on="dialog">
+          Login
+        </v-btn>
+      </template>
+
+      <v-card class="login">
+        <v-card-title>
+          Login
+
+          <v-btn icon @click="close" absolute right>
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+
+        <v-card-text>
+          <v-text-field 
+            placeholder="Username" prepend-icon="mdi-account" 
+            clearable hide-details
+          ></v-text-field>
+
+          <v-text-field
+            :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+            placeholder="Password" prepend-icon="mdi-lock" 
+            @click:append="showPassword = !showPassword"
+            :type="showPassword ? 'text' : 'password'"
+            clearable hide-details
+          ></v-text-field>
+        </v-card-text>
+
+        <v-card-actions class="px-6 pt-6">
+          <v-btn @click="login" color="secondary" block rounded>Login</v-btn>
+        </v-card-actions>
+
+        <div class="grey--text px-6 pb-6 text--center">
+          Don't have an account? <user-register/>.
+        </div>
+      </v-card>
+    </v-dialog>`,
+  data: function() {
+    return {
+      dialog: false,
+      showPassword: false,
+    };
+  },
+  methods: {
+    close() {
+      this.dialog = false;
+    },
+    login() {
+      // TODO
+      this.close();
+    }
+  },
+})
+
+Vue.component("user-register", {
+  template: `
+    <v-dialog v-model="dialog" max-width="350px" persistent>
+      <template v-slot:activator="{ attrs, on: dialog }">
+        <v-btn text v-bind="attrs" v-on="dialog">
+          Register
+        </v-btn>
+      </template>
+
+      <v-card class="register">
+        <v-card-title>
+          Register
+
+          <v-btn icon @click="close" absolute right>
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+
+        <v-card-text>
+          <v-text-field 
+            placeholder="Username" prepend-icon="mdi-account" 
+            clearable hide-details
+          ></v-text-field>
+
+          <v-text-field 
+            placeholder="Email" prepend-icon="mdi-email" 
+            clearable hide-details
+          ></v-text-field>
+
+          <v-text-field
+            :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+            placeholder="Password" prepend-icon="mdi-lock" 
+            @click:append="showPassword = !showPassword"
+            :type="showPassword ? 'text' : 'password'"
+            clearable hide-details
+          ></v-text-field>
+        </v-card-text>
+
+        <v-card-actions class="pa-6">
+          <v-btn @click="register" color="secondary" block rounded>Register</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>`,
+  data: function() {
+    return {
+      dialog: false,
+      showPassword: false,
+    };
+  },
+  methods: {
+    close() {
+      this.dialog = false;
+    },
+    register() {
+      // TODO
+      this.close();
+    },
+  },
+})
+
+Vue.component("progress-bar", {
+  template: `
+    <v-progress-linear :active="loading" absolute bottom indeterminate></v-progress-linear>`,
+  data: function() {
+    return {
+      loading: false,
+    };
+  },
+  computed: {
+    updateLoading: function() {
+      return this.$store.state.loading;
+    },
+  },
+  watch: {
+    updateLoading: function(value) {
+      console.log("loading", value);
+    }
+  }
+})
+
+Vue.component("zoom-nav", {
+  template: `
+    <div class="zoom">
+      <v-btn :disabled="!zoomInEnabled" color="primary" class="mr-1" @click="zoomIn" title="Zoom in" fab small>
+        <v-icon>mdi-magnify-plus-outline</v-icon>
+      </v-btn>
+
+      <v-btn :disabled="!zoomOutEnabled" color="primary" @click="zoomOut" title="Zoom out" fab small>
+        <v-icon>mdi-magnify-minus-outline</v-icon>
+      </v-btn>
+    </div>`,
+  data: function() {
+    return {
+      zoomLevel: 0,
+      zoomInEnabled: true,
+      zoomOutEnabled: true,
+    };
+  },
+  methods: {
+    zoomIn() {
+      if (this.zoomLevel < 6) {
+        this.zoomOutEnabled = true;
+        this.zoomLevel += 1;
+
+        if (this.zoomLevel == 5) {
+          this.zoomInEnabled = false;
+        } else {
+          this.zoomInEnabled = true;
+        }
+
+        this.update();
+      }
+    },
+    zoomOut() {
+      if (this.zoomLevel > -6) {
+        this.zoomInEnabled = true;
+        this.zoomLevel -= 1;
+
+        if (this.zoomLevel == -5) {
+          this.zoomOutEnabled = false;
+        } else {
+          this.zoomOutEnabled = true;
+        }
+
+        this.update();
+      }
+    },
+    update() {
+      this.$store.commit("updateZoomLevel", this.zoomLevel);
+    },
+  },
+})
 
 var app = new Vue({
   el: "#app",
   template: `
-    <div>
-      <div class="topnav">
-        <a class="active" href="#home"><img v-bind:src="url_static +'/img/logo.svg'" /></a>
-        <search-bar/>
-        <navbar-menu/>
-      </div>
-      <div class="main">
-        <detail-view/>
+    <v-app>
+      <v-app-bar class="v-bar--underline" app flat>
+        <v-app-bar-nav-icon class="mr-4"></v-app-bar-nav-icon>
+        <v-img src="url_static +'/img/logo.svg'" class="mr-4" max-height="40" max-width="100" contain></v-img>
+        
+        <search-bar/><settings/><user-menu/>
+        <progress-bar/>
+      </v-app-bar>
+
+      <v-main>
         <gallery/>
-      </div>
-    </div>`,
+      </v-main>
+
+      <zoom-nav/>
+    </v-app>`,
   store,
-  mounted: function () {
-    // TODO start screen with some cool images :-)
+  mounted: function() {
     this.$store.dispatch("search", {
-      queries: [{ query: "landscape", type: null }]
-      // query: ,
-      // category: null,
+      queries: [{ 
+        query: "Landscape", type: null 
+      }],
+      sorting: "random",
     });
+
+    this.$store.commit("updateQuery", "Landscape");
   },
+  vuetify: new Vuetify({
+    theme: {
+      themes: {
+        light: {
+          primary: "#B71C1C",
+          secondary: "#D32F2F",
+          accent: "#880E4F",
+        },
+      },
+      dark: false,
+    },
+  }),
 });

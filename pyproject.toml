@@ -7,10 +7,8 @@ authors = ["Your Name <you@example.com>"]
 [tool.poetry.dependencies]
 python = "^3.7"
 django = "^3.1.1"
-iart_indexer = "^0.1.0"
-#iart_indexer = {path = "/home/matthias/tmp/indexer/"}
-#iart_indexer = {git = "git@git.tib.eu:iart/indexer.git", branch = "feature_search"}
-
+#iart_indexer = {git = "git@git.tib.eu:iart/indexer.git", branch = "master"}
+iart_indexer = {path = "/home/matthias/projects/iart/indexer/"}
 [tool.poetry.dev-dependencies]
 black = "^20.8b1"
 flake8 = "^3.8.3"

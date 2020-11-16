@@ -4,18 +4,20 @@
 {% csrf_token %}
 
 <head>
-  <link rel="stylesheet" href="{% static 'css/iart.css' %}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+
+  <link href="{% static 'css/vuetify.min.css' %}" rel="stylesheet">
+  <link href="{% static 'css/materialdesignicons.min.css' %}" rel="stylesheet">
+
+  <link href="{% static 'css/iart.css' %}" rel="stylesheet" >
 
   <script>
-
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
     function csrfSafeMethod(method) {
       // these HTTP methods do not require CSRF protection
       return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
     }
-
 
     var url_search = '{% url "search" %}';
     var url_search_result = '{% url "search_result" %}';
@@ -26,6 +28,7 @@
   <!-- <script defer src="{% static 'js/fontawesome-all.js' %}"></script> -->
   <script src="{% static 'js/vue.js' %}"></script>
   <script src="{% static 'js/vuex.js' %}"></script>
+  <script src="{% static 'js/vuetify.js' %}"></script>
 </head>
 
 <body>
