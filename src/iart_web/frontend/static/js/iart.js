@@ -31,10 +31,11 @@ store = new Vuex.Store({
     features: [],
     reference: [],
     zoomLevel: 0,
+    submit: false,
 
     layout: {
       width: "auto", 
-      height: 200
+      height: 200,
     },
 
     dialog_search_image: false,
@@ -69,6 +70,12 @@ store = new Vuex.Store({
     },
     updateWeights(state, weights) {
       state.weights = weights;
+    },
+    updateSorting(state, sorting) {
+      state.sorting = sorting;
+    },
+    toggleSubmit(state) {
+      state.submit = !state.submit;
     },
     toggleDialogSearchImage(state) {
       state.dialog_search_image = !state.dialog_search_image;
@@ -289,8 +296,8 @@ Vue.component("feature-selector-circle", {
       this.dragging = true;
       console.log("start");
 
-      width = this.width; //this.$refs.svg.getBBox().width;
-      height = this.height; // this.$refs.svg.getBBox().height;
+      var width = this.width; //this.$refs.svg.getBBox().width;
+      var height = this.height; // this.$refs.svg.getBBox().height;
       this.mousePoint = this.mouseToPoint(event);
       this.startingPoint = this.mousePoint;
       this.selectedFeature = this.pointToFeature(this.mousePoint);
@@ -309,11 +316,11 @@ Vue.component("feature-selector-circle", {
         return;
       }
 
-      point = this.mouseToPoint(event);
+      var point = this.mouseToPoint(event);
       // console.log(point);
       // console.log(this.mousePoint);
-      radial_new = this.pointToRadial(point);
-      radial_old = this.pointToRadial(this.startingPoint);
+      var radial_new = this.pointToRadial(point);
+      var radial_old = this.pointToRadial(this.startingPoint);
       // console.log(radial_new.value);
       // console.log(radial_old.value);
       console.log({
@@ -388,10 +395,10 @@ Vue.component("feature-selector-circle", {
       };
     },
     pointToFeature: function(point) {
-      radial = this.pointToRadial(point);
+      var radial = this.pointToRadial(point);
 
-      featuresLength = this.features.length;
-      dist = this.features.map(function (element, index) {
+      var featuresLength = this.features.length;
+      var dist = this.features.map(function (element, index) {
         var featureAngle = ((Math.PI * 2) / featuresLength) * index;
         return Math.abs(
           Math.atan2(
@@ -561,7 +568,7 @@ Vue.component("detail-view", {
           <div class="text-h5 max-w">
             <span v-if="!entry.meta.title">No title</span>
 
-            <span v-else v-for="word in title" @click="searchTag(word)">
+            <span v-else v-for="word in title" @click="search(word, 'meta')">
               <span class="title--click" :title="word">{{word}}</span>
               <span style="display: inline-block;"> </span>
             </span>
@@ -591,7 +598,7 @@ Vue.component("detail-view", {
 
           <v-chip 
             v-for="tag in tags" :key="tag.id" :title="tag.name" 
-            class="mr-1 mb-1" @click:close="searchTag(tag.name)" 
+            class="mr-1 mb-1" @click:close="search(tag.name)" 
             :text-color="tag.disable ? 'grey lighten-1' : ''"
             outlined close close-icon="mdi-magnify"
           >
@@ -608,7 +615,7 @@ Vue.component("detail-view", {
   },
   computed: {
     tags: function() {
-      tags = [];
+      var tags = [];
 
       for (let i = 0; i < this.entry.classifier.length; i++) {
         var classifier = this.entry.classifier[i];
@@ -640,32 +647,26 @@ Vue.component("detail-view", {
     },
   },
   methods: {
-    searchTag(value) {
-      this.$store.commit("updateQuery", value);
-      this.close();
-
-      this.$store.dispatch("search", {
-        queries: [{ 
-          query: value, type: null 
-        }],
-        sorting: "random",
+    search(value, group="annotations") {
+      this.$store.commit("updateQuery", {
+        name: value, group: group,
       });
+
+      this.$store.commit("toggleSubmit");
+      this.close();
     },
     searchArtist(value) {
       // TODO
       this.close();
     },
     searchImage() {
-      this.$store.commit("updateQuery", this.entry);
-      this.close();
-
-      this.$store.dispatch("search", {
-        queries: [{
-          reference: this.entry.id,
-          features: this.$store.state.weights,
-        }],
-        sorting: null,
+      this.$store.commit("updateQuery", {
+        name: this.entry, group: "image",
+        // add: true,
       });
+
+      this.$store.commit("toggleSubmit");
+      this.close();
     },
     close() {
       this.dialog = false;
@@ -682,13 +683,44 @@ Vue.component("search-bar", {
         append-icon="mdi-image-search-outline" @click:append="searchImage"
         placeholder="Start typing to search" @keyup.enter="submit" rounded 
         item-text="name" item-value="id" clearable solo hide-no-data flat 
-        multiple chips
+        multiple hide-selected menu-props=closeOnClick
       >
+        <template v-slot:selection="{ attrs, select, selected, item, index }">
+          <v-menu :content-class="item.group" :close-on-content-click="false">
+            <template v-slot:activator="{ on }">
+              <v-chip 
+                v-on="on" v-bind="attrs" :input-value="selected" 
+                @click:close="deleteItem(index)" close
+              >
+                <span v-if="item.group!=null">
+                  <v-icon v-if="item.group=='meta'" size="18" left>mdi-information-outline</v-icon>
+                  <v-icon v-if="item.group=='annotations'" size="18" left>mdi-tag-text-outline</v-icon>
+                  <v-icon v-if="item.group=='image'" size="18" left>mdi-image-outline</v-icon>
+                  
+                  <span v-if="item.group!='image'" :title="item.name">{{item.name}}</span>
+                  <span v-else :title="item.name.meta.title">{{item.name.meta.title}}</span>
+                </span>
+                <span v-else class="text">{{item}}</span>
+              </v-chip>
+            </template>
+
+            <v-card v-if="item.group=='image'" width="300">
+              <v-img 
+                :src="item.name.path" class="grey lighten-1" contain max-height="200"
+              ></v-img>
+
+              <v-card-text>
+                <feature-selector-local :item="item" :index="index" :update="updateWeights"/>
+              </v-card-text>
+            </v-card>
+          </v-menu>
+        </template>
+
         <template v-slot:item="{ on, item }">
           <v-list-item v-on="on">
             <v-list-item-icon class="my-2 mr-3">
-              <v-icon v-if="item.group=='meta'">mdi-information-outline</v-icon>
-              <v-icon v-if="item.group=='annotations'">mdi-tag-text-outline</v-icon>
+              <v-icon v-if="item.group=='meta'" size=20>mdi-information-outline</v-icon>
+              <v-icon v-if="item.group=='annotations'" size=20>mdi-tag-text-outline</v-icon>
             </v-list-item-icon>
 
             <v-list-item-content>
@@ -702,8 +734,8 @@ Vue.component("search-bar", {
     </v-container>`,
   data: function() {
     return {
-      search: null,
       suggest: null,
+      search: [],
       items: [],
     };
   },
@@ -714,9 +746,8 @@ Vue.component("search-bar", {
 
 
       for (let i = 0; i < state.length; i++) {
-        var values = state[i].suggestions
+        var values = state[i].suggestions,
             group = state[i].group;
-            type = state[i].type;
 
         for (let j = 0; j < values.length; j++) {
           entries.push({
@@ -729,14 +760,10 @@ Vue.component("search-bar", {
       return entries;
     },
     updateQuery: function() {
-      if (typeof this.$store.state.query === "string") {
-        return this.$store.state.query;
-      }
-
-      if ("meta" in this.$store.state.query) {
-        // TODO what to do with referenced images?
-        return this.$store.state.query.meta.title;
-      }
+      return this.$store.state.query;
+    },
+    updateSubmit: function() {
+      return this.$store.state.submit;
     },
   },
   methods: {
@@ -745,10 +772,24 @@ Vue.component("search-bar", {
 
       for (let i = 0; i < this.search.length; i++) {
         if (typeof this.search[i] === "object") {
-          queries.push({
-            query: this.search[i].name,
-            type: this.search[i].group,
-          });
+          if (this.search[i].group == "image") {
+            if ("weights" in this.search[i].name) {
+              queries.push({
+                reference: this.search[i].name.id,
+                features: this.search[i].name.weights,
+              });
+            } else {
+              queries.push({
+                reference: this.search[i].name.id,
+                features: this.$store.state.weights,
+              });
+            }
+          } else {
+            queries.push({
+              query: this.search[i].name,
+              type: this.search[i].group,
+            });
+          }
         } else {
           queries.push({
             query: this.search[i], type: null,
@@ -757,9 +798,15 @@ Vue.component("search-bar", {
       }
 
       this.$store.dispatch("search", {
-        queries: queries,
-        sorting: "random",
+        queries: queries, 
+        sorting: this.$store.state.sorting,
       });
+    },
+    deleteItem(index) {
+      this.search.splice(index, 1);
+    },
+    updateWeights(index, weights) {
+      this.search[index]["weights"] = weights;
     },
     searchImage() {
       this.$store.commit("toggleDialogSearchImage");
@@ -767,17 +814,30 @@ Vue.component("search-bar", {
   },
   watch: {
     updateQuery: function(query) {
+      if ("add" in this.$store.state.query) {
+        if (this.$store.state.query.add) {
+          this.search.push(query);
+          return;
+        }
+      }
+
       this.search = [query];
     },
     updateItems: function(items) {
       this.items = items;
     },
+    updateSubmit: function(value) {
+      if (value) {
+        this.submit();  // run updated query
+        this.$store.commit("toggleSubmit");
+      }
+    },
     suggest: function(query) {
-      if (query == null) query = "";  // if empty
-
-      this.$store.dispatch("refreshAutocomplete", {
-        query: query,  // get new suggestion
-      });
+      if (query != null) {
+        this.$store.dispatch("refreshAutocomplete", {
+          query: query,  // get new suggestion
+        });
+      }
     },
   },
 });
@@ -857,7 +917,7 @@ Vue.component("search-image", {
       this.dialog = value;
     },
   },
-})
+});
 
 Vue.component("settings", {
   template: `
@@ -878,7 +938,9 @@ Vue.component("settings", {
         <v-container>
           <layout-settings/>
           <div class="mt-4 mb-3 mx-n3"><v-divider/></div>
-          <feature-selector/>
+          <feature-selector-global/>
+          <div class="mt-4 mb-3 mx-n3"><v-divider/></div>
+          <search-settings/>
         </v-container>
       </v-navigation-drawer>
     </div>`,
@@ -895,22 +957,19 @@ Vue.component("settings", {
       this.drawer = false;
     },
   },
-})
+});
 
-Vue.component("feature-selector", {
+Vue.component("feature-selector-global", {
   template: `
     <div class="pl-1">
-      <div class="mb-2 text-subtitle-1">Image Search</div>
+      <div class="mb-2 text-subtitle-1">Feature weights</div>
 
       <v-row>
         <feature-slider 
           v-for="(weight, name, id) in weights" :key="id" :name="name" 
-          :weight="weight" :update="update" hide-details dense
+          :weight="weight" :updateWeight="updateWeight" hide-details dense
         />
       </v-row>
-
-      <v-btn @click="search" color="primary" class="mt-1" block rounded 
-        depressed>Update search</v-btn>
     </div>`,
   data: function() {
     return {
@@ -918,21 +977,55 @@ Vue.component("feature-selector", {
     };
   },
   methods: {
-    search: function() {
-      if ("id" in this.$store.state.query) {
-        this.$store.dispatch("search", {
-          queries: [{
-            reference: this.$store.state.query.id,
-            features: this.$store.state.weights,
-          }],
-          sorting: null
-        });
-      }
-    },
-    update: function(plugin, value) {
-      this.weights[plugin] = value;
+    updateWeight: function(plugin, value) {
+      this.weights[plugin] = value;  // change single weight
       this.$store.commit("updateWeights", this.weights);
     },
+  },
+});
+
+Vue.component("feature-selector-local", {
+  template: `
+    <div>
+      <v-switch 
+        v-model="local" class="pt-0" inset hide-details
+        label="Specify local search weights"
+      ></v-switch>
+
+      <v-row v-if="local" class="mt-6 mb-n3">
+        <feature-slider 
+          v-for="(weight, name, id) in weights" :key="id" :name="name" 
+          :weight="weight" :updateWeight="updateWeight" hide-details dense
+        />
+      </v-row>
+    </div>`,
+  props: ["index", "item", "update"],
+  data: function() {
+    return {
+      local: false,
+      weights: {},
+    };
+  },
+  methods: {
+    updateWeight: function(plugin, value) {
+      this.weights[plugin] = value;
+      this.updateWeights();
+    },
+    updateWeights: function() {
+      if (this.local) {
+        this.update(this.index, this.weights);
+      } else {
+        this.update(this.index, {});
+      }
+    },
+  },
+  mounted: function() {
+    this.weights = this.$store.state.weights;
+  },
+  watch: {
+    local: function(value) {
+      this.updateWeights();
+    }
   },
 });
 
@@ -945,35 +1038,37 @@ Vue.component("feature-slider", {
         </template>
       </v-slider>
     </v-col>`,
-  props: ["name", "weight", "update"],
+  props: ["name", "weight", "updateWeight"],
   data: function() {
     return {
+      data: {
+        yuv_histogram_feature: {
+          icon: "mdi-palette",
+          title: "Color Features",
+        },
+        byol_embedding_feature: {
+          icon: "mdi-bank-outline",
+          title: "Wikimedia Features",
+        },
+        image_net_inception_feature: {
+          icon: "mdi-earth",
+          title: "ImageNet Features"
+        },
+      },
       value: this.weight * 100,
     };
   },
   computed: {
     icon: function() {
-      icon = {
-        yuv_histogram_feature: "mdi-palette",
-        byol_embedding_feature: "mdi-bank-outline",
-        image_net_inception_feature: "mdi-earth",
-      };
-
-      return icon[this.name];
+      return this.data[this.name].icon;
     },
     title: function() {
-      title = {
-        yuv_histogram_feature: "Color Features",
-        byol_embedding_feature: "Wikimedia Features",
-        image_net_inception_feature: "ImageNet Features",
-      };
-
-      return title[this.name];
+      return this.data[this.name].title;
     },
   },
   methods: {
     process: function() {
-      this.update(this.name, this.value / 100);
+      this.updateWeight(this.name, this.value / 100);
     },
   },
 });
@@ -1026,9 +1121,37 @@ Vue.component("layout-settings", {
   },
 })
 
+Vue.component("search-settings", {
+  template: `
+    <div class="pl-1">
+      <div class="mb-3 text-subtitle-1">Search results</div>
+
+      <v-row class="mx-1">
+        <v-switch 
+          v-model="sorting" class="pt-0" inset hide-details
+          label="Sort search results randomly" @change="update"
+        ></v-switch>
+      </v-row>
+    </div>`,
+  data: function() {
+    return {
+      sorting: false,
+    };
+  },
+  methods: {
+    update: function() {
+      if (this.sorting) {
+        this.$store.commit("updateSorting", "random");
+      } else {
+        this.$store.commit("updateSorting", null);
+      }
+    },
+  },
+});
+
 Vue.component("user-menu", {
   template: `
-    <v-menu offset-y bottom left>
+    <v-menu offset-y bottom left :close-on-content-click="false">
       <template v-slot:activator="{ attrs, on: menu }">
         <v-btn icon v-bind="attrs" v-on="menu" class="mr-n3">
           <v-icon>mdi-account-details</v-icon>
@@ -1040,11 +1163,11 @@ Vue.component("user-menu", {
         <v-list-item><user-register/></v-list-item>
       </v-list>
     </v-menu>`,
-})
+});
 
 Vue.component("user-login", {
   template: `
-    <v-dialog v-model="dialog" max-width="350px" persistent>
+    <v-dialog v-model="dialog" max-width="350px">
       <template v-slot:activator="{ attrs, on: dialog }">
         <v-btn text v-bind="attrs" v-on="dialog">
           Login
@@ -1080,7 +1203,7 @@ Vue.component("user-login", {
         </v-card-actions>
 
         <div class="grey--text px-6 pb-6 text--center">
-          Don't have an account? <user-register/>.
+          Don't have an account? <user-register @closeLogin="close"/>.
         </div>
       </v-card>
     </v-dialog>`,
@@ -1099,11 +1222,11 @@ Vue.component("user-login", {
       this.close();
     }
   },
-})
+});
 
 Vue.component("user-register", {
   template: `
-    <v-dialog v-model="dialog" max-width="350px" persistent>
+    <v-dialog v-model="dialog" max-width="350px">
       <template v-slot:activator="{ attrs, on: dialog }">
         <v-btn text v-bind="attrs" v-on="dialog">
           Register
@@ -1159,27 +1282,37 @@ Vue.component("user-register", {
       this.close();
     },
   },
-})
+  watch: {
+    dialog: function(value) {
+      if (value) {
+        this.$emit("closeLogin");
+      }
+    }
+  },
+});
 
 Vue.component("progress-bar", {
   template: `
-    <v-progress-linear :active="loading" absolute bottom indeterminate></v-progress-linear>`,
+    <v-progress-linear 
+      :style="loading? 'opacity: 1;' : 'opacity: 0'" 
+      color="primary" absolute bottom indeterminate
+    ></v-progress-linear>`,
   data: function() {
     return {
       loading: false,
     };
   },
   computed: {
-    updateLoading: function() {
-      return this.$store.state.loading;
+    update: function() {
+      return this.$store.state.search.status;
     },
   },
   watch: {
-    updateLoading: function(value) {
-      console.log("loading", value);
+    update: function(value) {
+      this.loading = value != null;
     }
   }
-})
+});
 
 Vue.component("zoom-nav", {
   template: `
@@ -1232,7 +1365,7 @@ Vue.component("zoom-nav", {
       this.$store.commit("updateZoomLevel", this.zoomLevel);
     },
   },
-})
+});
 
 var app = new Vue({
   el: "#app",
@@ -1254,14 +1387,11 @@ var app = new Vue({
     </v-app>`,
   store,
   mounted: function() {
-    this.$store.dispatch("search", {
-      queries: [{ 
-        query: "Landscape", type: null 
-      }],
-      sorting: "random",
+    this.$store.commit("updateQuery", {
+      name: "Landscape", group: "annotations",
     });
 
-    this.$store.commit("updateQuery", "Landscape");
+    this.$store.commit("toggleSubmit");
   },
   vuetify: new Vuetify({
     theme: {

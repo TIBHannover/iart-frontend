@@ -227,6 +227,44 @@ main .v-image__image--contain,
   margin-left: 0;
 }
 
+.v-application--is-ltr .v-select__selections .v-chip .v-icon--left {
+    margin-left: -4px;
+    margin-right: 4px;
+}
+
+.v-select__selections .v-chip i.v-icon {
+    margin-bottom: 0;
+}
+
+.v-select__selections .v-chip__content > span > span
+.v-select__selections .v-chip__content > span.text {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 150px;
+}
+
+.v-menu__content.image {
+  margin-top: 44px;
+}
+
+.v-menu__content.image .v-input--switch {
+  margin-top: 0;
+}
+
+.v-menu__content.image .v-input__slot {
+  margin-bottom: 0;
+}
+
+.v-menu__content.image .v-messages {
+  display: none;
+}
+
+.v-menu__content.meta,
+.v-menu__content.annotations {
+  display: none;
+}
+
 .svg-container {
   display: inline-block;
   position: relative;
