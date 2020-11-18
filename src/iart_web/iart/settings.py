@@ -135,3 +135,6 @@ STATIC_URL = FORCE_SCRIPT_NAME + "static/"
 
 MEDIA_ROOT = os.path.join("/data/1/iart/web/media/")
 MEDIA_URL = FORCE_SCRIPT_NAME + "media/"
+
+UPLOAD_ROOT = os.path.join("/data/1/iart/web/uploaded/")
+UPLOAD_URL = FORCE_SCRIPT_NAME + "uploaded/"

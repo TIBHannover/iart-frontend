@@ -2,7 +2,9 @@
 import sys
 import os
 import json
+import uuid
 
+import imageio
 import numpy as np
 
 from django.shortcuts import render
@@ -14,6 +16,8 @@ from django.views.decorators.http import require_http_methods
 import grpc
 from iart_indexer import indexer_pb2, indexer_pb2_grpc
 from iart_indexer.utils import meta_from_proto, classifier_from_proto, feature_from_proto, suggestions_from_proto
+
+from .utils import image_normalize
 
 
 def url_to_image(id):
@@ -209,12 +213,76 @@ def search_result_view(request):
 
 
 def upload(request):
-    if request.method == "POST" and request.FILES["myfile"]:
-        myfile = request.FILES["myfile"]
-        fs = FileSystemStorage(location="test/uploadedmedia")
-        filename = fs.save(myfile.name, myfile)
-        uploaded_file_url = fs.url(filename)
-        return render(
-            request, "upload.html", {"uploaded_file_url": uploaded_file_url, "fileupload": "File uploaded successfully"}
-        )
-    return render(request, "upload.html")
+    print(request)
+    print(request.FILES)
+    if request.method != "POST":
+        return JsonResponse({"status": "error"})
+
+    if "file" in request.FILES:
+        image_id = uuid.uuid4().hex
+        data = request.FILES["file"].read()
+        image = image_normalize(imageio.imread(data))
+        output_dir = os.path.join(settings.UPLOAD_ROOT, image_id[0:2], image_id[2:4])
+        os.makedirs(output_dir, exist_ok=True)
+        imageio.imwrite(os.path.join(output_dir, image_id + ".jpg"), image)
+
+    # print(request.FILES)
+    # upload_dir = os.path.join(APP_ROOT, "media", "user", "upload")
+    # image_dir = os.path.join(APP_ROOT, "media", "user", "img")
+    # if not os.path.exists(upload_dir):
+    #     os.makedirs(upload_dir)
+
+    # logging.info("/upload_file: new image id: {}".format(image_id))
+
+    # json_dict = {}
+    # for file in request.files.getlist("file"):
+    #     fname = os.path.join(upload_dir, image_id + os.path.splitext(file.filename)[-1])
+    #     file.save(fname)
+    #     # convert to jpg
+    #     try:
+    #         # open image
+    #         img = PIL.Image.open(fname)
+    #         exif_data = img._getexif()
+
+    #         # load exif data
+    #         if exif_data:
+    #             exif_dict = piexif.load(img.info["exif"])
+    #             exif_bytes = piexif.dump(exif_dict)
+
+    #         # resize image
+    #         w, h = img.size
+    #         r = min(1.0, config.max_img_dim / max(w, h))
+    #         img = img.resize(size=(int(w * r + 0.5), int(h * r + 0.5)))
+
+    #         # save image and exif data (if available)
+    #         new_fname = image_id + ".jpg"
+    #         if exif_data:
+    #             img.save(os.path.join(image_dir, new_fname), exif=exif_bytes)
+    #         else:
+    #             img.save(os.path.join(image_dir, new_fname))
+
+    #         # store json response
+    #     except Exception as e:
+    #         logging.info("/upload_file: {}".format(e))
+    #         return jsonify(json_dict)
+
+    #     # # convert to jpg
+    #     # image = imageio.imread(fname)
+    #     # imageio.imwrite(os.path.join(upload_dir, image_id + '.jpg'), image)
+
+    #     logging.info("/upload_file: {}".format(image_id))
+
+    #     json_dict["image_path"] = os.path.join(url_for("media"), "user", "img", image_id + ".jpg")
+    #     json_dict["image_id"] = image_id
+
+    return JsonResponse({"status": "error"})
+
+    # if request.method == "POST" and request.FILES["myfile"]:
+    #     myfile = request.FILES["myfile"]
+    #     fs = FileSystemStorage(location="test/uploadedmedia")
+    #     filename = fs.save(myfile.name, myfile)
+    #     uploaded_file_url = fs.url(filename)
+    #     return render(
+    #         request, "upload.html", {"uploaded_file_url": uploaded_file_url, "fileupload": "File uploaded successfully"}
+    #     )
+    # return render(request, "upload.html")
