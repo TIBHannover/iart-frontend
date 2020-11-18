@@ -1,4 +1,7 @@
 // import AnchoredHeading from './AnchoredHeading.vue'
+import Vue from 'vue';
+import Vuex from 'vuex';
+import Vuetify from 'vuetify';
 Vue.use(Vuex);
 Vue.use(Vuetify);
 
@@ -6,7 +9,7 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-store = new Vuex.Store({
+const store = new Vuex.Store({
   state: {
     suggestions: [],
     entries: [],
@@ -33,7 +36,7 @@ store = new Vuex.Store({
     zoomLevel: 0,
 
     layout: {
-      width: "auto", 
+      width: "auto",
       height: 200
     },
 
@@ -89,10 +92,10 @@ store = new Vuex.Store({
           query: parameter.query,
         }),
       })
-        .then(function(res) {
+        .then(function (res) {
           return res.json();
         })
-        .then(function(data) {
+        .then(function (data) {
           if (data.status == "ok") {
             context.commit("updateSuggestions", data["suggestions"]);
             // console.log('update suggestions');
@@ -121,13 +124,13 @@ store = new Vuex.Store({
           sorting: parameter.sorting
         }),
       })
-        .then(function(res) {
+        .then(function (res) {
           return res.json();
         })
-        .then(function(data) {
+        .then(function (data) {
           if (data.status == "ok") {
-            polling_job = setInterval(
-              function() {
+            var polling_job = setInterval(
+              function () {
                 // that.listSearchResults();
 
                 that.dispatch("listSearchResults", {
@@ -193,268 +196,11 @@ store = new Vuex.Store({
   },
 });
 
-function argMax(array) {
-  return array.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1];
-}
-
-function argMin(array) {
-  return array.map((x, i) => [x, i]).reduce((r, a) => (a[0] < r[0] ? a : r))[1];
-}
 
 function capitalize(x) {
   if (typeof x !== "string") return x;
   return x.charAt(0).toUpperCase() + x.slice(1);
 }
-
-Vue.component("feature-selector-circle", {
-  template: `
-  <div class="svg-container">
-    <svg
-      class="feature-selector"
-      ref="svg"
-      v-bind:viewBox="'0 0 ' + this.width+ ' '+ this.height"
-      v-on:mousedown="startDrag"
-      v-on:mouseup="stopDrag"
-      v-on:mouseleave="stopDrag"
-      v-on:mousemove="moveDrag">
-      <polygon :points="pointsStr" class="line"></polygon>
-      <circle v-bind:cx="width/2" v-bind:cy="height/2" v-bind:r="radius" class="border"></circle>
-      <circle
-        v-for="point in points"
-        v-bind:cx="point.x"
-        v-bind:cy="point.y"
-        class="drag-point"
-
-      ></circle>
-      <circle
-        v-bind:cx="mousePoint.x"
-        v-bind:cy="mousePoint.y"
-        r="5"
-        fill="#ffffff"
-      ></circle>
-      <text
-        v-for="(marker, marker_index) in markers"
-        v-bind:x="marker.point.x"
-        v-bind:y="marker.point.y"
-        v-bind:text-anchor="marker.anchor"
-        v-bind:alignment-baseline="marker.baseline"
-      >{{ marker.name }}</text>
-    </svg>
-  </div>`,
-  // props:['features'],
-  data: function() {
-    return {
-      features: [
-        {
-          name: "color",
-          weight: 0.5,
-        },
-        {
-          name: "style",
-          weight: 0.5,
-        },
-        {
-          name: "year",
-          weight: 0.8,
-        },
-        {
-          name: "genre",
-          weight: 0.8,
-        },
-        {
-          name: "genre",
-          weight: 0.8,
-        },
-      ],
-      dragging: false,
-      mousePoint: {
-        x: 0,
-        y: 0,
-      },
-      height: 250,
-      width: 300,
-      radius: 100,
-      minValue: 0.2,
-      maxValue: 0.9,
-      selectedFeature: null,
-      startingPoint: {
-        x: 0,
-        y: 0,
-      },
-    };
-  },
-  methods: {
-    startDrag: function(event) {
-      // found point
-      this.dragging = true;
-      console.log("start");
-
-      width = this.width; //this.$refs.svg.getBBox().width;
-      height = this.height; // this.$refs.svg.getBBox().height;
-      this.mousePoint = this.mouseToPoint(event);
-      this.startingPoint = this.mousePoint;
-      this.selectedFeature = this.pointToFeature(this.mousePoint);
-
-      radial_new = this.pointToRadial(this.mousePoint);
-
-      this.features[this.selectedFeature].weight = Math.min(
-        radial_new.value / this.radius,
-        1.0
-      );
-    },
-    moveDrag: function(event) {
-      // console.log('move');
-      //   console.log(this.dragging);
-      if (!this.dragging) {
-        return;
-      }
-
-      point = this.mouseToPoint(event);
-      // console.log(point);
-      // console.log(this.mousePoint);
-      radial_new = this.pointToRadial(point);
-      radial_old = this.pointToRadial(this.startingPoint);
-      // console.log(radial_new.value);
-      // console.log(radial_old.value);
-      console.log({
-        i: this.selectedFeature,
-        v: this.features[this.selectedFeature].weight,
-        n: radial_new.value / this.radius,
-      });
-      var delta_angle = Math.abs(
-        Math.atan2(
-          Math.sin(radial_old.angle - radial_new.angle),
-          Math.cos(radial_old.angle - radial_new.angle)
-        )
-      );
-      if (delta_angle > (90 / 180) * Math.PI) {
-        return;
-      }
-
-      this.features[this.selectedFeature].weight = Math.min(
-        radial_new.value / this.radius,
-        1.0
-      );
-
-      // renorm
-      // sum = this.features.reduce(function(all, current) {
-      //   return all + current.weight
-      // }, 0.0)
-      // console.log('################')
-      // console.log(sum)
-      //
-      // norm = 1 / (sum);
-      // console.log(norm)
-      // for (let i = 0; i < this.features.length; i++) {
-      //   this.features[i].weight = this.features[i].weight * norm;
-      // }
-
-      //debug
-      this.mousePoint = point;
-    },
-    stopDrag: function(event) {
-      this.dragging = false;
-      console.log("stop");
-    },
-    featureToPoint: function(index, value) {
-      var scale = this.radius * value;
-      var angle = ((Math.PI * 2) / this.features.length) * index;
-      var cos = Math.cos(angle);
-      var sin = Math.sin(angle);
-      var tx = scale * sin + this.width / 2;
-      var ty = scale * cos + this.height / 2;
-      return {
-        x: tx,
-        y: ty,
-      };
-    },
-    pointToRadial: function(point) {
-      var rel_y = point.y - this.height / 2;
-      var rel_x = point.x - this.width / 2;
-      console.log({
-        rel_y: rel_y,
-        rel_x: rel_x,
-      });
-      var angle = Math.atan2(-rel_y, rel_x) + Math.PI / 2;
-      var o = angle % (2 * Math.PI);
-      if (o < 0) {
-        angle += 2 * Math.PI;
-      }
-      var value = Math.sqrt(Math.pow(rel_y, 2) + Math.pow(rel_x, 2));
-
-      return {
-        angle: angle,
-        value: value,
-      };
-    },
-    pointToFeature: function(point) {
-      radial = this.pointToRadial(point);
-
-      featuresLength = this.features.length;
-      dist = this.features.map(function (element, index) {
-        var featureAngle = ((Math.PI * 2) / featuresLength) * index;
-        return Math.abs(
-          Math.atan2(
-            Math.sin(radial.angle - featureAngle),
-            Math.cos(radial.angle - featureAngle)
-          )
-        );
-      });
-      return argMin(dist);
-    },
-    mouseToPoint: function(event) {
-      var ctm = event.target.getScreenCTM();
-      return {
-        x: (event.clientX - ctm.e) / ctm.a,
-        y: (event.clientY - ctm.f) / ctm.d,
-      };
-    },
-  },
-  computed: {
-    pointsStr: function() {
-      return this.points
-        .map(function (point, index) {
-          return point.x + "," + point.y;
-        })
-        .join(" ");
-    },
-    points: function() {
-      var results = [];
-      for (let i = 0; i < this.features.length; i++) {
-        results.push(this.featureToPoint(i, this.features[i].weight));
-      }
-      return results;
-    },
-    markers: function() {
-      var results = [];
-      for (let i = 0; i < this.features.length; i++) {
-        var point = this.featureToPoint(i, 1.1);
-        var baseline = "middle";
-        if (point.y - this.height / 2 > 10) {
-          baseline = "hanging";
-        }
-        if (point.y - this.height / 2 < -10) {
-          baseline = "baseline";
-        }
-        var anchor = "middle";
-        if (point.x - this.width / 2 > 10) {
-          anchor = "start";
-        }
-        if (point.x - this.width / 2 < -10) {
-          anchor = "end";
-        }
-        results.push({
-          name: this.features[i].name,
-          weight: this.features[i].weight,
-          point: point,
-          baseline: baseline,
-          anchor: anchor,
-        });
-      }
-      return results;
-    },
-  },
-});
 
 Vue.component("gallery", {
   template: `
@@ -462,7 +208,7 @@ Vue.component("gallery", {
       <gallery-item v-for="entry in entries" :key="entry.id" :entry="entry"/>
     </div>`,
   computed: {
-    entries: function() {
+    entries: function () {
       return this.$store.state.entries;
     },
   },
@@ -485,19 +231,19 @@ Vue.component("gallery-item", {
       </div>
     </div>`,
   props: ["entry"],
-  data: function() {
+  data: function () {
     return {
       disabled: false,
       isWide: true,
     };
   },
   computed: {
-    updateHeight: function() {
+    updateHeight: function () {
       var height = this.$store.state.layout.height;
 
       return height + this.$store.state.zoomLevel * 25;
     },
-    updateWidth: function() {
+    updateWidth: function () {
       var width = this.$store.state.layout.width;
       var height = this.$store.state.layout.height;
 
@@ -506,10 +252,10 @@ Vue.component("gallery-item", {
       if (width == height) {
         width += this.$store.state.zoomLevel * 25;
       }
-      
+
       return width + "px";
     },
-    getCss: function() {
+    getCss: function () {
       return {
         "--item-height": this.updateHeight + "px",
         "--item-width": this.updateWidth,
@@ -517,11 +263,11 @@ Vue.component("gallery-item", {
     },
   },
   methods: {
-    onError: function(element) {
+    onError: function (element) {
       this.disabled = true;
     },
   },
-  mounted: function() {
+  mounted: function () {
     var img = this.$el.querySelector("img");
     this.isWide = img.naturalWidth > 1.25 * img.naturalHeight;
   },
@@ -601,14 +347,14 @@ Vue.component("detail-view", {
       </v-card>
     </v-dialog>`,
   props: ["entry", "isWide"],
-  data: function() {
+  data: function () {
     return {
       dialog: false,
     };
   },
   computed: {
-    tags: function() {
-      tags = [];
+    tags: function () {
+      var tags = [];
 
       for (let i = 0; i < this.entry.classifier.length; i++) {
         var classifier = this.entry.classifier[i];
@@ -623,9 +369,9 @@ Vue.component("detail-view", {
         return tags;
       }
     },
-    date: function() {
+    date: function () {
       var year_min = this.entry.meta.year_min,
-          year_max = this.entry.meta.yaer_max;
+        year_max = this.entry.meta.yaer_max;
 
       if (year_min && year_max) {
         if (year_min == year_max) return year_min;
@@ -635,7 +381,7 @@ Vue.component("detail-view", {
       if (year_min) return year_min;
       if (year_max) return year_max;
     },
-    title: function() {
+    title: function () {
       return this.entry.meta.title.split(' ');
     },
   },
@@ -645,8 +391,8 @@ Vue.component("detail-view", {
       this.close();
 
       this.$store.dispatch("search", {
-        queries: [{ 
-          query: value, type: null 
+        queries: [{
+          query: value, type: null
         }],
         sorting: "random",
       });
@@ -700,7 +446,7 @@ Vue.component("search-bar", {
 
       <search-image/>
     </v-container>`,
-  data: function() {
+  data: function () {
     return {
       search: null,
       suggest: null,
@@ -708,15 +454,15 @@ Vue.component("search-bar", {
     };
   },
   computed: {
-    updateItems: function() {
+    updateItems: function () {
       var state = this.$store.state.suggestions,
-          entries = [];  // converted suggestions
+        entries = [];  // converted suggestions
 
 
       for (let i = 0; i < state.length; i++) {
-        var values = state[i].suggestions
-            group = state[i].group;
-            type = state[i].type;
+        var values = state[i].suggestions;
+        var group = state[i].group;
+        var type = state[i].type;
 
         for (let j = 0; j < values.length; j++) {
           entries.push({
@@ -728,7 +474,7 @@ Vue.component("search-bar", {
 
       return entries;
     },
-    updateQuery: function() {
+    updateQuery: function () {
       if (typeof this.$store.state.query === "string") {
         return this.$store.state.query;
       }
@@ -766,13 +512,13 @@ Vue.component("search-bar", {
     },
   },
   watch: {
-    updateQuery: function(query) {
+    updateQuery: function (query) {
       this.search = [query];
     },
-    updateItems: function(items) {
+    updateItems: function (items) {
       this.items = items;
     },
-    suggest: function(query) {
+    suggest: function (query) {
       if (query == null) query = "";  // if empty
 
       this.$store.dispatch("refreshAutocomplete", {
@@ -811,7 +557,7 @@ Vue.component("search-image", {
         </v-card-actions>
       </v-card>
     </v-dialog>`,
-  data: function() {
+  data: function () {
     return {
       dialog: false,
       selectFile: false,
@@ -825,10 +571,10 @@ Vue.component("search-image", {
         },
         isUrl(value) {
           var pattern = new RegExp(
-            "(http|ftp|https)://[\w-]+(\.[\w-]+)+([\w.,@?^" + 
+            "(http|ftp|https)://[\w-]+(\.[\w-]+)+([\w.,@?^" +
             "=%&amp;:/~+#-]*[\w@?^=%&amp;/~+#-])?"
           );
-          
+
           if (pattern.test(value)) {
             return true;
           }
@@ -839,7 +585,7 @@ Vue.component("search-image", {
     };
   },
   computed: {
-    updateDialog: function() {
+    updateDialog: function () {
       return this.$store.state.dialog_search_image;
     },
   },
@@ -853,7 +599,7 @@ Vue.component("search-image", {
     },
   },
   watch: {
-    updateDialog: function(value) {
+    updateDialog: function (value) {
       this.dialog = value;
     },
   },
@@ -882,7 +628,7 @@ Vue.component("settings", {
         </v-container>
       </v-navigation-drawer>
     </div>`,
-  data: function() {
+  data: function () {
     return {
       drawer: false,
     };
@@ -912,13 +658,13 @@ Vue.component("feature-selector", {
       <v-btn @click="search" color="primary" class="mt-1" block rounded 
         depressed>Update search</v-btn>
     </div>`,
-  data: function() {
+  data: function () {
     return {
       weights: this.$store.state.weights,
     };
   },
   methods: {
-    search: function() {
+    search: function () {
       if ("id" in this.$store.state.query) {
         this.$store.dispatch("search", {
           queries: [{
@@ -929,7 +675,7 @@ Vue.component("feature-selector", {
         });
       }
     },
-    update: function(plugin, value) {
+    update: function (plugin, value) {
       this.weights[plugin] = value;
       this.$store.commit("updateWeights", this.weights);
     },
@@ -946,14 +692,14 @@ Vue.component("feature-slider", {
       </v-slider>
     </v-col>`,
   props: ["name", "weight", "update"],
-  data: function() {
+  data: function () {
     return {
       value: this.weight * 100,
     };
   },
   computed: {
-    icon: function() {
-      icon = {
+    icon: function () {
+      var icon = {
         yuv_histogram_feature: "mdi-palette",
         byol_embedding_feature: "mdi-bank-outline",
         image_net_inception_feature: "mdi-earth",
@@ -961,8 +707,8 @@ Vue.component("feature-slider", {
 
       return icon[this.name];
     },
-    title: function() {
-      title = {
+    title: function () {
+      var title = {
         yuv_histogram_feature: "Color Features",
         byol_embedding_feature: "Wikimedia Features",
         image_net_inception_feature: "ImageNet Features",
@@ -972,7 +718,7 @@ Vue.component("feature-slider", {
     },
   },
   methods: {
-    process: function() {
+    process: function () {
       this.update(this.name, this.value / 100);
     },
   },
@@ -999,25 +745,25 @@ Vue.component("layout-settings", {
         </v-row>
       </v-item-group>
     </div>`,
-  data: function() {
+  data: function () {
     return {
       selected: 0,
       items: [
         {
-          id: 1, height: 200, width: "auto", text: "Flexible", 
+          id: 1, height: 200, width: "auto", text: "Flexible",
           icon: "mdi-view-compact-outline",
         },
         {
-          id: 2, height: 200, width: 200, text: "Regular", 
-          icon: "mdi-view-comfy-outline", 
+          id: 2, height: 200, width: 200, text: "Regular",
+          icon: "mdi-view-comfy-outline",
         },
       ],
     };
   },
   methods: {
-    update: function() {
+    update: function () {
       var layout = {
-        width: this.items[this.selected].width, 
+        width: this.items[this.selected].width,
         height: this.items[this.selected].height,
       };
 
@@ -1084,7 +830,7 @@ Vue.component("user-login", {
         </div>
       </v-card>
     </v-dialog>`,
-  data: function() {
+  data: function () {
     return {
       dialog: false,
       showPassword: false,
@@ -1144,7 +890,7 @@ Vue.component("user-register", {
         </v-card-actions>
       </v-card>
     </v-dialog>`,
-  data: function() {
+  data: function () {
     return {
       dialog: false,
       showPassword: false,
@@ -1164,18 +910,18 @@ Vue.component("user-register", {
 Vue.component("progress-bar", {
   template: `
     <v-progress-linear :active="loading" absolute bottom indeterminate></v-progress-linear>`,
-  data: function() {
+  data: function () {
     return {
       loading: false,
     };
   },
   computed: {
-    updateLoading: function() {
+    updateLoading: function () {
       return this.$store.state.loading;
     },
   },
   watch: {
-    updateLoading: function(value) {
+    updateLoading: function (value) {
       console.log("loading", value);
     }
   }
@@ -1192,7 +938,7 @@ Vue.component("zoom-nav", {
         <v-icon>mdi-magnify-minus-outline</v-icon>
       </v-btn>
     </div>`,
-  data: function() {
+  data: function () {
     return {
       zoomLevel: 0,
       zoomInEnabled: true,
@@ -1253,10 +999,10 @@ var app = new Vue({
       <zoom-nav/>
     </v-app>`,
   store,
-  mounted: function() {
+  mounted: function () {
     this.$store.dispatch("search", {
-      queries: [{ 
-        query: "Landscape", type: null 
+      queries: [{
+        query: "Landscape", type: null
       }],
       sorting: "random",
     });
