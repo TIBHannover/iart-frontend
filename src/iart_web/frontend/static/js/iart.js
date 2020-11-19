@@ -2,6 +2,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import Vuetify from 'vuetify';
+
 Vue.use(Vuex);
 Vue.use(Vuetify);
 
@@ -300,23 +301,15 @@ Vue.component("detail-view", {
             <v-icon>mdi-close</v-icon>
           </v-btn>
 
-          <v-fab-transition>
-            <v-btn 
-              title="Search for similar objects" color="primary" 
-              @click="searchImage" fab absolute bottom right large
-            >
-              <v-icon>mdi-image-search-outline</v-icon>
-            </v-btn>
-          </v-fab-transition>
+          <detail-view-menu :item="entry" type="image" @closeDialog="close"/>
         </div>
 
         <v-card-title class="mb-2 mr-16">
           <div class="text-h5 max-w">
             <span v-if="!entry.meta.title">No title</span>
 
-            <span v-else v-for="word in title" @click="search(word, 'meta')">
-              <span class="title--click" :title="word">{{word}}</span>
-              <span style="display: inline-block;"> </span>
+            <span v-else v-for="word in title">
+              <detail-view-menu :item="word" type="meta" @closeDialog="close"/>
             </span>
           </div>
 
@@ -327,9 +320,8 @@ Vue.component("detail-view", {
               {{entry.meta.artist_name}}
 
               <v-btn 
-                icon @click="searchArtist(entry.meta.artist_name)" 
+                icon @click="searchArtist(entry.meta.artist_name)" class="ml-1" 
                 title="Search for the artist" depressed small
-                class="ml-1"
               >
                 <v-icon size="20">mdi-link-variant</v-icon>
               </v-btn>
@@ -343,12 +335,12 @@ Vue.component("detail-view", {
           </v-chip>
 
           <v-chip 
-            v-for="tag in tags" :key="tag.id" :title="tag.name" 
-            class="mr-1 mb-1" @click:close="search(tag.name)" 
-            :text-color="tag.disable ? 'grey lighten-1' : ''"
-            outlined close close-icon="mdi-magnify"
+            v-for="tag in tags" :key="tag.id" :title="tag.name" class="mr-1 mb-1" 
+            :text-color="tag.disable ? 'grey lighten-1' : ''" outlined
           >
-            {{tag.name}}<v-icon v-if="tag.disable" size="14" right>mdi-help</v-icon>
+            {{tag.name}}
+            <v-icon v-if="tag.disable" class="ml-1 mr-n1" size="14">mdi-help</v-icon>
+            <detail-view-menu :item="tag.name" type="annotations" @closeDialog="close"/>
           </v-chip>
         </v-card-text>
       </v-card>
@@ -393,32 +385,67 @@ Vue.component("detail-view", {
     },
   },
   methods: {
-    search(value, group = "annotations") {
-      this.$store.commit("updateQuery", {
-        name: value, group: group,
-      });
-
-      this.$store.commit("toggleSubmit");
-      this.close();
-    },
     searchArtist(value) {
       // TODO
-      this.close();
-    },
-    searchImage() {
-      this.$store.commit("updateQuery", {
-        name: this.entry, group: "image",
-        // add: true,
-      });
-
-      this.$store.commit("toggleSubmit");
       this.close();
     },
     close() {
       this.dialog = false;
     }
   },
-})
+});
+
+Vue.component("detail-view-menu", {
+  template: `
+    <v-menu offset-y bottom right>
+      <template v-slot:activator="{ attrs, on: menu }">
+        <v-fab-transition v-if="type=='image'">
+          <v-btn 
+            v-bind="attrs" v-on="menu" title="Search for similar objects" 
+            color="primary" fab absolute bottom right large
+          >
+            <v-icon>mdi-image-search-outline</v-icon>
+          </v-btn>
+        </v-fab-transition>
+
+        <v-btn 
+          v-if="type=='meta'" class="search title--click" text 
+          v-bind="attrs" v-on="menu" :title="item"
+        >
+          {{item}}
+        </v-btn>
+
+        <v-btn 
+          v-if="type=='annotations'" class="search" text 
+          v-bind="attrs" v-on="menu" 
+        >
+          <v-icon size="18" right>mdi-magnify</v-icon>
+        </v-btn>
+      </template>
+
+      <v-list>
+        <v-list-item>
+          <v-btn text @click="search(false)">Launch new search</v-btn>
+        </v-list-item>
+
+        <v-list-item>
+          <v-btn text @click="search(true)">Append to search</v-btn>
+        </v-list-item>
+      </v-list>
+    </v-menu>`,
+  props: ["item", "type"],
+  methods: {
+    search(add) {
+      this.$store.commit("updateQuery", {
+        name: this.item, group: this.type, 
+        add: add,  // add item to search bar
+      });
+
+      this.$store.commit("toggleSubmit");
+      this.$emit("closeDialog");
+    },
+  },
+});
 
 Vue.component("search-bar", {
   template: `
@@ -446,7 +473,7 @@ Vue.component("search-bar", {
                   <span v-if="item.group!='image'" :title="item.name">{{item.name}}</span>
                   <span v-else :title="item.name.meta.title">{{item.name.meta.title}}</span>
                 </span>
-                <span v-else class="text">{{item}}</span>
+                <span v-else :title="item">{{item}}</span>
               </v-chip>
             </template>
 
@@ -456,7 +483,7 @@ Vue.component("search-bar", {
               ></v-img>
 
               <v-card-text>
-                <feature-selector-local :item="item" :index="index" :update="updateWeights"/>
+                <feature-selector-local :item="item" :index.sync="index" @update="updateWeights"/>
               </v-card-text>
             </v-card>
           </v-menu>
@@ -519,10 +546,13 @@ Vue.component("search-bar", {
       for (let i = 0; i < this.search.length; i++) {
         if (typeof this.search[i] === "object") {
           if (this.search[i].group == "image") {
-            if ("weights" in this.search[i].name) {
+            if (
+              "weights" in this.search[i] && 
+              Object.keys(this.search[i].weights).length
+            ) {
               queries.push({
                 reference: this.search[i].name.id,
-                features: this.search[i].name.weights,
+                features: this.search[i].weights,
               });
             } else {
               queries.push({
@@ -710,10 +740,10 @@ Vue.component("feature-selector-global", {
     <div class="pl-1">
       <div class="mb-2 text-subtitle-1">Feature weights</div>
 
-      <v-row>
+      <v-row class="mb-n2">
         <feature-slider 
           v-for="(weight, name, id) in weights" :key="id" :name="name" 
-          :weight="weight" :updateWeight="updateWeight" hide-details dense
+          :weight="weight" @updateWeight="updateWeight" hide-details dense
         />
       </v-row>
     </div>`,
@@ -741,11 +771,11 @@ Vue.component("feature-selector-local", {
       <v-row v-if="local" class="mt-6 mb-n3">
         <feature-slider 
           v-for="(weight, name, id) in weights" :key="id" :name="name" 
-          :weight="weight" :updateWeight="updateWeight" hide-details dense
+          :weight="weight" @updateWeight="updateWeight" hide-details dense
         />
       </v-row>
     </div>`,
-  props: ["index", "item", "update"],
+  props: ["index", "item"],
   data: function () {
     return {
       local: false,
@@ -759,14 +789,14 @@ Vue.component("feature-selector-local", {
     },
     updateWeights: function () {
       if (this.local) {
-        this.update(this.index, this.weights);
+        this.$emit("update", this.index, this.weights);
       } else {
-        this.update(this.index, {});
+        this.$emit("update", this.index, {});
       }
     },
   },
-  mounted: function () {
-    this.weights = this.$store.state.weights;
+  created: function () {
+    this.weights = {...this.$store.state.weights};
   },
   watch: {
     local: function (value) {
@@ -784,7 +814,7 @@ Vue.component("feature-slider", {
         </template>
       </v-slider>
     </v-col>`,
-  props: ["name", "weight", "updateWeight"],
+  props: ["name", "weight"],
   data: function () {
     return {
       data: {
@@ -814,7 +844,7 @@ Vue.component("feature-slider", {
   },
   methods: {
     process: function () {
-      this.updateWeight(this.name, this.value / 100);
+      this.$emit("updateWeight", this.name, this.value / 100);
     },
   },
 });

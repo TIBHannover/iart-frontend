@@ -1,8 +1,12 @@
 const path = require('path');
-const VueLoaderPlugin = require('vue-loader/lib/plugin')
+const isProd = process.env.NODE_ENV === 'production';
+
+const VueLoaderPlugin = require('vue-loader/lib/plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
     entry: './frontend/static/js/iart.js',
+    mode: 'development',
     output: {
         filename: 'main.js',
         path: path.resolve('./frontend/static/', 'dist'),
@@ -21,8 +25,18 @@ module.exports = {
             }
         ]
     },
+    optimization: {
+        minimizer: [
+            new TerserPlugin({
+                terserOptions: {
+                    compress: {
+                        drop_console: isProd
+                    }
+                }
+            })
+        ]
+    },
     plugins: [
-        // make sure to include the plugin!
         new VueLoaderPlugin()
     ]
 };
