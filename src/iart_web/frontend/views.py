@@ -2,7 +2,10 @@
 import sys
 import os
 import json
+import uuid
+from urllib.parse import urlparse
 
+import imageio
 import numpy as np
 
 from django.shortcuts import render
@@ -15,36 +18,38 @@ import grpc
 from iart_indexer import indexer_pb2, indexer_pb2_grpc
 from iart_indexer.utils import meta_from_proto, classifier_from_proto, feature_from_proto, suggestions_from_proto
 
+from .utils import image_normalize
 
-def url_to_image(id):
+
+def media_url_to_image(id):
     # todo
     return settings.MEDIA_URL + id[0:2] + "/" + id[2:4] + "/" + id + ".jpg"
 
 
-def url_to_preview(id):
+def media_url_to_preview(id):
     # todo
     return settings.MEDIA_URL + id[0:2] + "/" + id[2:4] + "/" + id + "_m.jpg"
+
+
+def upload_url_to_image(id):
+    # todo
+    return settings.UPLOAD_URL + id[0:2] + "/" + id[2:4] + "/" + id + ".jpg"
+
+
+def upload_url_to_preview(id):
+    # todo
+    return settings.UPLOAD_URL + id[0:2] + "/" + id[2:4] + "/" + id + "_m.jpg"
+
+
+def upload_path_to_image(id):
+    # todo
+    return os.path.join(settings.UPLOAD_ROOT, id[0:2], id[2:4], id + ".jpg")
 
 
 def index_view(request):
 
     context = {}
     return render(request, "index.html", context)
-
-
-def details_view(request):
-    if not request.is_ajax():
-        return Http404()
-
-    if "id" not in request.POST:
-        # TODO error
-        return JsonResponse({"status": "error"})
-
-    id = request.POST["id"]
-    entry = db.get_entry(id)
-    entry["path"] = url_to_image(entry["id"])
-    context = {"status": "ok", "entry": entry, "entry_json": json.dumps(entry)}
-    return JsonResponse(context)
 
 
 def autocomplete_view(request):
@@ -136,7 +141,11 @@ def search_view(request):
             request.sorting = indexer_pb2.SearchRequest.Sorting.FEATURE
 
             term = request.terms.add()
-            term.feature.image.id = q["reference"]
+            # TODO use a database for this case
+            if os.path.exists(upload_path_to_image(q["reference"])):
+                term.feature.image.encoded = open(upload_path_to_image(q["reference"]), "rb").read()
+            else:
+                term.feature.image.id = q["reference"]
 
             if "features" in q:
                 plugins = q["features"]
@@ -195,7 +204,7 @@ def search_result_view(request):
             entry["classifier"] = classifier_from_proto(e.classifier)
             entry["feature"] = feature_from_proto(e.feature)
 
-            entry["path"] = url_to_preview(e.id)
+            entry["path"] = media_url_to_preview(e.id)
 
             entries.append(entry)
         return JsonResponse({"status": "ok", "entries": entries})
@@ -209,12 +218,36 @@ def search_result_view(request):
 
 
 def upload(request):
-    if request.method == "POST" and request.FILES["myfile"]:
-        myfile = request.FILES["myfile"]
-        fs = FileSystemStorage(location="test/uploadedmedia")
-        filename = fs.save(myfile.name, myfile)
-        uploaded_file_url = fs.url(filename)
-        return render(
-            request, "upload.html", {"uploaded_file_url": uploaded_file_url, "fileupload": "File uploaded successfully"}
-        )
-    return render(request, "upload.html")
+    try:
+        if request.method != "POST":
+            return JsonResponse({"status": "error"})
+
+        image_id = uuid.uuid4().hex
+        title = ""
+        if "file" in request.FILES:
+            data = request.FILES["file"].read()
+            if data is not None:
+                image = image_normalize(imageio.imread(data))
+                title = request.FILES["file"].name
+
+        if "url" in request.POST:
+            url_parsed = urlparse(request.POST["url"])
+            if url_parsed.netloc:
+                image = image_normalize(imageio.imread(request.POST["url"]))
+                title = os.path.basename(url_parsed.path)
+
+        if image is not None:
+            output_dir = os.path.join(settings.UPLOAD_ROOT, image_id[0:2], image_id[2:4])
+            os.makedirs(output_dir, exist_ok=True)
+            imageio.imwrite(os.path.join(output_dir, image_id + ".jpg"), image)
+
+            return JsonResponse(
+                {
+                    "status": "ok",
+                    "entries": [{"id": image_id, "meta": {"title": title}, "path": upload_url_to_image(image_id)}],
+                }
+            )
+
+        return JsonResponse({"status": "error"})
+    except:
+        return JsonResponse({"status": "error"})

@@ -118,7 +118,6 @@ const store = new Vuex.Store({
     },
     search(context, parameter) {
       var that = this;
-      console.log("search", parameter);
 
       fetch(url_search, {
         method: "POST",
@@ -149,13 +148,50 @@ const store = new Vuex.Store({
               1000
             );
 
-            console.log("job", polling_job);
-
             context.commit("updateSearch", {
               job_id: data.job_id,
               status: "running",
               polling_job: polling_job,
             });
+          } else {
+            console.log("error");
+          }
+        })
+        .catch((error) => {
+          console.log("error");
+          console.log(error);
+        });
+    },
+    upload(context, parameter) {
+      var that = this;
+      console.log('TTTTTT');
+
+      var data = new FormData()
+      data.append('file', parameter.file)
+      data.append('url', parameter.url)
+
+      fetch(url_upload, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrftoken,
+          // "Content-Type": "application/json"
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: data
+      })
+        .then(function (res) {
+          return res.json();
+        })
+        .then(function (data) {
+          console.log(JSON.stringify(data))
+          if (data.status == "ok") {
+            console.log(JSON.stringify(data))
+            // TODO several entries from upload
+            context.commit("updateQuery", {
+              name: data.entries[0], group: "image",
+            });
+
+            context.commit("toggleSubmit");
           } else {
             console.log("error");
           }
@@ -633,11 +669,11 @@ Vue.component("search-image", {
         <v-card-text>
           <v-switch v-model="selectFile" class="pt-0" inset label="Upload image from my computer"></v-switch>
           <v-file-input 
-            v-if="selectFile" :rules="[rules.isFile]" accept="image/png, image/jpeg, image/gif"
+            v-if="selectFile" v-model="file" :rules="[rules.isFile]" accept="image/png, image/jpeg, image/gif"
             placeholder="Select image file" prepend-icon="mdi-camera" chips show-size filled
           ></v-file-input>
           <v-text-field 
-            v-else :rules="[rules.isUrl]" placeholder="Paste URL to image" 
+            v-else v-model="url" :rules="[rules.isUrl]" placeholder="Paste URL to image" 
             prepend-icon="mdi-link-variant" clearable filled
           ></v-text-field>
         </v-card-text>
@@ -649,6 +685,8 @@ Vue.component("search-image", {
     </v-dialog>`,
   data: function () {
     return {
+      file: null,
+      url: null,
       dialog: false,
       selectFile: false,
       rules: {
@@ -684,7 +722,10 @@ Vue.component("search-image", {
       this.$store.commit("toggleDialogSearchImage");
     },
     search() {
-      // TODO
+      this.$store.dispatch("upload", {
+        file: this.file,
+        url: this.url
+      });
       this.close();
     },
   },
