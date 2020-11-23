@@ -3,6 +3,7 @@ import sys
 import os
 import json
 import uuid
+from urllib.parse import urlparse
 
 import imageio
 import numpy as np
@@ -20,35 +21,35 @@ from iart_indexer.utils import meta_from_proto, classifier_from_proto, feature_f
 from .utils import image_normalize
 
 
-def url_to_image(id):
+def media_url_to_image(id):
     # todo
     return settings.MEDIA_URL + id[0:2] + "/" + id[2:4] + "/" + id + ".jpg"
 
 
-def url_to_preview(id):
+def media_url_to_preview(id):
     # todo
     return settings.MEDIA_URL + id[0:2] + "/" + id[2:4] + "/" + id + "_m.jpg"
+
+
+def upload_url_to_image(id):
+    # todo
+    return settings.UPLOAD_URL + id[0:2] + "/" + id[2:4] + "/" + id + ".jpg"
+
+
+def upload_url_to_preview(id):
+    # todo
+    return settings.UPLOAD_URL + id[0:2] + "/" + id[2:4] + "/" + id + "_m.jpg"
+
+
+def upload_path_to_image(id):
+    # todo
+    return os.path.join(settings.UPLOAD_ROOT, id[0:2], id[2:4], id + ".jpg")
 
 
 def index_view(request):
 
     context = {}
     return render(request, "index.html", context)
-
-
-def details_view(request):
-    if not request.is_ajax():
-        return Http404()
-
-    if "id" not in request.POST:
-        # TODO error
-        return JsonResponse({"status": "error"})
-
-    id = request.POST["id"]
-    entry = db.get_entry(id)
-    entry["path"] = url_to_image(entry["id"])
-    context = {"status": "ok", "entry": entry, "entry_json": json.dumps(entry)}
-    return JsonResponse(context)
 
 
 def autocomplete_view(request):
@@ -140,7 +141,11 @@ def search_view(request):
             request.sorting = indexer_pb2.SearchRequest.Sorting.FEATURE
 
             term = request.terms.add()
-            term.feature.image.id = q["reference"]
+            # TODO use a database for this case
+            if os.path.exists(upload_path_to_image(q["reference"])):
+                term.feature.image.encoded = open(upload_path_to_image(q["reference"]), "rb").read()
+            else:
+                term.feature.image.id = q["reference"]
 
             if "features" in q:
                 plugins = q["features"]
@@ -199,7 +204,7 @@ def search_result_view(request):
             entry["classifier"] = classifier_from_proto(e.classifier)
             entry["feature"] = feature_from_proto(e.feature)
 
-            entry["path"] = url_to_preview(e.id)
+            entry["path"] = media_url_to_preview(e.id)
 
             entries.append(entry)
         return JsonResponse({"status": "ok", "entries": entries})
@@ -213,76 +218,36 @@ def search_result_view(request):
 
 
 def upload(request):
-    print(request)
-    print(request.FILES)
-    if request.method != "POST":
-        return JsonResponse({"status": "error"})
+    try:
+        if request.method != "POST":
+            return JsonResponse({"status": "error"})
 
-    if "file" in request.FILES:
         image_id = uuid.uuid4().hex
-        data = request.FILES["file"].read()
-        image = image_normalize(imageio.imread(data))
-        output_dir = os.path.join(settings.UPLOAD_ROOT, image_id[0:2], image_id[2:4])
-        os.makedirs(output_dir, exist_ok=True)
-        imageio.imwrite(os.path.join(output_dir, image_id + ".jpg"), image)
+        title = ""
+        if "file" in request.FILES:
+            data = request.FILES["file"].read()
+            if data is not None:
+                image = image_normalize(imageio.imread(data))
+                title = request.FILES["file"].name
 
-    # print(request.FILES)
-    # upload_dir = os.path.join(APP_ROOT, "media", "user", "upload")
-    # image_dir = os.path.join(APP_ROOT, "media", "user", "img")
-    # if not os.path.exists(upload_dir):
-    #     os.makedirs(upload_dir)
+        if "url" in request.POST:
+            url_parsed = urlparse(request.POST["url"])
+            if url_parsed.netloc:
+                image = image_normalize(imageio.imread(request.POST["url"]))
+                title = os.path.basename(url_parsed.path)
 
-    # logging.info("/upload_file: new image id: {}".format(image_id))
+        if image is not None:
+            output_dir = os.path.join(settings.UPLOAD_ROOT, image_id[0:2], image_id[2:4])
+            os.makedirs(output_dir, exist_ok=True)
+            imageio.imwrite(os.path.join(output_dir, image_id + ".jpg"), image)
 
-    # json_dict = {}
-    # for file in request.files.getlist("file"):
-    #     fname = os.path.join(upload_dir, image_id + os.path.splitext(file.filename)[-1])
-    #     file.save(fname)
-    #     # convert to jpg
-    #     try:
-    #         # open image
-    #         img = PIL.Image.open(fname)
-    #         exif_data = img._getexif()
+            return JsonResponse(
+                {
+                    "status": "ok",
+                    "entries": [{"id": image_id, "meta": {"title": title}, "path": upload_url_to_image(image_id)}],
+                }
+            )
 
-    #         # load exif data
-    #         if exif_data:
-    #             exif_dict = piexif.load(img.info["exif"])
-    #             exif_bytes = piexif.dump(exif_dict)
-
-    #         # resize image
-    #         w, h = img.size
-    #         r = min(1.0, config.max_img_dim / max(w, h))
-    #         img = img.resize(size=(int(w * r + 0.5), int(h * r + 0.5)))
-
-    #         # save image and exif data (if available)
-    #         new_fname = image_id + ".jpg"
-    #         if exif_data:
-    #             img.save(os.path.join(image_dir, new_fname), exif=exif_bytes)
-    #         else:
-    #             img.save(os.path.join(image_dir, new_fname))
-
-    #         # store json response
-    #     except Exception as e:
-    #         logging.info("/upload_file: {}".format(e))
-    #         return jsonify(json_dict)
-
-    #     # # convert to jpg
-    #     # image = imageio.imread(fname)
-    #     # imageio.imwrite(os.path.join(upload_dir, image_id + '.jpg'), image)
-
-    #     logging.info("/upload_file: {}".format(image_id))
-
-    #     json_dict["image_path"] = os.path.join(url_for("media"), "user", "img", image_id + ".jpg")
-    #     json_dict["image_id"] = image_id
-
-    return JsonResponse({"status": "error"})
-
-    # if request.method == "POST" and request.FILES["myfile"]:
-    #     myfile = request.FILES["myfile"]
-    #     fs = FileSystemStorage(location="test/uploadedmedia")
-    #     filename = fs.save(myfile.name, myfile)
-    #     uploaded_file_url = fs.url(filename)
-    #     return render(
-    #         request, "upload.html", {"uploaded_file_url": uploaded_file_url, "fileupload": "File uploaded successfully"}
-    #     )
-    # return render(request, "upload.html")
+        return JsonResponse({"status": "error"})
+    except:
+        return JsonResponse({"status": "error"})

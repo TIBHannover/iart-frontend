@@ -167,6 +167,7 @@ const store = new Vuex.Store({
 
       var data = new FormData()
       data.append('file', parameter.file)
+      data.append('url', parameter.url)
 
       fetch(url_upload, {
         method: "POST",
@@ -181,14 +182,15 @@ const store = new Vuex.Store({
           return res.json();
         })
         .then(function (data) {
+          console.log(JSON.stringify(data))
           if (data.status == "ok") {
-
-
-            context.commit("updateSearch", {
-              job_id: data.job_id,
-              status: "running",
-              polling_job: polling_job,
+            console.log(JSON.stringify(data))
+            // TODO several entries from upload
+            context.commit("updateQuery", {
+              name: data.entries[0], group: "image",
             });
+
+            context.commit("toggleSubmit");
           } else {
             console.log("error");
           }
@@ -690,17 +692,10 @@ Vue.component("search-image", {
       this.$store.commit("toggleDialogSearchImage");
     },
     search() {
-      console.log('Upload');
-      console.log('data:', this.file, this.url);
-      console.log('data:', JSON.stringify(this.file), JSON.stringify(this.url));
-
-      this.$store.commit("upload", {});
-
       this.$store.dispatch("upload", {
-        file: this.file,  // get new suggestion
+        file: this.file,
+        url: this.url
       });
-      console.log('Upload2');
-      // TODO
       this.close();
     },
   },
