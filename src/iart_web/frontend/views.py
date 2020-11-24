@@ -128,7 +128,7 @@ def search_view(request):
             if type_req.lower() == "annotations":
                 term = request.terms.add()
                 term.classifier.query = q["query"]
-                request.sorting = indexer_pb2.SearchRequest.Sorting.CLASSIFIER
+                request.sorting = "classifier"
 
         elif "query" in q and q["query"] is not None:
             term = request.terms.add()
@@ -138,7 +138,7 @@ def search_view(request):
             term.classifier.query = q["query"]
 
         if "reference" in q and q["reference"] is not None:
-            request.sorting = indexer_pb2.SearchRequest.Sorting.FEATURE
+            request.sorting = "feature"
 
             term = request.terms.add()
             # TODO use a database for this case
@@ -158,8 +158,10 @@ def search_view(request):
                         plugins.weight = v
 
     if "sorting" in data and data["sorting"] == "random":
+        request.sorting = "random"
 
-        request.sorting = indexer_pb2.SearchRequest.Sorting.RANDOM
+    if "mapping" in data and data["mapping"] == "umap":
+        request.mapping = "umap"
 
     response = stub.search(request)
 
@@ -203,6 +205,7 @@ def search_result_view(request):
             entry["origin"] = meta_from_proto(e.origin)
             entry["classifier"] = classifier_from_proto(e.classifier)
             entry["feature"] = feature_from_proto(e.feature)
+            entry["coordinates"] = list(e.coordinates)
 
             entry["path"] = media_url_to_preview(e.id)
 
