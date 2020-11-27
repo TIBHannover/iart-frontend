@@ -199,7 +199,7 @@ main .v-image__image--contain,
 .grid-item > .overlay .meta * {
   text-overflow: ellipsis;
   white-space: nowrap;
-  line-height: 1.5rem;
+  line-height: 1.35rem;
   overflow: hidden;
   font-weight: 400;
 }
@@ -245,8 +245,18 @@ main .v-image__image--contain,
   text-overflow: ellipsis;
   display: inline-block;
   white-space: nowrap;
-  overflow: clip;
+  overflow: hidden;
   max-width: 150px;
+  vertical-align: middle;
+  margin-bottom: 1px;
+}
+
+.v-select__selections .v-chip__content i.v-icon::before {
+  margin-bottom: 1px;
+}
+
+.v-dialog .v-chip__content > span {
+  margin-bottom: 1px;
 }
 
 .v-dialog .v-btn.search {

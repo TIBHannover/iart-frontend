@@ -329,9 +329,15 @@ Vue.component("detail-view", {
       <v-card>
         <div class="img-wrapper">
           <v-img 
-            :lazy-src="entry.path" class="grey lighten-1" 
+            :lazy-src="entry.path" :src="entry.path" class="grey lighten-1" 
             :max-height="isWide? 'auto' : '500px'" contain
-          ></v-img>
+          >
+            <template v-slot:placeholder>
+              <v-row class="fill-height ma-0" align="center" justify="center">
+                <v-progress-circular indeterminate></v-progress-circular>
+              </v-row>
+            </template>
+          </v-img>
 
           <v-btn icon @click="close" absolute top right>
             <v-icon>mdi-close</v-icon>
@@ -371,10 +377,10 @@ Vue.component("detail-view", {
           </v-chip>
 
           <v-chip 
-            v-for="tag in tags" :key="tag.id" :title="tag.name" class="mr-1 mb-1" 
+            v-for="tag in tags" :key="tag.id" class="mr-1 mb-1" 
             :text-color="tag.disable ? 'grey lighten-1' : ''" outlined
           >
-            {{tag.name}}
+            <span :title="tag.name">{{tag.name}}</span>
             <v-icon v-if="tag.disable" class="ml-1 mr-n1" size="14">mdi-help</v-icon>
             <detail-view-menu :item="tag.name" type="annotations" @closeDialog="close"/>
           </v-chip>
@@ -519,7 +525,7 @@ Vue.component("search-bar", {
               ></v-img>
 
               <v-card-text>
-                <feature-selector-local :item="item" :index.sync="index" @update="updateWeights"/>
+                <feature-selector-local :item.sync="item" :index="index" @update="updateWeights"/>
               </v-card-text>
             </v-card>
           </v-menu>
@@ -626,9 +632,25 @@ Vue.component("search-bar", {
   },
   watch: {
     updateQuery: function (query) {
+      for (let i = 0; i < this.search.length; i++) {
+        if (this.search[i].group == query.group) {
+          if (typeof this.search[i].name === typeof query.name) {
+            if (this.search[i].name === query.name) {
+              return;
+            }
+
+            if (typeof this.search[i].name === "object") {
+              if (this.search[i].name.id == query.name.id) {
+                return;
+              }
+            }
+          }
+        }
+      }
+
       if ("add" in this.$store.state.query) {
         if (this.$store.state.query.add) {
-          this.search.push(query);
+          this.search.push(query); 
           return;
         }
       }
@@ -723,9 +745,9 @@ Vue.component("search-image", {
     },
     search() {
       this.$store.dispatch("upload", {
-        file: this.file,
-        url: this.url
+        file: this.file, url: this.url
       });
+
       this.close();
     },
   },
@@ -842,6 +864,15 @@ Vue.component("feature-selector-local", {
   watch: {
     local: function (value) {
       this.updateWeights();
+    },
+    item: function() {
+      if ("weights" in this.item) {
+        this.local = true;
+        this.weights = this.item.weights;
+      } else {
+        this.local = false;
+        this.weights = {...this.$store.state.weights};
+      }
     }
   },
 });
