@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 const isProd = process.env.NODE_ENV === 'production';
 
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
@@ -18,10 +19,13 @@ module.exports = {
     },
     module: {
         rules: [
-            // ... other rules
             {
                 test: /\.vue$/,
                 loader: 'vue-loader'
+            },
+            {
+                test: /\.css$/,
+                use: ['style-loader', 'css-loader']
             }
         ]
     },
@@ -37,6 +41,9 @@ module.exports = {
         ]
     },
     plugins: [
-        new VueLoaderPlugin()
+        new VueLoaderPlugin(),
+        new webpack.ProvidePlugin({
+            'introJs': ['intro.js']
+        })
     ]
 };

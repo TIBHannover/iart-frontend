@@ -2,9 +2,14 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import Vuetify from 'vuetify';
+import VueIntro from 'vue-introjs';
+
+import 'vuetify/dist/vuetify.min.css';
+import 'intro.js/introjs.css';
 
 Vue.use(Vuex);
 Vue.use(Vuetify);
+Vue.use(VueIntro);
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -266,6 +271,24 @@ Vue.component("gallery-item", {
       <div class="overlay">
         <div class="view">
           <detail-view :key="entry.id" :entry="entry" :isWide="isWide"/>
+
+          <v-menu offset-y bottom right>
+            <template v-slot:activator="{ attrs, on: menu }">
+              <v-btn icon v-bind="attrs" v-on="menu" title="Search for similar objects">
+                <v-icon color="white" class="shadow">mdi-image-search-outline</v-icon>
+              </v-btn>
+            </template>
+
+            <v-list>
+              <v-list-item>
+                <v-btn text @click="search(false)">Launch new search</v-btn>
+              </v-list-item>
+
+              <v-list-item>
+                <v-btn text @click="search(true)">Append to search</v-btn>
+              </v-list-item>
+            </v-list>
+          </v-menu>
         </div>
 
         <div class="meta">
@@ -307,8 +330,16 @@ Vue.component("gallery-item", {
     },
   },
   methods: {
-    onError: function (element) {
+    onError (element) {
       this.disabled = true;
+    },
+    search(add) {
+      this.$store.commit("updateQuery", {
+        name: this.entry, group: 'image', 
+        add: add,  // add item to search bar
+      });
+
+      this.$store.commit("toggleSubmit");
     },
   },
   mounted: function () {
@@ -806,7 +837,8 @@ Vue.component("feature-selector-global", {
       <v-row class="mb-n2">
         <feature-slider 
           v-for="(weight, name, id) in weights" :key="id" :name="name" 
-          :weight="weight" @updateWeight="updateWeight" hide-details dense
+          :weight="weight" :sum="sumWeights" @updateWeight="updateWeight" 
+          hide-details dense
         />
       </v-row>
     </div>`,
@@ -815,8 +847,19 @@ Vue.component("feature-selector-global", {
       weights: this.$store.state.weights,
     };
   },
+  computed: {
+    sumWeights: function () {
+      let sum = 0;
+
+      for (let key in this.weights) {
+        sum += this.weights[key];
+      }
+
+      return sum;
+    },
+  },
   methods: {
-    updateWeight: function (plugin, value) {
+    updateWeight(plugin, value) {
       this.weights[plugin] = value;  // change single weight
       this.$store.commit("updateWeights", this.weights);
     },
@@ -834,7 +877,8 @@ Vue.component("feature-selector-local", {
       <v-row v-if="local" class="mt-6 mb-n3">
         <feature-slider 
           v-for="(weight, name, id) in weights" :key="id" :name="name" 
-          :weight="weight" @updateWeight="updateWeight" hide-details dense
+          :weight="weight" :sum="sumWeights" @updateWeight="updateWeight" 
+          hide-details dense
         />
       </v-row>
     </div>`,
@@ -845,12 +889,23 @@ Vue.component("feature-selector-local", {
       weights: {},
     };
   },
+  computed: {
+    sumWeights: function () {
+      let sum = 0;
+
+      for (let key in this.weights) {
+        sum += this.weights[key];
+      }
+
+      return sum;
+    },
+  },
   methods: {
-    updateWeight: function (plugin, value) {
+    updateWeight(plugin, value) {
       this.weights[plugin] = value;
       this.updateWeights();
     },
-    updateWeights: function () {
+    updateWeights() {
       if (this.local) {
         this.$emit("update", this.index, this.weights);
       } else {
@@ -886,7 +941,7 @@ Vue.component("feature-slider", {
         </template>
       </v-slider>
     </v-col>`,
-  props: ["name", "weight"],
+  props: ["name", "weight", "sum"],
   data: function () {
     return {
       data: {
@@ -915,7 +970,12 @@ Vue.component("feature-slider", {
     },
   },
   methods: {
-    process: function () {
+    process() {
+      // restrict value, if the other weights are set to 0
+      if (this.sum - this.weight < 0.1) {
+        this.value = 10;
+      }
+
       this.$emit("updateWeight", this.name, this.value / 100);
     },
   },
@@ -958,7 +1018,7 @@ Vue.component("layout-settings", {
     };
   },
   methods: {
-    update: function () {
+    update() {
       var layout = {
         width: this.items[this.selected].width,
         height: this.items[this.selected].height,
@@ -987,7 +1047,7 @@ Vue.component("search-settings", {
     };
   },
   methods: {
-    update: function () {
+    update() {
       if (this.sorting) {
         this.$store.commit("updateSorting", "random");
       } else {
@@ -1240,6 +1300,7 @@ var app = new Vue({
     });
 
     this.$store.commit("toggleSubmit");
+    this.$intro().start();
   },
   vuetify: new Vuetify({
     theme: {
