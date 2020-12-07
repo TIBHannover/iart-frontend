@@ -45,6 +45,7 @@ const store = new Vuex.Store({
     layout: {
       width: "auto",
       height: 200,
+      mapping: null,
     },
 
     dialog_search_image: false,
@@ -133,7 +134,8 @@ const store = new Vuex.Store({
         },
         body: JSON.stringify({
           queries: parameter.queries,
-          sorting: parameter.sorting
+          sorting: parameter.sorting,
+          mapping: parameter.mapping,
         }),
       })
         .then(function (res) {
@@ -169,7 +171,6 @@ const store = new Vuex.Store({
     },
     upload(context, parameter) {
       var that = this;
-      console.log('TTTTTT');
 
       var data = new FormData()
       data.append('file', parameter.file)
@@ -188,9 +189,7 @@ const store = new Vuex.Store({
           return res.json();
         })
         .then(function (data) {
-          console.log(JSON.stringify(data))
           if (data.status == "ok") {
-            console.log(JSON.stringify(data))
             // TODO several entries from upload
             context.commit("updateQuery", {
               name: data.entries[0], group: "image",
@@ -510,7 +509,7 @@ Vue.component("detail-view-menu", {
   methods: {
     search(add) {
       this.$store.commit("updateQuery", {
-        name: this.item, group: this.type, 
+        name: this.item, group: this.type,
         add: add,  // add item to search bar
       });
 
@@ -620,7 +619,7 @@ Vue.component("search-bar", {
         if (typeof this.search[i] === "object") {
           if (this.search[i].group == "image") {
             if (
-              "weights" in this.search[i] && 
+              "weights" in this.search[i] &&
               Object.keys(this.search[i].weights).length
             ) {
               queries.push({
@@ -649,6 +648,7 @@ Vue.component("search-bar", {
       this.$store.dispatch("search", {
         queries: queries,
         sorting: this.$store.state.sorting,
+        mapping: this.$store.state.layout.mapping,
       });
     },
     deleteItem(index) {
@@ -914,7 +914,7 @@ Vue.component("feature-selector-local", {
     },
   },
   created: function () {
-    this.weights = {...this.$store.state.weights};
+    this.weights = { ...this.$store.state.weights };
   },
   watch: {
     local: function (value) {
@@ -1008,11 +1008,15 @@ Vue.component("layout-settings", {
       items: [
         {
           id: 1, height: 200, width: "auto", text: "Flexible",
-          icon: "mdi-view-compact-outline",
+          icon: "mdi-view-compact-outline", mapping: null,
         },
         {
           id: 2, height: 200, width: 200, text: "Regular",
-          icon: "mdi-view-comfy-outline",
+          icon: "mdi-view-comfy-outline", mapping: null,
+        },
+        {
+          id: 3, height: 200, width: 200, text: "Map",
+          icon: "mdi-group", mapping: "umap",
         },
       ],
     };
@@ -1022,9 +1026,17 @@ Vue.component("layout-settings", {
       var layout = {
         width: this.items[this.selected].width,
         height: this.items[this.selected].height,
+        mapping: this.items[this.selected].mapping,
       };
 
+      // TODO STEFANIE: Feel free to use a watcher for layout mapping
+      // If mapping changes we have to trigger search again
+
+      if (this.$store.state.layout.mapping != layout.mapping) {
+        this.$store.commit("toggleSubmit");
+      }
       this.$store.commit("updateLayout", layout);
+
     },
   },
 })
