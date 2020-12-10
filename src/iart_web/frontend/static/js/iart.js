@@ -3,6 +3,11 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import Vuetify from 'vuetify';
 
+import * as THREE from 'three';
+import * as TWEEN from '@tweenjs/tween.js'
+import { Interaction } from 'three.interaction';
+import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
+
 Vue.use(Vuex);
 Vue.use(Vuetify);
 
@@ -35,6 +40,7 @@ const store = new Vuex.Store({
     features: [],
     reference: [],
     zoomLevel: 0,
+    meshSize: 1.3,
     submit: false,
 
     layout: {
@@ -43,7 +49,7 @@ const store = new Vuex.Store({
       mapping: null,
     },
 
-    dialog_search_image: false,
+    dialog: false,
   },
   mutations: {
     updateSuggestions(state, suggestions) {
@@ -70,6 +76,9 @@ const store = new Vuex.Store({
     updateZoomLevel(state, level) {
       state.zoomLevel = level;
     },
+    updateMeshSize(state, size) {
+      state.meshSize = size;
+    },
     updateLayout(state, layout) {
       state.layout = layout;
     },
@@ -79,12 +88,12 @@ const store = new Vuex.Store({
     updateSorting(state, sorting) {
       state.sorting = sorting;
     },
+    updateDialog(state, dialog) {
+      state.dialog = dialog;
+    },
     toggleSubmit(state) {
       state.submit = !state.submit;
     },
-    toggleDialogSearchImage(state) {
-      state.dialog_search_image = !state.dialog_search_image;
-    }
   },
   actions: {
     refreshAutocomplete(context, parameter) {
@@ -245,6 +254,254 @@ function capitalize(x) {
   return x.charAt(0).toUpperCase() + x.slice(1);
 }
 
+Vue.component("umap", {
+  template: `
+    <div class="umap">
+      <div class="canvas"></div>
+    </div>`,
+  data: function () {
+    return {
+      canvasSize: 100,
+      timer: null,
+      nStep: 8,
+    };
+  },
+  mounted: function () {
+    this.init();
+    this.controls();
+    this.animate();
+  },
+  computed: {
+    entries: function () {
+      return this.$store.state.entries;
+    },
+    meshSize: function () {
+      return this.$store.state.meshSize;
+    },
+    zoomLevel: function () {
+      return this.$store.state.zoomLevel;
+    },
+    zoomStep: function () {
+      return this.canvasSize / this.nStep;
+    }
+  },
+  methods: {
+    init: function () {
+      const [width, height] = this.getSize();
+
+      this.scene = new THREE.Scene();
+      this.scene.background = new THREE.Color(0xe0e0e0);
+
+      this.camera = new THREE.PerspectiveCamera(
+        0.5 * this.canvasSize, width / height
+      );
+
+      this.resetCamera(0, 0, 12 * this.zoomStep);
+
+      this.renderer = new THREE.WebGLRenderer({antialias: true});
+      this.renderer.setPixelRatio(window.devicePixelRatio);
+      this.renderer.setSize(width, height);
+
+      const canvas = document.querySelector(".umap .canvas");
+      canvas.appendChild(this.renderer.domElement);
+
+      window.addEventListener("resize", this.onResize);
+
+      const interaction = new Interaction(
+        this.renderer, this.scene, this.camera
+      );
+    },
+    controls: function () {
+      this.controls = new TrackballControls(
+        this.camera, this.renderer.domElement
+      );
+
+      this.controls.dynamicDampingFactor = 0.1;
+      const ALT_KEY = 18, CTRL_KEY = 17, CMD_KEY = 91;
+      this.controls.keys = [ALT_KEY, CTRL_KEY, CMD_KEY];
+
+      this.controls.minDistance = 2 * this.zoomStep;
+      this.controls.maxDistance = 14 * this.zoomStep;
+
+      this.controls.mouseButtons = {
+        LEFT: THREE.MOUSE.PAN,
+        MIDDLE: THREE.MOUSE.ZOOM,
+        RIGHT: THREE.MOUSE.ROTATE,
+      };
+
+      this.renderer.domElement.addEventListener(
+        "wheel", this.onWheel, false  // zoom event
+      );
+    },
+    animate: function () {
+      requestAnimationFrame(this.animate);
+      this.controls.update(); TWEEN.update();
+      this.renderScene();
+    },
+    getTexture: function (entry) {
+      const loader = new THREE.TextureLoader()
+      
+      return new Promise((resolve, reject) => {
+        loader.load(
+          entry.path, texture => resolve(texture),
+          undefined, error => reject(error)
+        )
+      })
+    },
+    addMesh: function (entry, type) {
+      this.getTexture(entry).then(texture => {
+        let width = texture.image.width, 
+            height = texture.image.height,
+            [x, y, z] = entry.coordinates;
+
+        if (type == "cylinder") {
+          texture.wrapS = THREE.ClampToEdgeWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+
+          if (width > height) {
+            texture.repeat.set(height / width, 1);
+            texture.offset.x = 0.5 * (1 - height / width);
+          } else {
+            texture.repeat.set(1, width / height);
+            texture.offset.y = 0.5 * (1 - width / height);
+          }
+
+          var geometry = new THREE.CylinderBufferGeometry(
+            this.meshSize, this.meshSize, 0.05, 48
+          );
+        } else if (type == "plane") {
+          if (width > height) {
+            height /= width / this.meshSize; 
+            width = this.meshSize;
+          } else {
+            width /= height / this.meshSize; 
+            height = this.meshSize;
+          }
+
+          var geometry = new THREE.BoxBufferGeometry(
+            width, height, 0.05, 1, 1, 1
+          );
+        }
+
+        let material = new THREE.MeshBasicMaterial({map: texture});
+        let mesh = new THREE.Mesh(geometry, material);
+
+        mesh.position.setX((x - 0.5) * this.canvasSize);
+        mesh.position.setY((y - 0.5) * this.canvasSize);
+
+        if (z != undefined) {
+          mesh.position.setZ((z - 0) * this.canvasSize);
+        }
+
+        if (type == "cylinder") {
+          mesh.rotation.set(Math.PI / 2, Math.PI / 2, 0);
+        }
+
+        mesh.entry = entry; 
+        mesh.cursor = "pointer";
+        mesh.on("click", this.onClick);
+
+        this.scene.add(mesh);
+      });
+    },
+    getSize: function() {
+      let width = document.querySelector(".umap").clientWidth;
+      let height = document.querySelector(".umap").clientHeight;
+
+      return [width, height];
+    },
+    renderScene: function () {
+      this.renderer.render(this.scene, this.camera);
+    },
+    resetCamera: function (x, y, z) {
+      let position = {x: x, y: y, z: z};
+
+      new TWEEN.Tween(this.camera.position)
+        .to(position, 750)
+        .easing(TWEEN.Easing.Quadratic.In)
+        .onComplete(function() {
+          this.camera.position.copy(position);
+        }.bind(this))
+        .start();
+    },
+    resetControls: function (x, y, z) {
+      let position = {x: x, y: y, z: z};
+
+      new TWEEN.Tween(this.controls.target)
+        .to(position, 750)
+        .easing(TWEEN.Easing.Quadratic.In)
+        .onComplete(function() {
+          this.controls.target.copy(position);
+          this.controls.update();
+        }.bind(this))
+        .start();
+    },
+    resetScene: function () {
+      while (this.scene.children.length) {
+        this.scene.remove(this.scene.children[0]);
+      }
+
+      if (this.entries != undefined) {
+        for (let i = 0; i < this.entries.length; i++) {
+          if (this.entries[i].coordinates.length > 1) {
+            this.addMesh(this.entries[i], "plane");
+          }
+        }
+      }
+    },
+    onResize: function () {
+      if (document.querySelector(".umap") != null) {
+        let [width, height] = this.getSize();
+
+        this.camera.aspect = width / height;
+        this.camera.updateProjectionMatrix();
+
+        this.renderer.setSize(width, height);
+      }
+    },
+    onClick: function (event) {
+      if (event.data.originalEvent.detail === 1) {
+        this.timer = setTimeout(function () {
+          let entry = event.data.target.entry;
+
+          this.$store.commit("updateSelected", entry);
+          this.$store.commit("updateDialog", "detail");
+        }.bind(this), 250);
+      } else {
+        clearTimeout(this.timer); TWEEN.removeAll();
+
+        let x = event.data.target.position.x,
+            y = event.data.target.position.y,
+            z = event.data.target.position.z;
+
+        this.resetCamera(x, y, z + 1.5 * this.meshSize);
+        this.resetControls(x, y, 0);
+      }
+    },
+    onWheel: function (event) {
+      setTimeout(function () {
+        let z = this.camera.position.z / this.zoomStep;
+        let zoomLevel = -Math.floor(z - this.nStep);
+
+        this.$store.commit("updateZoomLevel", zoomLevel);
+      }.bind(this), 250);
+    },
+  },
+  watch: {
+    entries: function () {
+      this.resetCamera(0, 0, 12 * this.zoomStep); 
+      this.resetControls(0, 0, 0); 
+      this.resetScene();
+    },
+    meshSize: function () {
+      this.resetScene();
+    },
+    zoomLevel: function (value) {
+      // TODO: zoom in or out on button click
+    },
+  },
+});
+
 Vue.component("gallery", {
   template: `
     <div class="grid-view open pa-1">
@@ -264,7 +521,9 @@ Vue.component("gallery-item", {
 
       <div class="overlay">
         <div class="view">
-          <detail-view :key="entry.id" :entry="entry" :isWide="isWide"/>
+          <v-btn icon @click="openDetail" title="View object">
+            <v-icon color="white" class="shadow">mdi-eye-outline</v-icon>
+          </v-btn>
         </div>
 
         <div class="meta">
@@ -277,7 +536,6 @@ Vue.component("gallery-item", {
   data: function () {
     return {
       disabled: false,
-      isWide: true,
     };
   },
   computed: {
@@ -309,23 +567,17 @@ Vue.component("gallery-item", {
     onError: function (element) {
       this.disabled = true;
     },
-  },
-  mounted: function () {
-    var img = this.$el.querySelector("img");
-    this.isWide = img.naturalWidth > 1.25 * img.naturalHeight;
+    openDetail: function () {
+      this.$store.commit("updateSelected", this.entry);
+      this.$store.commit("updateDialog", "detail");
+    }
   },
 });
 
 Vue.component("detail-view", {
   template: `
     <v-dialog v-model="dialog" max-width="800px">
-      <template v-slot:activator="{ attrs, on: dialog }">
-        <v-btn icon v-bind="attrs" v-on="dialog" title="View object">
-          <v-icon color="white" class="shadow">mdi-eye-outline</v-icon>
-        </v-btn>
-      </template>
-
-      <v-card>
+      <v-card v-if="entry!=null">
         <div class="img-wrapper">
           <v-img 
             :lazy-src="entry.path" class="grey lighten-1" 
@@ -364,7 +616,7 @@ Vue.component("detail-view", {
           </div>
         </v-card-title> 
 
-        <v-card-text v-if="dialog">
+        <v-card-text>
           <v-chip v-if="date" class="mr-1 mb-1" :title="date">
             <v-icon left>mdi-clock-time-four-outline</v-icon>{{date}}
           </v-chip>
@@ -380,7 +632,6 @@ Vue.component("detail-view", {
         </v-card-text>
       </v-card>
     </v-dialog>`,
-  props: ["entry", "isWide"],
   data: function () {
     return {
       dialog: false,
@@ -418,6 +669,16 @@ Vue.component("detail-view", {
     title: function () {
       return this.entry.meta.title.split(' ');
     },
+    entry: function () {
+      return this.$store.state.selected;
+    },
+    isWide: function () {
+      // TODO
+      return false;
+    },
+    updateDialog: function () {
+      return this.$store.state.dialog == "detail";
+    },
   },
   methods: {
     searchArtist(value) {
@@ -427,6 +688,14 @@ Vue.component("detail-view", {
     close() {
       this.dialog = false;
     }
+  },
+  watch: {
+    updateDialog: function (value) {
+      if (value) {
+        this.dialog = value;  // open dialog
+        this.$store.commit("updateDialog", null);
+      }
+    },
   },
 });
 
@@ -621,7 +890,7 @@ Vue.component("search-bar", {
       this.search[index]["weights"] = weights;
     },
     searchImage() {
-      this.$store.commit("toggleDialogSearchImage");
+      this.$store.commit("updateDialog", "search");
     },
   },
   watch: {
@@ -656,7 +925,7 @@ Vue.component("search-bar", {
 
 Vue.component("search-image", {
   template: `
-    <v-dialog v-model="dialog" max-width="350px" persistent>
+    <v-dialog v-model="dialog" max-width="350px">
       <v-card>
         <v-card-title>
           Image search
@@ -714,12 +983,12 @@ Vue.component("search-image", {
   },
   computed: {
     updateDialog: function () {
-      return this.$store.state.dialog_search_image;
+      return this.$store.state.dialog == "search";
     },
   },
   methods: {
     close() {
-      this.$store.commit("toggleDialogSearchImage");
+      this.dialog = false;
     },
     search() {
       this.$store.dispatch("upload", {
@@ -731,7 +1000,10 @@ Vue.component("search-image", {
   },
   watch: {
     updateDialog: function (value) {
-      this.dialog = value;
+      if (value) {
+        this.dialog = value;  // open dialog
+        this.$store.commit("updateDialog", null);
+      }
     },
   },
 });
@@ -897,7 +1169,7 @@ Vue.component("layout-settings", {
 
       <v-item-group v-model="selected" mandatory>
         <v-row class="px-2">
-          <v-col v-for="item in items" :key="item.id" @click="update" cols="12" md="6" class="pa-1">
+          <v-col v-for="(item, id) in items" :key="id" @click="update" cols="12" md="6" class="pa-1">
             <v-item v-slot="{ active, toggle }">
               <v-card
                 @click="toggle" :color="active ? 'primary' : 'grey lighten-3'"
@@ -910,43 +1182,80 @@ Vue.component("layout-settings", {
           </v-col>
         </v-row>
       </v-item-group>
+
+      <div v-if="mapping=='umap'">
+        <div class="mt-4 mb-3 ml-n4 mr-n3"><v-divider/></div>
+        <umap-settings/>
+      </div>
     </div>`,
   data: function () {
     return {
       selected: 0,
       items: [
         {
-          id: 1, height: 200, width: "auto", text: "Flexible",
+          height: 200, width: "auto", text: "Flexible",
           icon: "mdi-view-compact-outline", mapping: null,
         },
         {
-          id: 2, height: 200, width: 200, text: "Regular",
+          height: 200, width: 200, text: "Regular",
           icon: "mdi-view-comfy-outline", mapping: null,
         },
         {
-          id: 3, height: 200, width: 200, text: "Map",
-          icon: "mdi-group", mapping: "umap",
+          height: 200, width: 200, text: "Canvas",
+          icon: "mdi-vector-polyline", mapping: "umap",
         },
       ],
     };
   },
+  computed: {
+    mapping: function () {
+      return this.items[this.selected].mapping;
+    },
+  },
   methods: {
     update: function () {
-      var layout = {
+      let layout = {
         width: this.items[this.selected].width,
         height: this.items[this.selected].height,
-        mapping: this.items[this.selected].mapping,
+        mapping: this.mapping,
       };
 
-      // TODO STEFANIE: Feel free to use a watcher for layout mapping
-      // If mapping changes we have to trigger search again
-
       if (this.$store.state.layout.mapping != layout.mapping) {
+        // if mapping changes, trigger search again
         this.$store.commit("toggleSubmit");
+        this.$store.commit("updateZoomLevel", 0);
       }
-      this.$store.commit("updateLayout", layout);
 
+      this.$store.commit("updateLayout", layout);
     },
+  },
+})
+
+Vue.component("umap-settings", {
+  template: `
+    <div>
+      <div class="mb-2 text-subtitle-1">Image size</div>
+
+      <v-col cols="12" class="pa-0">
+        <v-slider 
+          v-model="meshSize" prepend-icon="mdi-image-size-select-large"
+          @change="process" step="0.1" min="1.0" max="5.0"
+        >
+          <template v-slot:append>
+            <v-text-field v-model="meshSize" class="mt-0 pt-0" type="number"></v-text-field>
+          </template>
+        </v-slider>
+      </v-col>
+    </div>`,
+  data: function () {
+    return {
+      meshSize: this.$store.state.meshSize,
+    }
+  },
+  methods: {
+    process: function () {
+      this.$store.commit("updateMeshSize", this.meshSize);
+    }
   },
 })
 
@@ -1161,39 +1470,46 @@ Vue.component("zoom-nav", {
       zoomOutEnabled: true,
     };
   },
+  computed: {
+    updateZoomLevel: function () {
+      return this.$store.state.zoomLevel;
+    },
+  },
   methods: {
     zoomIn() {
-      if (this.zoomLevel < 6) {
-        this.zoomOutEnabled = true;
+      if (this.zoomLevel < 7) {
         this.zoomLevel += 1;
-
-        if (this.zoomLevel == 5) {
-          this.zoomInEnabled = false;
-        } else {
-          this.zoomInEnabled = true;
-        }
-
-        this.update();
+        this.commit();
       }
     },
     zoomOut() {
-      if (this.zoomLevel > -6) {
-        this.zoomInEnabled = true;
+      if (this.zoomLevel > -7) {
         this.zoomLevel -= 1;
-
-        if (this.zoomLevel == -5) {
-          this.zoomOutEnabled = false;
-        } else {
-          this.zoomOutEnabled = true;
-        }
-
-        this.update();
+        this.commit();
       }
     },
-    update() {
+    enableZoom() {
+      this.zoomInEnabled = true;
+      this.zoomOutEnabled = true;
+
+      if (this.zoomLevel == 6) {
+        this.zoomInEnabled = false;
+      }
+
+      if (this.zoomLevel == -6) {
+        this.zoomOutEnabled = false;
+      }
+    },
+    commit() {
       this.$store.commit("updateZoomLevel", this.zoomLevel);
     },
   },
+  watch: {
+    updateZoomLevel: function (value) {
+      this.zoomLevel = value;
+      this.enableZoom();
+    }
+  }
 });
 
 var app = new Vue({
@@ -1209,12 +1525,20 @@ var app = new Vue({
       </v-app-bar>
 
       <v-main>
-        <gallery/>
+        <umap v-if="mapping=='umap'"/>
+        <gallery v-else/>
+
+        <detail-view/>
       </v-main>
 
-      <zoom-nav/>
+      <zoom-nav v-if="mapping!='umap'"/>
     </v-app>`,
   store,
+  computed: {
+    mapping: function () {
+      return this.$store.state.layout.mapping;
+    },
+  },
   mounted: function () {
     this.$store.commit("updateQuery", {
       name: "Landscape", group: "annotations",

@@ -302,3 +302,8 @@ main .v-image__image--contain,
   vertical-align: top;
   overflow: hidden;
 }
+
+.umap {
+  width: 100%;
+  height: 100%;
+}
