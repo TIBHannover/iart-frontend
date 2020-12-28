@@ -599,14 +599,14 @@ Vue.component("gallery-item", {
 
       this.$store.commit("toggleSubmit");
     },
-  },
-  mounted: function () {
-    var img = this.$el.querySelector("img");
-    this.isWide = img.naturalWidth > 1.25 * img.naturalHeight;
     openDetail: function () {
       this.$store.commit("updateSelected", this.entry);
       this.$store.commit("updateDialog", "detail");
     }
+  },
+  mounted: function () {
+    var img = this.$el.querySelector("img");
+    this.isWide = img.naturalWidth > 1.25 * img.naturalHeight;
   },
 });
 
