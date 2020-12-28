@@ -526,8 +526,6 @@ Vue.component("gallery-item", {
 
       <div class="overlay">
         <div class="view">
-          <detail-view :key="entry.id" :entry="entry" :isWide="isWide"/>
-
           <v-menu offset-y bottom right>
             <template v-slot:activator="{ attrs, on: menu }">
               <v-btn icon v-bind="attrs" v-on="menu" title="Search for similar objects">
@@ -603,10 +601,6 @@ Vue.component("gallery-item", {
       this.$store.commit("updateSelected", this.entry);
       this.$store.commit("updateDialog", "detail");
     }
-  },
-  mounted: function () {
-    var img = this.$el.querySelector("img");
-    this.isWide = img.naturalWidth > 1.25 * img.naturalHeight;
   },
 });
 
