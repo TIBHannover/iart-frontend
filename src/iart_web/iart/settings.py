@@ -24,8 +24,8 @@ SECRET_KEY = "wrmnr_)ffvihaem(^1vf4*&^n3mthvi-x$74kco07azh0-feb5"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-FORCE_SCRIPT_NAME = "/"
-# FORCE_SCRIPT_NAME = '/iart'
+# FORCE_SCRIPT_NAME = "/"
+FORCE_SCRIPT_NAME = '/iart/'
 
 ALLOWED_HOSTS = [
     "iart21.labs.tib.eu",
@@ -44,7 +44,7 @@ CSRF_COOKIE_HTTPONLY = False
 # Application definition
 
 INSTALLED_APPS = [
-    "iart_web.frontend",
+    "frontend",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -63,7 +63,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "iart_web.iart.urls"
+ROOT_URLCONF = "iart.urls"
 
 TEMPLATES = [
     {
@@ -81,7 +81,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "iart_web.iart.wsgi.application"
+WSGI_APPLICATION = "iart.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
@@ -138,3 +138,8 @@ MEDIA_URL = FORCE_SCRIPT_NAME + "media/"
 
 UPLOAD_ROOT = os.path.join("/data/1/iart/web/uploaded/")
 UPLOAD_URL = FORCE_SCRIPT_NAME + "uploaded/"
+
+GRPC_HOST = 'devbox1.research.tib.eu'
+GRPC_PORT = 50052
+
+INDEXER_PATH = "/tib/app/iart/indexer/src/"

@@ -14,6 +14,15 @@ from django.conf import settings
 from django.contrib import auth
 from django.views.decorators.http import require_http_methods
 
+# from iart_indexer.database.elasticsearch_database import ElasticSearchDatabase
+# from iart_indexer.database.elasticsearch_suggester import ElasticSearchSuggester
+
+import json
+
+if settings.INDEXER_PATH is not None:
+    sys.path.append(settings.INDEXER_PATH)
+    print(sys.path)
+
 import grpc
 from iart_indexer import indexer_pb2, indexer_pb2_grpc
 from iart_indexer.utils import meta_from_proto, classifier_from_proto, feature_from_proto, suggestions_from_proto
@@ -57,8 +66,14 @@ def autocomplete_view(request):
     # return Http404()
 
     try:
-        data = json.loads(request.body)
-    except:
+        body = request.body.decode('utf-8')
+    except (UnicodeDecodeError, AttributeError):
+        body = request.body
+        
+    try:
+        data = json.loads(body)
+    except Exception as e:
+        print("Search: JSON error: {}".format(e))
         return JsonResponse({"status": "error"})
 
     if "query" not in data:
@@ -67,10 +82,10 @@ def autocomplete_view(request):
 
     query = data["query"]
 
-    host = "localhost"
-    port = 50051
+    host = settings.GRPC_HOST #"localhost"
+    port = settings.GRPC_PORT # 50051
     channel = grpc.insecure_channel(
-        f"{host}:{port}",
+         "{}:{}".format(host, port),
         options=[
             ("grpc.max_send_message_length", 50 * 1024 * 1024),
             ("grpc.max_receive_message_length", 50 * 1024 * 1024),
@@ -90,20 +105,23 @@ def search_view(request):
     #
     # if not request.is_ajax():
     #     return Http404()
+    try:
+        body = request.body.decode('utf-8')
+    except (UnicodeDecodeError, AttributeError):
+        body = request.body
 
     try:
-        data = json.loads(request.body)
-        print(data)
-    except:
-        print("kein json")
+        data = json.loads(body)
+    except Exception as e:
+        print("Search: JSON error: {}".format(e))
         return JsonResponse({"status": "error"})
-
+        
     if "queries" not in data:
         return JsonResponse({"status": "error"})
-    host = "localhost"
-    port = 50051
+    host = settings.GRPC_HOST #"localhost"
+    port = settings.GRPC_PORT # 50051
     channel = grpc.insecure_channel(
-        f"{host}:{port}",
+         "{}:{}".format(host, port),
         options=[
             ("grpc.max_send_message_length", 50 * 1024 * 1024),
             ("grpc.max_receive_message_length", 50 * 1024 * 1024),
@@ -174,15 +192,20 @@ def search_result_view(request):
     #     return Http404()
 
     try:
-        data = json.loads(request.body)
-        print(data)
-    except:
-        print("kein json")
+        body = request.body.decode('utf-8')
+    except (UnicodeDecodeError, AttributeError):
+        body = request.body
+        
+    try:
+        data = json.loads(body)
+    except Exception as e:
+        print("Search: JSON error: {}".format(e))
         return JsonResponse({"status": "error"})
-    host = "localhost"
-    port = 50051
+
+    host = settings.GRPC_HOST #"localhost"
+    port = settings.GRPC_PORT # 50051
     channel = grpc.insecure_channel(
-        f"{host}:{port}",
+         "{}:{}".format(host, port),
         options=[
             ("grpc.max_send_message_length", 50 * 1024 * 1024),
             ("grpc.max_receive_message_length", 50 * 1024 * 1024),

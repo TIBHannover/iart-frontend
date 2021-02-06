@@ -16,6 +16,16 @@ Vue.use(Vuex);
 Vue.use(Vuetify);
 Vue.use(VueIntro);
 
+Vue.mixin({
+  data: function() {
+    return {
+      get url_static() {
+        return url_static;
+      }
+    }
+  }
+})
+
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -1608,7 +1618,7 @@ var app = new Vue({
     <v-app>
       <v-app-bar class="v-bar--underline" app flat>
         <v-app-bar-nav-icon class="mr-4"></v-app-bar-nav-icon>
-        <v-img src="static/img/logo.svg" class="mr-4" max-height="40" max-width="100" contain></v-img>
+        <v-img src="url_static +'/img/logo.svg'" class="mr-4" max-height="40" max-width="100" contain></v-img>
         
         <search-bar/><settings/><user-menu/>
         <progress-bar/>
