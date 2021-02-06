@@ -1,4 +1,4 @@
-# TODO
+import logging
 import sys
 import os
 import json
@@ -66,10 +66,10 @@ def autocomplete_view(request):
     # return Http404()
 
     try:
-        body = request.body.decode('utf-8')
+        body = request.body.decode("utf-8")
     except (UnicodeDecodeError, AttributeError):
         body = request.body
-        
+
     try:
         data = json.loads(body)
     except Exception as e:
@@ -82,10 +82,10 @@ def autocomplete_view(request):
 
     query = data["query"]
 
-    host = settings.GRPC_HOST #"localhost"
-    port = settings.GRPC_PORT # 50051
+    host = settings.GRPC_HOST  # "localhost"
+    port = settings.GRPC_PORT  # 50051
     channel = grpc.insecure_channel(
-         "{}:{}".format(host, port),
+        "{}:{}".format(host, port),
         options=[
             ("grpc.max_send_message_length", 50 * 1024 * 1024),
             ("grpc.max_receive_message_length", 50 * 1024 * 1024),
@@ -106,7 +106,7 @@ def search_view(request):
     # if not request.is_ajax():
     #     return Http404()
     try:
-        body = request.body.decode('utf-8')
+        body = request.body.decode("utf-8")
     except (UnicodeDecodeError, AttributeError):
         body = request.body
 
@@ -115,13 +115,14 @@ def search_view(request):
     except Exception as e:
         print("Search: JSON error: {}".format(e))
         return JsonResponse({"status": "error"})
-        
+
     if "queries" not in data:
         return JsonResponse({"status": "error"})
-    host = settings.GRPC_HOST #"localhost"
-    port = settings.GRPC_PORT # 50051
+    host = settings.GRPC_HOST  # "localhost"
+    port = settings.GRPC_PORT  # 50051
+    print(f"Search: GRPC {host}:{port}")
     channel = grpc.insecure_channel(
-         "{}:{}".format(host, port),
+        "{}:{}".format(host, port),
         options=[
             ("grpc.max_send_message_length", 50 * 1024 * 1024),
             ("grpc.max_receive_message_length", 50 * 1024 * 1024),
@@ -192,20 +193,20 @@ def search_result_view(request):
     #     return Http404()
 
     try:
-        body = request.body.decode('utf-8')
+        body = request.body.decode("utf-8")
     except (UnicodeDecodeError, AttributeError):
         body = request.body
-        
+
     try:
         data = json.loads(body)
     except Exception as e:
         print("Search: JSON error: {}".format(e))
         return JsonResponse({"status": "error"})
 
-    host = settings.GRPC_HOST #"localhost"
-    port = settings.GRPC_PORT # 50051
+    host = settings.GRPC_HOST  # "localhost"
+    port = settings.GRPC_PORT  # 50051
     channel = grpc.insecure_channel(
-         "{}:{}".format(host, port),
+        "{}:{}".format(host, port),
         options=[
             ("grpc.max_send_message_length", 50 * 1024 * 1024),
             ("grpc.max_receive_message_length", 50 * 1024 * 1024),
@@ -231,7 +232,7 @@ def search_result_view(request):
             entry["coordinates"] = list(e.coordinates)
 
             entry["path"] = media_url_to_preview(e.id)
-
+            print(entry)
             entries.append(entry)
         return JsonResponse({"status": "ok", "entries": entries})
     except grpc.RpcError as e:

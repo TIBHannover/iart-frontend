@@ -20,6 +20,7 @@ Vue.mixin({
   data: function() {
     return {
       get url_static() {
+        
         return url_static;
       }
     }
@@ -559,8 +560,8 @@ Vue.component("gallery-item", {
         </div>
 
         <div class="meta">
-          <div v-if="entry.meta.title" class="text-subtitle-1" :title="entry.meta.title">{{entry.meta.title}}</div>
-          <div v-if="entry.meta.artist_name" class="text-caption" :title="entry.meta.artist_name">{{entry.meta.artist_name}}</div>
+          <div v-if="title" class="text-subtitle-1" :title="title">{{title}}</div>
+          <div v-if="artist" class="text-caption" :title="artist">{{artist}}</div>
         </div>
       </div>
     </div>`,
@@ -571,6 +572,24 @@ Vue.component("gallery-item", {
     };
   },
   computed: {
+    title: function() {
+      var title = [] 
+      this.entry.meta.forEach(element => {
+        if(element.name == "title"){
+          title.push(element.value_str)
+        }
+      });
+      return title.join(', ')
+    },
+    artist: function(){
+      var artist = [] 
+      this.entry.meta.forEach(element => {
+        if(element.name == "artist_name"){
+          artist.push(element.value_str)
+        }
+      });
+      return artist.join(', ')
+    },
     updateHeight: function () {
       var height = this.$store.state.layout.height;
 
@@ -639,7 +658,7 @@ Vue.component("detail-view", {
 
         <v-card-title class="mb-2 mr-16">
           <div class="text-h5 max-w">
-            <span v-if="!entry.meta.title">No title</span>
+            <span v-if="!title">No title</span>
 
             <span v-else v-for="word in title">
               <detail-view-menu :item="word" type="meta" @closeDialog="close"/>
@@ -647,13 +666,13 @@ Vue.component("detail-view", {
           </div>
 
           <div class="text-h6 max-w font-weight-regular grey--text mt-1">
-            <span v-if="!entry.meta.artist_name">Unknown</span>
+            <span v-if="!artist">Unknown</span>
 
             <span v-else>
-              {{entry.meta.artist_name}}
+              {{artist}}
 
               <v-btn 
-                icon @click="searchArtist(entry.meta.artist_name)" class="ml-1" 
+                icon @click="searchArtist(artist)" class="ml-1" 
                 title="Search for the artist" depressed small
               >
                 <v-icon size="20">mdi-link-variant</v-icon>
@@ -684,21 +703,41 @@ Vue.component("detail-view", {
     };
   },
   computed: {
+    title: function() {
+      var title = [] 
+      this.entry.meta.forEach(element => {
+        if(element.name == "title"){
+          title.push(element.value_str)
+        }
+      });
+      title = title.join(', ')
+      title = title.split(' ');
+      return title
+    },
+    artist: function(){
+      var artist = [] 
+      this.entry.meta.forEach(element => {
+        if(element.name == "artist_name"){
+          artist.push(element.value_str)
+        }
+      });
+      return artist.join(', ')
+    },
     tags: function () {
       var tags = [];
-
+      var count = 0
       for (let i = 0; i < this.entry.classifier.length; i++) {
         var classifier = this.entry.classifier[i];
 
         for (let j = 0; j < classifier.annotations.length; j++) {
           tags.push({
-            id: j, disable: classifier.annotations[j].value < 0.6,
+            id: count, disable: classifier.annotations[j].value < 0.6,
             name: capitalize(classifier.annotations[j].name),
           });
+          count += 1;
         }
-
-        return tags;
       }
+      return tags;
     },
     date: function () {
       var year_min = this.entry.meta.year_min,
@@ -711,9 +750,6 @@ Vue.component("detail-view", {
 
       if (year_min) return year_min;
       if (year_max) return year_max;
-    },
-    title: function () {
-      return this.entry.meta.title.split(' ');
     },
     entry: function () {
       return this.$store.state.selected;

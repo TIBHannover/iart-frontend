@@ -25,7 +25,7 @@ SECRET_KEY = "wrmnr_)ffvihaem(^1vf4*&^n3mthvi-x$74kco07azh0-feb5"
 DEBUG = True
 
 # FORCE_SCRIPT_NAME = "/"
-FORCE_SCRIPT_NAME = '/iart/'
+FORCE_SCRIPT_NAME = "/iart/"
 
 ALLOWED_HOSTS = [
     "iart21.labs.tib.eu",
@@ -134,12 +134,20 @@ STATIC_URL = FORCE_SCRIPT_NAME + "static/"
 # MEDIA_ROOT = os.path.join(os.path.dirname(__file__), "..", "media")
 
 MEDIA_ROOT = os.path.join("/data/1/iart/web/media/")
-MEDIA_URL = FORCE_SCRIPT_NAME + "media/"
 
 UPLOAD_ROOT = os.path.join("/data/1/iart/web/uploaded/")
+
+GRPC_HOST = "localhost"
+GRPC_PORT = 50051
+
+INDEXER_PATH = "/home/springsteinm/projects/iart/indexer/src/"
+
+
+try:
+    from .user_settings import *
+
+except:
+    pass
+
+MEDIA_URL = FORCE_SCRIPT_NAME + "media/"
 UPLOAD_URL = FORCE_SCRIPT_NAME + "uploaded/"
-
-GRPC_HOST = 'devbox1.research.tib.eu'
-GRPC_PORT = 50052
-
-INDEXER_PATH = "/tib/app/iart/indexer/src/"
