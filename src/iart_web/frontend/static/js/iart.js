@@ -172,7 +172,7 @@ const store = new Vuex.Store({
                   // reference: this.$store.state.selected
                 });
               }.bind(that),
-              1000
+              200
             );
 
             context.commit("updateSearch", {
