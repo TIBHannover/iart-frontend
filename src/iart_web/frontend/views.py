@@ -100,6 +100,110 @@ def autocomplete_view(request):
 
     return JsonResponse(context)
 
+def list_feature_view(request):
+
+    host = settings.GRPC_HOST  # "localhost"
+    port = settings.GRPC_PORT  # 50051
+
+    channel = grpc.insecure_channel(
+        "{}:{}".format(host, port),
+        options=[
+            ("grpc.max_send_message_length", 50 * 1024 * 1024),
+            ("grpc.max_receive_message_length", 50 * 1024 * 1024),
+        ],
+    )
+    stub = indexer_pb2_grpc.IndexerStub(channel)
+    request = indexer_pb2.AggregateRequest(size=10, type='count', part='feature')
+    response = stub.aggregate(request)
+
+    return JsonResponse({"status": "ok", "features": [x.key for x in response.field if x.int_val > 0]})
+
+def aggregate_view(request):
+    #
+    # if not request.is_ajax():
+    #     return Http404()
+    try:
+        body = request.body.decode("utf-8")
+    except (UnicodeDecodeError, AttributeError):
+        body = request.body
+
+    try:
+        data = json.loads(body)
+    except Exception as e:
+        print("Search: JSON error: {}".format(e))
+        return JsonResponse({"status": "error"})
+
+    if "queries" not in data:
+        return JsonResponse({"status": "error"})
+
+    host = settings.GRPC_HOST  # "localhost"
+    port = settings.GRPC_PORT  # 50051
+
+    channel = grpc.insecure_channel(
+        "{}:{}".format(host, port),
+        options=[
+            ("grpc.max_send_message_length", 50 * 1024 * 1024),
+            ("grpc.max_receive_message_length", 50 * 1024 * 1024),
+        ],
+    )
+    stub = indexer_pb2_grpc.IndexerStub(channel)
+    request = indexer_pb2.AggregateRequest()
+
+    for q in data["queries"]:
+        print(q)
+
+        if "type" in q and q["type"] is not None:
+            type_req = q["type"]
+            if not isinstance(type_req, str):
+                return JsonResponse({"status": "error"})
+
+            term = request.terms.add()
+            if type_req.lower() == "meta":
+                term = request.terms.add()
+                term.meta.query = q["query"]
+            if type_req.lower() == "annotations":
+                term = request.terms.add()
+                term.classifier.query = q["query"]
+                request.sorting = "classifier"
+
+        elif "query" in q and q["query"] is not None:
+            term = request.terms.add()
+            term.meta.query = q["query"]
+
+            term = request.terms.add()
+            term.classifier.query = q["query"]
+
+        if "reference" in q and q["reference"] is not None:
+            request.sorting = "feature"
+
+            term = request.terms.add()
+            # TODO use a database for this case
+            if os.path.exists(upload_path_to_image(q["reference"])):
+                term.feature.image.encoded = open(upload_path_to_image(q["reference"]), "rb").read()
+            else:
+                term.feature.image.id = q["reference"]
+
+            if "features" in q:
+                plugins = q["features"]
+                if not isinstance(q["features"], (list, set)):
+                    plugins = [q["features"]]
+                for p in plugins:
+                    for k, v in p.items():
+                        plugins = term.feature.plugins.add()
+                        plugins.name = k.lower()
+                        plugins.weight = v
+
+    if "sorting" in data and data["sorting"] == "random":
+        request.sorting = "random"
+
+    if "mapping" in data and data["mapping"] == "umap":
+        request.mapping = "umap"
+
+    response = stub.search(request)
+
+    return JsonResponse({"status": "ok", "job_id": response.id})
+
+
 
 def search_view(request):
     #

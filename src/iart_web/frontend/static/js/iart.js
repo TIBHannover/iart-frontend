@@ -46,9 +46,10 @@ const store = new Vuex.Store({
     },
 
     weights: {
-      yuv_histogram_feature: 0.2,
-      byol_embedding_feature: 0.7,
-      image_net_inception_feature: 0.4,
+      yuv_histogram_feature: 0.0,
+      byol_embedding_feature: 0.0,
+      image_net_inception_feature: 0.0,
+      clip_embedding_feature: 1.0,
     },
 
     query: {},
@@ -66,6 +67,8 @@ const store = new Vuex.Store({
     },
 
     dialog: false,
+
+    feature_list: [],
   },
   mutations: {
     updateSuggestions(state, suggestions) {
@@ -106,6 +109,10 @@ const store = new Vuex.Store({
     },
     updateDialog(state, dialog) {
       state.dialog = dialog;
+    },
+    updateFeatureList(state, feature_list) {
+      state.feature_list = feature_list;
+      console.log(feature_list);
     },
     toggleSubmit(state) {
       state.submit = !state.submit;
@@ -225,6 +232,33 @@ const store = new Vuex.Store({
           console.log(error);
         });
     },
+    listFeatures(context, parameter) {
+      console.log('FOOBAR');
+      var that = this;
+
+      fetch(url_list_features, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrftoken,
+          "Content-Type": "application/json",
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      })
+        .then(function (res) {
+          return res.json();
+        })
+        .then(function (data) {
+          if (data.status == "ok") {
+            context.commit("updateFeatureList", data.features);
+          } else {
+            console.log("error");
+          }
+        })
+        .catch((error) => {
+          console.log("error");
+          console.log(error);
+        });
+    },
     listSearchResults(context, parameter) {
       fetch(url_search_result, {
         method: "POST",
@@ -262,6 +296,7 @@ const store = new Vuex.Store({
         });
     },
   },
+
 });
 
 
@@ -1274,6 +1309,10 @@ Vue.component("feature-slider", {
           icon: "mdi-earth",
           title: "ImageNet Features"
         },
+        clip_embedding_feature: {
+          icon: "mdi-image-outline",
+          title: "CLIP Features"
+        },
       },
       value: this.weight * 100,
     };
@@ -1679,6 +1718,8 @@ var app = new Vue({
     this.$store.commit("updateQuery", {
       name: "Landscape", group: "annotations",
     });
+    this.$store.dispatch("listFeatures");
+      
 
     this.$store.commit("toggleSubmit");
     this.$intro().start();
