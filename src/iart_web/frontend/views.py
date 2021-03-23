@@ -100,6 +100,7 @@ def autocomplete_view(request):
 
     return JsonResponse(context)
 
+
 def list_feature_view(request):
 
     host = settings.GRPC_HOST  # "localhost"
@@ -113,10 +114,11 @@ def list_feature_view(request):
         ],
     )
     stub = indexer_pb2_grpc.IndexerStub(channel)
-    request = indexer_pb2.AggregateRequest(size=10, type='count', part='feature')
+    request = indexer_pb2.AggregateRequest(size=10, type="count", part="feature")
     response = stub.aggregate(request)
 
     return JsonResponse({"status": "ok", "features": [x.key for x in response.field if x.int_val > 0]})
+
 
 def aggregate_view(request):
     #
@@ -202,7 +204,6 @@ def aggregate_view(request):
     response = stub.search(request)
 
     return JsonResponse({"status": "ok", "job_id": response.id})
-
 
 
 def search_view(request):

@@ -1,20 +1,86 @@
 version: "2.0"
 services:
+  indexer:
+   
+    image: iart/indexer
+    build: indexer
+    
+    network_mode: "host"
+    volumes:
+      - type: bind
+        # TODO change path
+        source: /data/iart/web/models/
+        target: /models
+
+      - type: bind
+        # TODO change path
+        source: /data/iart/web/cache/
+        target: /cache
+        
+      - type: bind
+        # TODO change path
+        source: /data/iart/web/faiss/
+        target: /faiss
+
+      - type: bind
+        source: ./indexer/config.json
+        target: /config.json
+  redisai:
+    build: 
+      context: https://github.com/RedisAI/RedisAI.git #2c3239e
+    network_mode: "host"
+
+  elasticsearch:
+    image: elasticsearch:7.9.1
+
+    network_mode: "host"
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+
+    volumes:
+      - type: bind
+        # TODO change path
+        source: /data/iart/web/elasticsearch/data/
+        target: /usr/share/elasticsearch/data
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65530
+        hard: 65530
+  mysql:
+    image: mysql:8.0.23
+    environment:
+      - MYSQL_ROOT_PASSWORD=FnwpP50M
   web:
     image: iart/web
     build:
       context: .
-    ports:
-      - 8000:8000
-    # networks:
-    #   - indexer_net
-
+  
     network_mode: "host"
     volumes:
       - type: bind
-        source: /home/matthias/tmp/indexer/data/images/
+        # TODO change path
+        source: /data/iart/web/media/
         target: /media
-# networks:
-#   indexer_net:
-#     external: true
-#     name: indexer_network
+
+    volumes: 
+      - type: bind
+        # TODO change path
+        source: /data/iart/web/upload/
+        target: /upload
+
+    volumes:
+      - type: bind
+        # TODO change path
+        source: ./src/iart_web
+        target: /iart_web
+
+    working_dir: /iart_web
+    environment:
+      - POETRY_VIRTUALENVS_CREATE=False
+      - PYTHONPATH=/
+
+    command: python3 manage.py runserver  0.0.0.0:8000
