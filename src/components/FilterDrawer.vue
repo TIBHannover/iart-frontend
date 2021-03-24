@@ -1,0 +1,262 @@
+<template>
+  <v-navigation-drawer :value="value" @input="updateInput" width="350" app right hide-overlay disable-resize-watcher>
+    <v-toolbar flat class="v-bar--underline">
+      <v-toolbar-title>Refine</v-toolbar-title>
+
+      <div class="v-btn--absolute v-btn--right" style="position: absolute;">
+        <v-btn @click="removeAllFilters" title="Remove All Filters" icon>
+          <v-icon>mdi-trash-can-outline</v-icon>
+        </v-btn>
+
+        <v-btn @click="$emit('input', false)" class="ml-n2" icon>
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </div>
+    </v-toolbar>
+
+    <v-container class="ml-1 mt-n1">
+      <div v-for="(count, index) in counts" :key="index">
+        <label v-if="notEmpty(count.field)" class="v-label v-label--active theme--light ml-6">{{ count.field.replace('_', ' ') }}</label>
+
+        <v-autocomplete v-model="data[count.field]" item-value="key" :items="count.buckets" :label="count.field.replace('_', ' ')" :disabled="!count.buckets.length" :filter="filterAutocomplete" @click:clear="remove(-1, count.field)" class="mb-4" background-color="grey lighten-4" solo rounded hide-details hide-selected flat clearable multiple>
+          <template v-slot:item="{ on, item }">
+            <v-list-item v-on="on">
+              <v-list-item-content>
+                <v-list-item-title class="meta">
+                  <div :title="item.key">{{ item.key }}</div>
+                  <div class="ml-3" :title="item.doc_count+' objects'">({{ item.doc_count }})</div>
+                </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </template>
+
+          <template v-slot:selection="{ attrs, selected, item }">
+            <v-chip v-bind="attrs" :input-value="selected" @click:close="remove(item.key, count.field)" close>
+              <span :title="item.key">{{ item.key }}</span>
+            </v-chip>
+          </template>
+        </v-autocomplete>
+      </div>
+
+      <div class="date-range mb-4">
+        <v-layout row class="mx-6 ma-1">
+          <label class="v-input v-label v-label--active theme--light">Period</label>
+
+          <v-btn v-if="dateToggle" @click="dateToggle=false" title="Hide Period Filter" icon small>
+            <v-icon>mdi-eye-off-outline</v-icon>
+          </v-btn>
+          <v-btn v-else @click="dateToggle=true" title="Show Period Filter" icon small>
+            <v-icon>mdi-eye-outline</v-icon>
+          </v-btn>
+        </v-layout>
+
+        <v-range-slider v-if="dateToggle" v-model="dateRange" min="1000" max="2000" color="secondary" :disabled="!dateToggle" @end="commitDateRange" thumb-label hide-details>
+          <template v-slot:prepend>
+            <v-text-field :value="dateRange[0]" type="number" class="mt-0 pt-0" background-color="grey lighten-4" style="width: 85px" @change="$set(dateRange, 0, $event)" hide-details single-line rounded flat></v-text-field>
+          </template>
+
+          <template v-slot:append>
+            <v-text-field :value="dateRange[1]" type="number" class="mt-0 pt-0" background-color="grey lighten-4" style="width: 85px" @change="$set(dateRange, 1, $event)" hide-details single-line rounded flat></v-text-field>
+          </template>
+        </v-range-slider>
+      </div>
+
+      <div>
+        <label v-if="select" class="v-label v-label--active theme--light ml-6">Index</label>
+
+        <v-autocomplete v-model="select" :items="selectItems" label="Index" append-icon="mdi-autorenew" @click:append="renewIndex" background-color="grey lighten-4" solo rounded hide-details flat>
+          <template v-slot:item="{ on, item }">
+            <v-list-item v-on="on">
+              <v-list-item-content>
+                <v-list-item-title class="index">
+                  {{ item }}
+                </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </template>
+
+          <template v-slot:selection="{ attrs, selected, item }">
+            <v-chip v-bind="attrs" :input-value="selected">
+              <span class="index">{{ item }}</span>
+            </v-chip>
+          </template>
+        </v-autocomplete>
+      </div>
+    </v-container>
+  </v-navigation-drawer>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      data: {},
+      dateToggle: false,
+      dateRange: [1400, 1900],
+      select: this.$store.state.api.index,
+      selectItems: ['wikidata', 'rijksmuseum'],
+    };
+  },
+  props: ['value'],
+  methods: {
+    remove(value, field) {
+      this.$store.commit('removeFilter', { value, field });
+    },
+    removeAllFilters() {
+      this.$store.commit('removeAllFilters');
+    },
+    renewIndex() {
+      const params = { data: this.select, renew: true };
+      this.$store.dispatch('insert', params);
+    },
+    commitDateRange() {
+      this.$store.commit('updateDateRange', this.dateRange);
+    },
+    filterAutocomplete(item, queryText) {
+      const key = item.key.toLocaleLowerCase();
+      const query = queryText.toLocaleLowerCase();
+
+      return key.indexOf(query) > -1;
+    },
+    notEmpty(field) {
+      if (Object.prototype.hasOwnProperty.call(this.data, field)) {
+        if (this.data[field].length) {
+          return true;
+        }
+      }
+
+      return false;
+    },
+    updateInput() {
+      // TODO: outside directive (if mobile)
+      console.log(this.value);
+    },
+  },
+  computed: {
+    counts() {
+      return this.$store.state.api.counts.lst;
+    },
+    filters() {
+      return this.$store.state.api.filters;
+    },
+    updateDateToggle() {
+      return this.$store.state.api.dateRange.length;
+    },
+  },
+  watch: {
+    filters: {
+      handler(filters) {
+        this.data = filters;
+      },
+      deep: true,
+    },
+    data: {
+      handler(data) {
+        Object.keys(data).forEach((field) => {
+          data[field].forEach((value) => {
+            this.$store.commit('addFilter', { value, field });
+          });
+        });
+      },
+      deep: true,
+    },
+    dateToggle(value) {
+      if (value) {
+        this.$store.commit('updateDateRange', this.dateRange);
+      } else {
+        this.$store.commit('updateDateRange', []);
+      }
+    },
+    updateDateToggle(value) {
+      if (value === 0) {
+        this.dateToggle = false;
+      }
+    },
+    select(value) {
+      this.$store.commit('updateIndex', value);
+    },
+  },
+  created() {
+    const { dateRange } = this.$store.state.api;
+
+    if (dateRange.length) {
+      this.dateRange = dateRange;
+      this.dateToggle = true;
+    }
+
+    this.data = this.filters;
+  },
+};
+</script>
+
+<style>
+.v-navigation-drawer:not(.v-navigation-drawer--close) {
+  box-shadow: 0 8px 10px -5px rgb(0 0 0 / 20%), 0 16px 24px 2px rgb(0 0 0 / 14%), 0 6px 30px 5px rgb(0 0 0 / 12%);
+}
+
+.container > div > label {
+  font-size: 12px;
+}
+
+.date-range .row > label {
+  align-items: center;
+  font-size: 12px;
+}
+
+.date-range .v-input--switch {
+  margin-top: 0;
+  padding-top: 0;
+  z-index: 1;
+}
+
+.date-range .v-input--switch .v-input--switch__thumb {
+    color: #eee;
+}
+
+.v-select__slot label, .container > div > label {
+  text-transform: capitalize;
+}
+
+.v-select__slot .v-chip__content > span  {
+  text-overflow: ellipsis;
+  max-width: 160px;
+  overflow: hidden;
+}
+
+.v-select__selections {
+  margin: 4px 0;
+}
+
+.v-menu__content {
+  background-color: #fff;
+}
+
+.v-menu__content .v-list-item__title {
+  display: flex;
+  line-height: 1.5;
+  white-space: inherit;
+}
+
+.v-menu__content .v-list-item__title.meta > div:first-child {
+  max-width: 200px;
+}
+
+.v-menu__content .v-list-item__title.meta > div:last-child {
+  text-align: right;
+  flex-grow: 1;
+  color: #bbb;
+}
+
+.v-menu__content .v-list-item__title.index, .v-chip__content > .index  {
+  text-transform: capitalize;
+}
+
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+</style>
