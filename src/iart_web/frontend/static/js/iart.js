@@ -721,8 +721,17 @@ Vue.component("detail-view", {
             <v-icon left>mdi-clock-time-four-outline</v-icon>{{date}}
           </v-chip>
 
+          
           <v-chip 
-            v-for="tag in tags" :key="tag.id" class="mr-1 mb-1" 
+            v-for="anno in annotations" :key="'anno'+anno.id" class="mr-1 mb-1"  outlined
+          >
+            <detail-view-menu :item="anno.name" type="meta" @closeDialog="close"/>
+          </v-chip>
+
+          
+
+          <v-chip 
+            v-for="tag in tags" :key="'tag'+tag.id" class="mr-1 mb-1" 
             :text-color="tag.disable ? 'grey lighten-1' : ''" outlined
           >
             <span :title="tag.name">{{tag.name}}</span>
@@ -742,7 +751,9 @@ Vue.component("detail-view", {
       var title = [] 
       this.entry.meta.forEach(element => {
         if(element.name == "title"){
-          title.push(element.value_str)
+          if(!title.includes(element.value_str)){
+            title.push(element.value_str);
+          }
         }
       });
       title = title.join(', ')
@@ -775,9 +786,20 @@ Vue.component("detail-view", {
       return tags;
     },
     date: function () {
-      var year_min = this.entry.meta.year_min,
-        year_max = this.entry.meta.yaer_max;
 
+      var year_min = null; 
+      this.entry.meta.forEach(element => {
+        if(element.name == "year_min"){
+          year_min = element.value_str;
+        }
+      });
+
+      var year_max = null; 
+      this.entry.meta.forEach(element => {
+        if(element.name == "year_max"){
+          year_max =element.value_str;
+        }
+      });
       if (year_min && year_max) {
         if (year_min == year_max) return year_min;
         return year_min + "–" + year_max;
@@ -785,6 +807,28 @@ Vue.component("detail-view", {
 
       if (year_min) return year_min;
       if (year_max) return year_max;
+    },
+    annotations: function () {
+      var TAGS_ALLOW = ['medium', 'perspective'];
+      var tags = [];
+      var tags_name = [];
+      var count = 0
+
+      this.entry.meta.forEach(element => {
+        if(TAGS_ALLOW.includes(element.name)){
+          if(!tags_name.includes(element.value_str)){
+            tags.push({
+              id: count,
+              name: capitalize(element.value_str),
+            });
+            tags_name.push(element.value_str);
+            count += 1;
+          }
+        }
+      });
+      console.log(tags);
+      return tags;
+
     },
     entry: function () {
       return this.$store.state.selected;
@@ -1608,7 +1652,7 @@ Vue.component("progress-bar", {
   template: `
     <v-progress-linear 
       :style="loading? 'opacity: 1;' : 'opacity: 0'" 
-      color="primary" absolute bottom indeterminate
+      color="primary" absolute bottom indeterminate height="8"
     ></v-progress-linear>`,
   data: function () {
     return {
@@ -1699,7 +1743,8 @@ var app = new Vue({
         <progress-bar/>
       </v-app-bar>
 
-      <v-main>
+      <v-main 
+      :style="loading? 'opacity: 0;' : 'opacity: 1'" >
         <umap v-if="mapping=='umap'"/>
         <gallery v-else/>
 
@@ -1712,6 +1757,9 @@ var app = new Vue({
   computed: {
     mapping: function () {
       return this.$store.state.layout.mapping;
+    },
+    loading: function () {
+      return this.$store.state.search.status;
     },
   },
   mounted: function () {

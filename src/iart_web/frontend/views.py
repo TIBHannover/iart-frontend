@@ -381,5 +381,6 @@ def upload(request):
             )
 
         return JsonResponse({"status": "error"})
-    except:
+    except Exception as e:
+        print(e)
         return JsonResponse({"status": "error"})
