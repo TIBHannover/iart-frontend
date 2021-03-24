@@ -1,14 +1,8 @@
-FROM node:10.16.0-alpine as build-stage
+FROM nginx:1.16.1-alpine
 
-WORKDIR /app
-COPY package*.json ./
-RUN yarn
-COPY . .
-RUN npm run build
-
-FROM nginx:1.16.1-alpine as production-stage
-
-COPY --from=build-stage /app/dist /usr/share/nginx/html
+RUN apk add --update npm
+COPY ./default.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
+WORKDIR /web
 
 CMD ["nginx", "-g", "daemon off;"]
