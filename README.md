@@ -8,49 +8,81 @@
 
 ## Installation 
 
-```
+The first step is to clone the project and load all submodules:
+
+```sh
 git clone git@git.tib.eu:iart/web.git
 cd web
 git submodule init
 git submodule update
+
 ```
+
+To ensure that the data is retained after the container is finished, local folders must be created and added to the docker-compose.yml file.
+
+```sh
+# Local cache for feature dumps
+mkdir -p <LOCAL_PATH>/cache 
+# Local path for import msg files
+mkdir -p <LOCAL_PATH>/dump  
+# Local path for the elasticsearch database
+mkdir -p <LOCAL_PATH>/elasticsearch  
+# Local path for public available images
+mkdir -p <LOCAL_PATH>/media  
+# Local path for deep learning models
+mkdir -p <LOCAL_PATH>/models
+# Local path for uploaded images from the user
+mkdir -p <LOCAL_PATH>/upload
+```
+
+Afterwards, the paths in the docker-compose.yml file should be adjusted, for example `/data/iart/web/media/ -> <LOCAL_PATH>/media`. Subsequently, the container can be built and started:
+
+
+```sh 
+sudo docker-compose build
+sudo docker-compose up
+```
+
 
 ## Import data from ARTigo
 
-Download images 
+### Download images 
 
-```
+```sh
 rsync -azv -e 'ssh -A -J springsteinm@exchange.research.tib.eu' springsteinm@devbox3.research.tib.eu:/nfs/data/iart/web/ ./
 tar -xf media.tar.gz -C ./
 ```
 
-Import Database
+### Import Database
 
-```
-npm install elasticdump --prefix ./    
+To import data, a snapshot (<DUMP_NAME>.msg) must be stored in the /dump folder and the following command must be executed while the application is running:
 
-./node_modules/elasticdump/bin/elasticdump \
-  --input=iart_mapping.json \
-  --output=http://localhost:9200/iart \
-  --type=mapping
-
-./node_modules/elasticdump/bin/elasticdump \
-  --input=iart.json \
-  --output=http://localhost:9200/iart \
-  --type=data
-
-```
-
-
-## Export
 
 ```sh
-elasticdump \
-  --input=http://production.es.com:9200/iart \
-  --output=/tmp/iart_web//my_index_mapping.json \
-  --type=mapping
-./elasticdump \
-  --input=http://production.es.com:9200/iart \
-  --output=/tmp/iart_web//my_index.json \
-  --type=data
+sudo docker-compose exec indexer python -m iart_indexer --m client --task load --dump_path /dump/<DUMP_NAME>.msg 
 ```
+
+
+### Create retrieval index
+
+To enable the image search, an index with the current database state must be created:
+
+
+```sh
+sudo docker-compose exec indexer python -m iart_indexer --m client --task build_indexer
+```
+
+### Generate autocompletion
+
+For the autocomplete to work, it must also be regenerated:
+```sh
+sudo docker-compose exec indexer python -m iart_indexer --m client --task build_suggester
+```
+
+### Generete webpack
+
+```sh
+sudo docker-compose exec web npm install
+sudo docker-compose exec web npx webpack
+```
+

@@ -23,6 +23,12 @@ services:
         target: /faiss
 
       - type: bind
+        # TODO change path
+        source: /data/iart/web/dump/
+        target: /dump
+
+
+      - type: bind
         source: ./indexer/config.json
         target: /config.json
   redisai:
@@ -63,16 +69,13 @@ services:
     volumes:
       - type: bind
         # TODO change path
-        source: /data/iart/web/media/
+        source: /data/iart/web/collections/artigo/img/
+        # source: /data/iart/web/media/
         target: /media
-
-    volumes: 
       - type: bind
         # TODO change path
         source: /data/iart/web/upload/
         target: /upload
-
-    volumes:
       - type: bind
         # TODO change path
         source: ./src/iart_web
