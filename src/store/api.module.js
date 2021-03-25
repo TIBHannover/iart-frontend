@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import axios from '../plugins/axios';
+import config from '../../app.config';
 
 function keyInObj(key, obj) {
   return Object.prototype.hasOwnProperty.call(obj, key);
@@ -45,7 +46,7 @@ const api = {
           commit('toggleBackBtn');
         }
 
-        axios.post('/api/load', { params })
+        axios.post(`${config.API_LOCATION}/load`, { params })
           .then((res) => {
             const { results } = res.data;
 
@@ -64,7 +65,7 @@ const api = {
     insert({ commit }, params) {
       commit('updateLoading', true);
 
-      axios.post('/api/insert', { params })
+      axios.post(`${config.API_LOCATION}/insert`, { params })
         .catch((error) => {
           console.error(error);
         })
@@ -75,7 +76,7 @@ const api = {
     suggest({ commit }, params) {
       commit('updateLoading', true);
 
-      axios.post('/api/suggest', { params })
+      axios.post(`${config.API_LOCATION}/suggest`, { params })
         .catch((error) => {
           console.error(error);
         })
