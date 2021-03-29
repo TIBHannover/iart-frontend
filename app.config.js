@@ -1,3 +1,3 @@
 module.exports = {
-    API_LOCATION: 'http://localhos:8000/api'
+    API_LOCATION: 'http://localhost:8000'
 }

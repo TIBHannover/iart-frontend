@@ -25,6 +25,7 @@ const api = {
 
     prevParams: {},
     backBtn: false,
+    jobID: null,
   },
   actions: {
     load({ commit, dispatch, state }) {
@@ -49,18 +50,59 @@ const api = {
         axios.post(`${config.API_LOCATION}/load`, { params })
           .then((res) => {
             const { results } = res.data;
-
-            commit('updateHits', results.hits);
-            commit('updateCounts', results.counts);
+            console.log(res.data);
+            console.log(res.data.job_id);
+            // Check if we have to wait for the results
+            if (res.data.job_id !== undefined) {
+              commit('updateJobID', res.data.job_id);
+              setTimeout(() => this.dispatch('check_load'), 500);
+            } else {
+              commit('updateHits', results.hits);
+              // commit('updateCounts', results.counts);
+              commit('updateLoading', false);
+              window.scrollTo(0, 0);
+            }
           })
           .catch((error) => {
             console.error(error);
-          })
-          .finally(() => {
             commit('updateLoading', false);
-            window.scrollTo(0, 0);
           });
       }
+    },
+    check_load({ commit, dispatch, state }) {
+      // commit('updateLoading', true);
+      console.log('check_load');
+      const params = {
+        job_id: state.jobID,
+      };
+
+      if (!state.backBtn) {
+        dispatch('getState');
+      } else {
+        commit('toggleBackBtn');
+      }
+
+      console.log(params);
+      axios.post(`${config.API_LOCATION}/load`, { params })
+        .then((res) => {
+          // const { results } = res.data;
+          console.log(res.data);
+          console.log(res.data.job_id);
+          // Check if we have to wait for the results
+          if (res.data.job_id !== undefined) {
+            commit('jobID', res.data.job_id);
+            setTimeout(() => this.dispatch('check_load'), 500);
+          } else {
+            commit('updateHits', res.data.entries);
+            // commit('updateCounts', results.counts);
+            commit('updateLoading', false);
+            window.scrollTo(0, 0);
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+          commit('updateLoading', false);
+        });
     },
     insert({ commit }, params) {
       commit('updateLoading', true);
@@ -184,6 +226,11 @@ const api = {
     },
   },
   mutations: {
+    updateJobID(state, jobID) {
+      console.log('updateJobID');
+      console.log(jobID);
+      state.jobID = jobID;
+    },
     updateHits(state, hits) {
       state.hits = hits;
     },
