@@ -130,11 +130,12 @@ export default {
     updateInput() {
       // TODO: outside directive (if mobile)
       console.log(this.value);
+      
     },
   },
   computed: {
     counts() {
-      return this.$store.state.api.counts.lst;
+      return this.$store.state.api.counts;
     },
     filters() {
       return this.$store.state.api.filters;

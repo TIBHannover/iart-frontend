@@ -35,6 +35,7 @@ const api = {
         random: state.random,
         filters: state.filters,
         date_range: state.dateRange,
+        aggregate: config.DEFAULT_AGGREGATION_FIELDS,
       };
 
       if (!isEqual(params, state.prevParams)) {
@@ -50,15 +51,15 @@ const api = {
         axios.post(`${config.API_LOCATION}/load`, { params })
           .then((res) => {
             const { results } = res.data;
-            console.log(res.data);
-            console.log(res.data.job_id);
             // Check if we have to wait for the results
             if (res.data.job_id !== undefined) {
               commit('updateJobID', res.data.job_id);
               setTimeout(() => this.dispatch('check_load'), 500);
             } else {
+              //TODO add cache here
+
               commit('updateHits', results.hits);
-              // commit('updateCounts', results.counts);
+              commit('updateCounts', results.aggregations);
               commit('updateLoading', false);
               window.scrollTo(0, 0);
             }
@@ -94,7 +95,7 @@ const api = {
             setTimeout(() => this.dispatch('check_load'), 500);
           } else {
             commit('updateHits', res.data.entries);
-            // commit('updateCounts', results.counts);
+            commit('updateCounts', res.data.aggregations);
             commit('updateLoading', false);
             window.scrollTo(0, 0);
           }
