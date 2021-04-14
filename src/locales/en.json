@@ -1,0 +1,129 @@
+{
+  "home": {
+    "search": {
+      "placeholder": "Start Typing To Search",
+      "query": {
+        "positive": "Set As Positive Query",
+        "negative": "Set As Negative Query"
+      }
+    }
+  },
+  "drawer": {
+    "filter": {
+      "title": "Refine",
+      "remove": "Remove Filters",
+      "objects": "Objects",
+      "period": {
+        "show": "Show Period Filter",
+        "hide": "Hide Period Filter"
+      },
+      "field": {
+        "depicts": "Depicts",
+        "object_type": "Object Type",
+        "location": "Location",
+        "artist_name": "Artist",
+        "medium": "Medium",
+        "institution": "Institution",
+        "genre": "Genre",
+        "period": "Period",
+        "index": "Index"
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "size": {
+        "increase": "Increase Item Size",
+        "reduce": "Reduce Item Size"
+      },
+      "layout": {
+        "flexible": "Flexible Layout",
+        "regular": "Regular Layout",
+        "umap": "Canvas Layout"
+      }
+    }
+  },
+  "modal": {
+    "item": {
+      "information": "Basic Information",
+      "references": "References",
+      "tags": {
+        "more": "Show More Tags",
+        "less": "Show Less Tags"
+      },
+      "iconclass": {
+        "text": "Iconclass",
+        "notations": "Notations"
+      }
+    },
+    "weights": {
+      "title": "Global Weights",
+      "toggle": "Specify Local Weights",
+      "advanced": {
+        "show": "Show Advanced Options",
+        "hide": "Hide Advanced Options"
+      },
+      "group": {
+        "content": "Content Features",
+        "color": "Color Features"
+      }
+    },
+    "search": {
+      "title": "Search By Image",
+      "toggle": "Upload Image From My Computer",
+      "file": {
+        "label": "Select Image File",
+        "rule": "Image size should be less than 2 MB."
+      },
+      "url": {
+        "label": "Paste URL To Image",
+        "rule": "Requested URL is not valid."
+      }
+    },
+    "noresults": {
+      "title": "Information",
+      "text": "Your search did not yield any results. Please modify your query or extend the range of your search, e. g., by removing filters."
+    }
+  },
+  "user": {
+    "name": "Username",
+    "password": "Password",
+    "email": "E-Mail",
+    "menu": {
+      "title": "Account"
+    },
+    "login": {
+      "title": "Login",
+      "text": "Don't have an account?",
+      "rules": {
+        "min": "Min. 5 characters.",
+        "max": "Max. 25 characters."
+      }
+    },
+    "register": {
+      "title": "Register",
+      "rules": {
+        "min": "Min. 5 characters.",
+        "max": "Max. 25 characters."
+      }
+    }
+  },
+  "griditem": {
+    "view": "View Object",
+    "noartist": "Unknown",
+    "notitle": "No Title"
+  },
+  "search": {
+    "random": "Random Search",
+    "object": "Search Object",
+    "append": "Append To Search",
+    "new": "Launch New Search"
+  },
+  "button": {
+    "update": "Update",
+    "cancel": "Cancel",
+    "submit": "Submit"
+  },
+  "field": {
+    "required": "This is a required field."
+  }
+}

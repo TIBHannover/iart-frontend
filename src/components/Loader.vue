@@ -8,7 +8,7 @@
 export default {
   computed: {
     loading() {
-      return this.$store.state.api.loading;
+      return this.$store.state.api.loading || this.$store.state.user.loading;
     },
   },
 };

@@ -1,21 +1,16 @@
 <template>
-  <v-main class="ma-1">
-    <div class="grid-view">
-      <GridItem v-for="(entry, index) in data" :key="index" :entry="entry" />
-    </div>
-
-    <MessageModal v-model="messageModal" />
-  </v-main>
+  <div class="grid-view">
+    <GridItem v-for="(entry, index) in data" :key="index" :entry="entry" />
+  </div>
 </template>
 
 <script>
 import GridItem from '@/components/GridItem.vue';
-import MessageModal from '@/components/MessageModal.vue';
 
 export default {
   data() {
     return {
-      messageModal: false,
+      modalNoResults: false,
     };
   },
   computed: {
@@ -23,16 +18,8 @@ export default {
       return this.$store.state.api.hits;
     },
   },
-  watch: {
-    data(value) {
-      if (value.length === 0) {
-        this.messageModal = true;
-      }
-    },
-  },
   components: {
     GridItem,
-    MessageModal,
   },
 };
 </script>

@@ -10,6 +10,17 @@ function isEqual(x, y) {
   return JSON.stringify(x) === JSON.stringify(y);
 }
 
+function lsplit(x, sep, maxsplit) {
+  x = x.split(sep);
+  const result = x.splice(0, maxsplit);
+
+  if (x.length) {
+    result.push(x.join(sep));
+  }
+
+  return result;
+}
+
 const api = {
   state: {
     index: 'wikidata',
@@ -34,6 +45,7 @@ const api = {
         query: state.query,
         random: state.random,
         filters: state.filters,
+        settings: state.settings,
         date_range: state.dateRange,
         aggregate: config.DEFAULT_AGGREGATION_FIELDS,
       };
@@ -50,16 +62,20 @@ const api = {
 
         axios.post(`${config.API_LOCATION}/load`, { params })
           .then((res) => {
-            const { results } = res.data;
-            // Check if we have to wait for the results
             if (res.data.job_id !== undefined) {
               commit('updateJobID', res.data.job_id);
-              setTimeout(() => this.dispatch('check_load'), 500);
+              setTimeout(() => this.dispatch('checkLoad'), 500);
             } else {
-              //TODO add cache here
+              // TODO: add cache here
 
-              commit('updateHits', results.hits);
-              commit('updateCounts', results.aggregations);
+              if (keyInObj('entries', res.data)) {
+                commit('updateHits', res.data.entries);
+              }
+              
+              if (keyInObj('aggregations', res.data)) {
+                commit('updateCounts', res.data.aggregations);
+              }
+
               commit('updateLoading', false);
               window.scrollTo(0, 0);
             }
@@ -70,32 +86,23 @@ const api = {
           });
       }
     },
-    check_load({ commit, dispatch, state }) {
-      // commit('updateLoading', true);
-      console.log('check_load');
-      const params = {
-        job_id: state.jobID,
-      };
+    checkLoad({ commit, dispatch, state }) {
+      const params = { job_id: state.jobID };
 
-      if (!state.backBtn) {
-        dispatch('getState');
-      } else {
-        commit('toggleBackBtn');
-      }
-
-      console.log(params);
       axios.post(`${config.API_LOCATION}/load`, { params })
         .then((res) => {
-          // const { results } = res.data;
-          console.log(res.data);
-          console.log(res.data.job_id);
-          // Check if we have to wait for the results
           if (res.data.job_id !== undefined) {
-            commit('jobID', res.data.job_id);
-            setTimeout(() => this.dispatch('check_load'), 500);
+            commit('updateJobID', res.data.job_id);
+            setTimeout(() => this.dispatch('checkLoad'), 500);
           } else {
-            commit('updateHits', res.data.entries);
-            commit('updateCounts', res.data.aggregations);
+            if (keyInObj('entries', res.data)) {
+              commit('updateHits', res.data.entries);
+            }
+
+            if (keyInObj('aggregations', res.data)) {
+              commit('updateCounts', res.data.aggregations);
+            }
+
             commit('updateLoading', false);
             window.scrollTo(0, 0);
           }
@@ -105,25 +112,19 @@ const api = {
           commit('updateLoading', false);
         });
     },
-    insert({ commit }, params) {
-      commit('updateLoading', true);
+    upload({ commit }, params) {
+      axios.post(`${config.API_LOCATION}/upload`, { params })
+        .then((res) => {
+          if (res.data.status === 'ok') {
+            console.log(res.data);
+            // commit('updateQuery', []);
+          }
 
-      axios.post(`${config.API_LOCATION}/insert`, { params })
-        .catch((error) => {
-          console.error(error);
-        })
-        .finally(() => {
           commit('updateLoading', false);
-        });
-    },
-    suggest({ commit }, params) {
-      commit('updateLoading', true);
-
-      axios.post(`${config.API_LOCATION}/suggest`, { params })
+          window.scrollTo(0, 0);
+        })
         .catch((error) => {
           console.error(error);
-        })
-        .finally(() => {
           commit('updateLoading', false);
         });
     },
@@ -150,7 +151,7 @@ const api = {
               let type = 'txt';
 
               if (value.includes(':')) {
-                [type, value] = value.split(':', 2);
+                [type, value] = lsplit(value, ':', 1);
 
                 if (['+', '-'].includes(type.charAt(0))) {
                   if (type.charAt(0) === '-') {
@@ -159,6 +160,10 @@ const api = {
 
                   type = type.slice(1);
                 }
+
+                if (type === 'idx') {
+                  // TODO: retrieve metadata
+                }
               }
 
               commit('addQuery', { type, positive, value });
@@ -166,6 +171,10 @@ const api = {
           } catch (e) {
             console.log('query', e);
           }
+        }
+
+        if (field === 'random') {
+          commit('updateRandom', params[field]);
         }
 
         if (field === 'period') {
@@ -210,6 +219,10 @@ const api = {
         params.append('query', query);
       }
 
+      if (state.random) {
+        params.append('random', state.random);
+      }
+
       if (state.dateRange.length) {
         const period = state.dateRange.join('-');
         params.append('period', period);
@@ -228,8 +241,6 @@ const api = {
   },
   mutations: {
     updateJobID(state, jobID) {
-      console.log('updateJobID');
-      console.log(jobID);
       state.jobID = jobID;
     },
     updateHits(state, hits) {
@@ -245,11 +256,15 @@ const api = {
       state.loading = loading;
     },
     updateRandom(state, random) {
-      if (random) {
-        state.random = Math.random();
-        state.query = [];
+      if (typeof random === 'boolean') {
+        if (random) {
+          state.random = Math.random();
+          state.query = [];
+        } else {
+          state.random = null;
+        }
       } else {
-        state.random = null;
+        state.random = parseFloat(random);
       }
     },
     updateSettings(state, settings) {
@@ -310,7 +325,7 @@ const api = {
             state.filters[field].splice(index, 1);
           }
 
-          if (!state.filters[field].length) {
+          if (state.filters[field].length === 0) {
             Vue.delete(state.filters, field);
           }
         }
@@ -318,8 +333,11 @@ const api = {
     },
     removeAllFilters(state) {
       if (Object.keys(state.filters).length) {
-        state.dateRange = [];
         state.filters = {};
+      }
+
+      if (state.dateRange.length) {
+        state.dateRange = [];
       }
     },
   },

@@ -6,72 +6,80 @@
           <img src="/assets/images/logo.png" />
         </div>
 
-        <v-combobox v-model="query" @click:clear="remove(-1)" @keyup.enter="submit" placeholder="Start Typing To Search" class="mx-1" rounded solo hide-details flat clearable multiple>
+        <v-combobox v-model="query" @click:clear="remove(-1)" @keyup.enter="submit(random=false)" :placeholder="$t('home.search.placeholder')" class="mx-1" allow-overflow rounded solo hide-details flat clearable multiple single-line>
           <template v-slot:prepend-inner>
             <v-icon @click="submit">mdi-magnify</v-icon>
-            <v-icon title="Random Search" @click="random" class="ml-1">mdi-slot-machine-outline</v-icon>
+            <v-icon :title="$t('search.random')" @click="submit(random=true)" class="ml-1">mdi-slot-machine-outline</v-icon>
+          </template>
+
+          <template v-slot:append>
+            <ModalSearch @search="submit" />
           </template>
 
           <template v-slot:selection="{ attrs, selected, item, index }">
-            <v-chip v-on="on" v-bind="attrs" :input-value="selected" @click:close="remove(index)" close>
-              <v-btn v-if="item.positive" @click="toggle(index)" title="Set As Negative Query" font-size="18" class="ml-n2" icon small>
-                <v-icon>mdi-plus</v-icon>
-              </v-btn>
-              <v-btn v-else @click="toggle(index)" title="Set As Positive Query" font-size="18" class="ml-n2" icon small>
-                <v-icon>mdi-minus</v-icon>
-              </v-btn>
+            <v-menu v-model="weightDialog[index]" :close-on-content-click="false" offset-y bottom right open-on-hover>
+              <template v-slot:activator="{ on }">
+                <v-chip v-on="on" v-bind="attrs" :input-value="selected" @click:close="remove(index)" close>
+                  <v-btn v-if="item.positive" @click="toggle(index)" :title="$t('home.search.query.negative')" font-size="18" class="ml-n2" icon small>
+                    <v-icon>mdi-plus</v-icon>
+                  </v-btn>
+                  <v-btn v-else @click="toggle(index)" :title="$t('home.search.query.positive')" font-size="18" class="ml-n2" icon small>
+                    <v-icon>mdi-minus</v-icon>
+                  </v-btn>
 
-              {{ item.value }}
-            </v-chip>
+                  <span v-if="item.type==='idx'" :title="item.label">{{ item.label }}</span>
+                  <span v-else :title="item.value">{{ item.value }}</span>
+                </v-chip>
+              </template>
+
+              <Weights v-if="item.type==='idx'" :default="item.features" :local="true" :visible="weightDialog[index]" @update="updateWeights(index, ...arguments)" />
+            </v-menu>
           </template>
         </v-combobox>
 
-        <v-btn @click="filterDrawer=!filterDrawer" title="Refine Results" class="ml-1" icon>
+        <v-btn @click="toggleDrawer('filter')" :title="$t('drawer.filter.title')" class="ml-1" icon>
           <v-badge v-if="nFilters" color="accent" :content="nFilters">
             <v-icon>mdi-tune</v-icon>
           </v-badge>
           <v-icon v-else>mdi-tune</v-icon>
         </v-btn>
 
-        <v-btn @click="settingsDrawer=!settingsDrawer" title="Settings" class="ml-n2" icon>
+        <v-btn @click="toggleDrawer('settings')" :title="$t('drawer.settings.title')" class="ml-n2" icon>
           <v-icon>mdi-cog-outline</v-icon>
         </v-btn>
-      </v-layout>
+
+        <UserMenu />
     </v-app-bar>
 
-    <SettingsDrawer v-model="settingsDrawer" :margin="filterDrawer" />
-
-    <Grid />
+    <DrawerSettings />
+    <Main />
     <Loader />
-
-    <FilterDrawer v-model="filterDrawer" />
-    <SearchImage v-model="dialog" @search="submit" />
+    <DrawerFilter />
   </v-app>
 </template>
 
 <script>
-import Grid from '@/components/Grid.vue';
+import Main from '@/components/Main.vue';
 import Loader from '@/components/Loader.vue';
-import SearchImage from '@/components/SearchImage.vue';
-import FilterDrawer from '@/components/FilterDrawer.vue';
-import SettingsDrawer from '@/components/SettingsDrawer.vue';
+import Weights from '@/components/Weights.vue';
+import UserMenu from '@/components/UserMenu.vue';
+import ModalSearch from '@/components/ModalSearch.vue';
+import DrawerFilter from '@/components/DrawerFilter.vue';
+import DrawerSettings from '@/components/DrawerSettings.vue';
 
 export default {
   data() {
     return {
-      dialog: false,
-      filterDrawer: false,
-      settingsDrawer: false,
+      weightDialog: {},
       query: this.$store.state.api.query,
     };
   },
   methods: {
-    submit() {
-      this.$store.commit('updateRandom', false);
+    submit(random = false) {
+      this.$store.commit('updateRandom', random);
       this.$store.dispatch('load');
     },
-    random() {
-      this.$store.commit('updateRandom', true);
+    load() {
       this.$store.dispatch('load');
     },
     remove(index) {
@@ -88,6 +96,12 @@ export default {
     toggle(index) {
       const value = this.query[index].positive;
       this.query[index].positive = !value;
+    },
+    toggleDrawer(value) {
+      this.$store.commit('toggleDrawer', value);
+    },
+    updateWeights(index, value) {
+      this.query[index].weights = value;
     },
   },
   computed: {
@@ -107,25 +121,32 @@ export default {
     data() {
       return this.$store.state.api.index;
     },
+    layout() {
+      return this.$store.state.api.settings.layout;
+    },
     updateQuery() {
       return this.$store.state.api.query;
     },
   },
   watch: {
     nFilters() {
-      this.submit();
+      this.load();
     },
     dateRange() {
-      this.submit();
+      this.load();
     },
     data() {
-      this.insert();
-      this.submit();
+      this.load();
+    },
+    layout(new_value, old_value) {
+      if (new_value != old_value && new_value === 'umap') {
+        this.load();
+      }
     },
     query: {
-      handler(values, prev_values) {
-        if (values.length !== prev_values.length) {
-          this.query = values.map((value) => {
+      handler(new_values, old_values) {
+        if (new_values.length !== old_values.length) {
+          this.query = new_values.map((value) => {
             if (typeof value === 'string') {
               let positive = true;
 
@@ -149,7 +170,7 @@ export default {
       handler(values) {
         this.query = values;
 
-        if (this.$store.state.api.random === null) {
+        if (!this.$store.state.api.random) {
           this.submit();
         }
       },
@@ -168,11 +189,13 @@ export default {
     };
   },
   components: {
-    Grid,
+    Main,
     Loader,
-    SearchImage,
-    FilterDrawer,
-    SettingsDrawer,
+    Weights,
+    UserMenu,
+    ModalSearch,
+    DrawerFilter,
+    DrawerSettings,
   },
 };
 </script>
@@ -194,8 +217,34 @@ export default {
   transform: rotate(0deg);
 }
 
+header .v-autocomplete {
+  max-width: calc(100% - 295px);
+}
+
 .v-autocomplete:not(.v-input--is-focused).v-select--chips input {
   max-height: 25px !important;
+}
+
+header .v-autocomplete .v-text-field.v-text-field--solo .v-input__control input {
+  max-width: fit-content;
+  min-width: 0;
+}
+
+header .v-autocomplete .v-select__selections {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+header .v-autocomplete .v-select__selections::-webkit-scrollbar {
+  height: 0;
+  width: 0;
+}
+
+header .v-autocomplete .v-select__selections > .v-chip {
+  overflow: initial;
 }
 
 .logo {
@@ -209,13 +258,17 @@ export default {
 
 .theme--light.v-chip,
 .theme--light.v-sheet,
+.theme--light.v-input input,
 .theme--light.v-application,
 .theme--light.v-expansion-panels .v-expansion-panel,
-.theme--light.v-list-item:not(.v-list-item--active):not(.v-list-item--disabled) {
+.theme--light.v-list-item:not(.v-list-item--active):not(.v-list-item--disabled),
+.v-card.login .v-btn.register,
+.v-banner .v-btn--text:hover .v-icon {
   color: #1D3557 !important;
 }
 
-.theme--light.v-icon {
+.theme--light.v-icon,
+.v-dialog .v-expansion-panel-content__wrap .capitalize {
   color: rgba(69, 123, 157, 0.54);
 }
 

@@ -1,15 +1,35 @@
 <template>
-  <div class="grid-item" :disabled="disabled" :style="getCss">
-    <ItemModal v-model="dialog" :entry="entry" />
+  <div class="grid-item" :disabled="disabled" :style="getCss" @click="bookmark">
+    <ModalItem v-model="dialog" :entry="entry" />
     <img :src="entry.path" v-on:error="onError">
+
+    <div v-if="bookmarked" class="bookmark">
+      <v-btn icon>
+        <v-icon color="accent" class="shadow">mdi-record-circle-outline</v-icon>
+      </v-btn>
+    </div>
 
     <div class="overlay">
       <div class="view">
-        <v-btn icon @click="query" title="Search Object">
-          <v-icon color="white" class="shadow">mdi-magnify</v-icon>
-        </v-btn>
+        <v-menu offset-y bottom right>
+          <template v-slot:activator="{ attrs, on: menu }">
+            <v-btn icon v-bind="attrs" v-on="menu" :title="$t('search.object')">
+              <v-icon color="white" class="shadow">mdi-magnify</v-icon>
+            </v-btn>
+          </template>
 
-        <v-btn icon @click="dialog=true" title="View Object" class="ml-n1">
+          <v-list class="pa-0">
+            <v-list-item class="px-0 h44">
+              <v-btn @click="query(false)" text block large>{{ $t('search.new') }}</v-btn>
+            </v-list-item>
+
+            <v-list-item class="px-0 h44">
+              <v-btn @click="query(true)" text block large>{{ $t('search.append') }}</v-btn>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+
+        <v-btn icon @click="dialog=true" :title="$t('griditem.view')" class="ml-n1">
           <v-icon color="white" class="shadow">mdi-eye-outline</v-icon>
         </v-btn>
       </div>
@@ -23,7 +43,7 @@
 </template>
 
 <script>
-import ItemModal from '@/components/ItemModal.vue';
+import ModalItem from '@/components/ModalItem.vue';
 
 export default {
   data() {
@@ -32,18 +52,30 @@ export default {
       width: 'auto',
       dialog: false,
       disabled: false,
+      bookmarked: false,
     };
   },
   props: ['entry'],
   methods: {
-    query() {
-      const query = [{
+    query(append) {
+      const query = {
         type: 'idx',
         positive: true,
+        label: this.title,
         value: this.entry.id,
-      }];
+        weights: this.settings.weights,
+      };
 
-      this.$store.commit('updateQuery', query);
+      if (append) {
+        this.$store.commit('addQuery', query);
+      } else {
+        this.$store.commit('updateQuery', [query]);
+      }
+    },
+    bookmark(event) {
+      if (event.target.nodeName !== 'I') {
+        this.bookmarked = !this.bookmarked;
+      }
     },
     onError() {
       this.disabled = true;
@@ -67,18 +99,28 @@ export default {
       return this.entry;
     },
     title() {
-      try {
-        return this.entry.meta.title[0];
-      } catch {
-        return 'No title';
-      }
+      const title = [];
+
+      this.entry.meta.forEach(({ name, value_str }) => {
+        if (name === 'title' && value_str) {
+          title.push(value_str);
+        }
+      });
+
+      if (title.length) return title[0];
+      return this.$t('griditem.notitle');
     },
     artist() {
-      try {
-        return this.entry.meta.artist_name.join(', ');
-      } catch {
-        return 'Unknown';
-      }
+      const artist = [];
+
+      this.entry.meta.forEach(({ name, value_str }) => {
+        if (name === 'artist_name' && value_str) {
+          artist.push(value_str);
+        }
+      });
+
+      if (artist.length) return artist.join(', ');
+      return this.$t('griditem.noartist');
     },
     settings() {
       return this.$store.state.api.settings;
@@ -87,12 +129,16 @@ export default {
       return {
         height: this.height,
         width: this.width,
+        cursor: 'pointer',
       };
     },
   },
   watch: {
-    update() {
-      this.disabled = false;
+    update(new_entry, old_entry) {
+      if (new_entry.id !== old_entry.id) {
+        this.bookmarked = false;
+        this.disabled = false;
+      }
     },
     settings: {
       handler() {
@@ -105,7 +151,7 @@ export default {
     this.updateSize();
   },
   components: {
-    ItemModal,
+    ModalItem,
   },
 };
 </script>
@@ -127,6 +173,22 @@ export default {
 
 .grid-item:last-child {
   max-width: 400px;
+}
+
+.grid-item i {
+  text-shadow: 0 0 5px black;
+}
+
+.grid-item > .bookmark {
+  transition: opacity .25s ease;
+  position: absolute;
+  padding: 5px;
+  opacity: 1;
+  top: 0;
+}
+
+.grid-item:hover > .bookmark {
+  opacity: 0;
 }
 
 .grid-item > img {
@@ -163,7 +225,6 @@ export default {
 }
 
 .grid-item > .overlay .view {
-  text-shadow: 0 0 5px black;
   padding: 5px 5px 0 0;
   text-align: right;
 }

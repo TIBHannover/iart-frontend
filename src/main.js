@@ -1,4 +1,6 @@
 import Vue from 'vue';
+
+import i18n from './plugins/i18n';
 import vuetify from './plugins/vuetify';
 
 import App from './App.vue';
@@ -9,5 +11,6 @@ new Vue({
   vuetify,
   router,
   store,
+  i18n,
   render: (h) => h(App),
 }).$mount('#app');
