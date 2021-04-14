@@ -1,6 +1,6 @@
 <template>
   <v-main class="ma-1">
-    <Umap v-if="settings.layout==='umap'" />
+    <Umap v-if="settings.layout === 'umap'" />
     <Grid v-else />
 
     <ModalNoResults v-model="modalNoResults" />
@@ -8,9 +8,9 @@
 </template>
 
 <script>
-import Grid from '@/components/Grid.vue';
-import Umap from '@/components/Umap.vue';
-import ModalNoResults from '@/components/ModalNoResults.vue';
+import Grid from "@/components/Grid.vue";
+import Umap from "@/components/Umap.vue";
+import ModalNoResults from "@/components/ModalNoResults.vue";
 
 export default {
   data() {
@@ -47,6 +47,6 @@ export default {
   display: flex;
   flex-wrap: wrap;
   overflow: hidden;
-  transition: flex-basis .2s ease;
+  transition: flex-basis 0.2s ease;
 }
 </style>

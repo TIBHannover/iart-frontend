@@ -1,7 +1,7 @@
 <template>
   <div class="grid-item" :disabled="disabled" :style="getCss" @click="bookmark">
     <ModalItem v-model="dialog" :entry="entry" />
-    <img :src="entry.path" v-on:error="onError">
+    <img :src="entry.path" v-on:error="onError" />
 
     <div v-if="bookmarked" class="bookmark">
       <v-btn icon>
@@ -20,16 +20,25 @@
 
           <v-list class="pa-0">
             <v-list-item class="px-0 h44">
-              <v-btn @click="query(false)" text block large>{{ $t('search.new') }}</v-btn>
+              <v-btn @click="query(false)" text block large>{{
+                $t("search.new")
+              }}</v-btn>
             </v-list-item>
 
             <v-list-item class="px-0 h44">
-              <v-btn @click="query(true)" text block large>{{ $t('search.append') }}</v-btn>
+              <v-btn @click="query(true)" text block large>{{
+                $t("search.append")
+              }}</v-btn>
             </v-list-item>
           </v-list>
         </v-menu>
 
-        <v-btn icon @click="dialog=true" :title="$t('griditem.view')" class="ml-n1">
+        <v-btn
+          icon
+          @click="dialog = true"
+          :title="$t('griditem.view')"
+          class="ml-n1"
+        >
           <v-icon color="white" class="shadow">mdi-eye-outline</v-icon>
         </v-btn>
       </div>
@@ -43,23 +52,23 @@
 </template>
 
 <script>
-import ModalItem from '@/components/ModalItem.vue';
+import ModalItem from "@/components/ModalItem.vue";
 
 export default {
   data() {
     return {
-      height: '200px',
-      width: 'auto',
+      height: "200px",
+      width: "auto",
       dialog: false,
       disabled: false,
       bookmarked: false,
     };
   },
-  props: ['entry'],
+  props: ["entry"],
   methods: {
     query(append) {
       const query = {
-        type: 'idx',
+        type: "idx",
         positive: true,
         label: this.title,
         value: this.entry.id,
@@ -67,13 +76,13 @@ export default {
       };
 
       if (append) {
-        this.$store.commit('addQuery', query);
+        this.$store.commit("addQuery", query);
       } else {
-        this.$store.commit('updateQuery', [query]);
+        this.$store.commit("updateQuery", [query]);
       }
     },
     bookmark(event) {
-      if (event.target.nodeName !== 'I') {
+      if (event.target.nodeName !== "I") {
         this.bookmarked = !this.bookmarked;
       }
     },
@@ -84,9 +93,9 @@ export default {
       if (Object.keys(this.settings).length) {
         const pixels = this.settings.zoomLevel * 25;
 
-        if (this.settings.layout === 'flexible') {
+        if (this.settings.layout === "flexible") {
           this.height = `${200 + pixels}px`;
-          this.width = 'auto';
+          this.width = "auto";
         } else {
           this.height = `${200 + pixels}px`;
           this.width = `${200 + pixels}px`;
@@ -102,25 +111,25 @@ export default {
       const title = [];
 
       this.entry.meta.forEach(({ name, value_str }) => {
-        if (name === 'title' && value_str) {
+        if (name === "title" && value_str) {
           title.push(value_str);
         }
       });
 
       if (title.length) return title[0];
-      return this.$t('griditem.notitle');
+      return this.$t("griditem.notitle");
     },
     artist() {
       const artist = [];
 
       this.entry.meta.forEach(({ name, value_str }) => {
-        if (name === 'artist_name' && value_str) {
+        if (name === "artist_name" && value_str) {
           artist.push(value_str);
         }
       });
 
-      if (artist.length) return artist.join(', ');
-      return this.$t('griditem.noartist');
+      if (artist.length) return artist.join(", ");
+      return this.$t("griditem.noartist");
     },
     settings() {
       return this.$store.state.api.settings;
@@ -129,7 +138,7 @@ export default {
       return {
         height: this.height,
         width: this.width,
-        cursor: 'pointer',
+        cursor: "pointer",
       };
     },
   },
@@ -180,7 +189,7 @@ export default {
 }
 
 .grid-item > .bookmark {
-  transition: opacity .25s ease;
+  transition: opacity 0.25s ease;
   position: absolute;
   padding: 5px;
   opacity: 1;
@@ -192,7 +201,7 @@ export default {
 }
 
 .grid-item > img {
-  transition: transform .5s ease;
+  transition: transform 0.5s ease;
   transform: scale(1.05);
   object-fit: cover;
   min-width: 100%;
@@ -212,7 +221,7 @@ export default {
 .grid-item > .overlay {
   background: linear-gradient(to top, black, #00000000 50%);
   transform: translate(-50%, -50%);
-  transition: opacity .25s ease;
+  transition: opacity 0.25s ease;
   position: absolute;
   object-fit: cover;
   min-width: 100%;

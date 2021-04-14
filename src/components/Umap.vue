@@ -6,12 +6,12 @@
 </template>
 
 <script>
-import * as THREE from 'three';
-import * as TWEEN from '@tweenjs/tween.js';
-import { Interaction } from 'three.interaction';
-import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
+import * as THREE from "three";
+import * as TWEEN from "@tweenjs/tween.js";
+import { Interaction } from "three.interaction";
+import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
 
-import ModalItem from '@/components/ModalItem.vue';
+import ModalItem from "@/components/ModalItem.vue";
 
 export default {
   data() {
@@ -48,7 +48,8 @@ export default {
       this.scene.background = new THREE.Color(0xe0e0e0);
 
       this.camera = new THREE.PerspectiveCamera(
-        0.5 * this.canvasSize, width / height,
+        0.5 * this.canvasSize,
+        width / height
       );
 
       this.resetCamera(0, 0, 12 * this.zoomStep);
@@ -57,15 +58,20 @@ export default {
       this.renderer.setPixelRatio(window.devicePixelRatio);
       this.renderer.setSize(width, height);
 
-      const canvas = document.querySelector('.umap .canvas');
+      const canvas = document.querySelector(".umap .canvas");
       canvas.appendChild(this.renderer.domElement);
 
-      window.addEventListener('resize', this.onResize);
-      this.interaction = new Interaction(this.renderer, this.scene, this.camera);
+      window.addEventListener("resize", this.onResize);
+      this.interaction = new Interaction(
+        this.renderer,
+        this.scene,
+        this.camera
+      );
     },
     controls() {
       this.controls = new TrackballControls(
-        this.camera, this.renderer.domElement,
+        this.camera,
+        this.renderer.domElement
       );
 
       const ALT_KEY = 18;
@@ -84,9 +90,7 @@ export default {
         RIGHT: THREE.MOUSE.ROTATE,
       };
 
-      this.renderer.domElement.addEventListener(
-        'wheel', this.onWheel, false,
-      );
+      this.renderer.domElement.addEventListener("wheel", this.onWheel, false);
     },
     animate() {
       requestAnimationFrame(this.animate);
@@ -100,8 +104,10 @@ export default {
 
       return new Promise((resolve, reject) => {
         loader.load(
-          entry.path, (texture) => resolve(texture),
-          undefined, (error) => reject(error),
+          entry.path,
+          (texture) => resolve(texture),
+          undefined,
+          (error) => reject(error)
         );
       });
     },
@@ -112,7 +118,7 @@ export default {
 
         let geometry = null;
 
-        if (type === 'cylinder') {
+        if (type === "cylinder") {
           texture.wrapS = THREE.ClampToEdgeWrapping;
           texture.wrapT = THREE.RepeatWrapping;
 
@@ -125,9 +131,12 @@ export default {
           }
 
           geometry = new THREE.CylinderBufferGeometry(
-            this.meshSize, this.meshSize, 0.05, 48,
+            this.meshSize,
+            this.meshSize,
+            0.05,
+            48
           );
-        } else if (type === 'plane') {
+        } else if (type === "plane") {
           if (width > height) {
             height /= width / this.meshSize;
             width = this.meshSize;
@@ -136,9 +145,7 @@ export default {
             height = this.meshSize;
           }
 
-          geometry = new THREE.BoxBufferGeometry(
-            width, height, 0.05, 1, 1, 1,
-          );
+          geometry = new THREE.BoxBufferGeometry(width, height, 0.05, 1, 1, 1);
         }
 
         const material = new THREE.MeshBasicMaterial({ map: texture });
@@ -151,19 +158,19 @@ export default {
           mesh.position.setZ((z - 0) * this.canvasSize);
         }
 
-        if (type === 'cylinder') {
+        if (type === "cylinder") {
           mesh.rotation.set(Math.PI / 2, Math.PI / 2, 0);
         }
 
         mesh.entry = entry;
-        mesh.cursor = 'pointer';
-        mesh.on('click', this.onClick);
+        mesh.cursor = "pointer";
+        mesh.on("click", this.onClick);
 
         this.scene.add(mesh);
       });
     },
     getSize() {
-      const { clientWidth, clientHeight } = document.querySelector('.umap');
+      const { clientWidth, clientHeight } = document.querySelector(".umap");
 
       return [clientWidth, clientHeight];
     },
@@ -197,13 +204,13 @@ export default {
       if (this.data !== undefined) {
         this.data.forEach((entry) => {
           if (entry.coordinates) {
-            this.addMesh(entry, 'plane');
+            this.addMesh(entry, "plane");
           }
         });
       }
     },
     onResize() {
-      if (document.querySelector('.umap') !== null) {
+      if (document.querySelector(".umap") !== null) {
         const [width, height] = this.getSize();
 
         this.camera.aspect = width / height;
@@ -219,7 +226,8 @@ export default {
           this.dialog = true;
         }, 250);
       } else {
-        clearTimeout(this.timer); TWEEN.removeAll();
+        clearTimeout(this.timer);
+        TWEEN.removeAll();
         const { x, y, z } = event.data.target.position;
 
         this.resetCamera(x, y, z + 1.5 * this.meshSize);

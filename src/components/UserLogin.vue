@@ -2,40 +2,66 @@
   <v-dialog v-model="dialog" max-width="350px">
     <template v-slot:activator="{ on }">
       <v-btn v-on="on" class="login" text block large>
-        {{ $t('user.login.title') }}
+        {{ $t("user.login.title") }}
       </v-btn>
     </template>
 
     <v-card class="login">
       <v-card-title>
-        {{ $t('user.login.title') }}
+        {{ $t("user.login.title") }}
 
-        <v-btn icon @click="dialog=false" absolute right>
+        <v-btn icon @click="dialog = false" absolute right>
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
 
       <v-card-text>
-        <v-text-field v-model="user.name" :placeholder="$t('user.name')" prepend-icon="mdi-account" counter="25" :rules="[checkLength]" clearable></v-text-field>
+        <v-text-field
+          v-model="user.name"
+          :placeholder="$t('user.name')"
+          prepend-icon="mdi-account"
+          counter="25"
+          :rules="[checkLength]"
+          clearable
+        ></v-text-field>
 
-        <v-text-field v-model="user.password" :append-icon="showPassword ? 'mdi-eye-outline' : 'mdi-eye-off-outline'" :placeholder="$t('user.password')" prepend-icon="mdi-lock" @click:append="showPassword=!showPassword" :type="showPassword ? 'text' : 'password'" counter="25" :rules="[checkLength]" clearable></v-text-field>
+        <v-text-field
+          v-model="user.password"
+          :append-icon="
+            showPassword ? 'mdi-eye-outline' : 'mdi-eye-off-outline'
+          "
+          :placeholder="$t('user.password')"
+          prepend-icon="mdi-lock"
+          @click:append="showPassword = !showPassword"
+          :type="showPassword ? 'text' : 'password'"
+          counter="25"
+          :rules="[checkLength]"
+          clearable
+        ></v-text-field>
       </v-card-text>
 
       <v-card-actions class="px-6 pt-2">
-        <v-btn @click="login" :disabled="disabled" color="accent" block rounded depressed>
-          {{ $t('user.login.title') }}
+        <v-btn
+          @click="login"
+          :disabled="disabled"
+          color="accent"
+          block
+          rounded
+          depressed
+        >
+          {{ $t("user.login.title") }}
         </v-btn>
       </v-card-actions>
 
-      <div class="grey--text px-6 pb-6" style="text-align: center;">
-        {{ $t('user.login.text') }} <UserRegister @close="dialog=false" />.
+      <div class="grey--text px-6 pb-6" style="text-align: center">
+        {{ $t("user.login.text") }} <UserRegister @close="dialog = false" />.
       </div>
     </v-card>
   </v-dialog>
 </template>
 
 <script>
-import UserRegister from '@/components/UserRegister.vue';
+import UserRegister from "@/components/UserRegister.vue";
 
 export default {
   data() {
@@ -47,30 +73,31 @@ export default {
   },
   methods: {
     login() {
-      this.$store.dispatch('login', this.user);
+      this.$store.dispatch("login", this.user);
       this.dialog = false;
     },
     checkLength(value) {
       if (value) {
         if (value.length < 5) {
-          return this.$t('user.login.rules.min');
+          return this.$t("user.login.rules.min");
         }
 
         if (value.length > 25) {
-          return this.$t('user.login.rules.max');
+          return this.$t("user.login.rules.max");
         }
 
         return true;
       }
 
-      return this.$t('field.required');
+      return this.$t("field.required");
     },
   },
   computed: {
     disabled() {
       if (Object.keys(this.user).length) {
         const total = Object.values(this.user).reduce(
-          (t, value) => t + (this.checkLength(value) === true), 0,
+          (t, value) => t + (this.checkLength(value) === true),
+          0
         );
 
         if (total === 2) return false;
@@ -82,7 +109,7 @@ export default {
   watch: {
     dialog(value) {
       if (value) {
-        this.$emit('close');
+        this.$emit("close");
       }
     },
   },

@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import GridItem from '@/components/GridItem.vue';
+import GridItem from "@/components/GridItem.vue";
 
 export default {
   data() {
@@ -30,6 +30,6 @@ export default {
   display: flex;
   flex-wrap: wrap;
   overflow: hidden;
-  transition: flex-basis .2s ease;
+  transition: flex-basis 0.2s ease;
 }
 </style>

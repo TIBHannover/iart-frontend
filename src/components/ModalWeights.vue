@@ -1,18 +1,33 @@
 <template>
-  <v-menu v-model="dialog" :close-on-content-click="false" offset-y bottom right open-on-hover>
+  <v-menu
+    v-model="dialog"
+    :close-on-content-click="false"
+    offset-y
+    bottom
+    right
+    open-on-hover
+  >
     <template v-slot:activator="{ on }">
       <v-btn v-on="on" text block>
-        <v-icon color="grey darken-1" class="mr-2 ml-n1">mdi-compass-outline</v-icon>
-        <span style="font-size: 14px;">{{ $t('modal.weights.title') }}</span>
+        <v-icon color="grey darken-1" class="mr-2 ml-n1"
+          >mdi-compass-outline</v-icon
+        >
+        <span style="font-size: 14px">{{ $t("modal.weights.title") }}</span>
       </v-btn>
     </template>
 
-    <Weights :default="values" :local="false" :visible="dialog" @update="update" @close="dialog=false" />
+    <Weights
+      :default="values"
+      :local="false"
+      :visible="dialog"
+      @update="update"
+      @close="dialog = false"
+    />
   </v-menu>
 </template>
 
 <script>
-import Weights from '@/components/Weights.vue';
+import Weights from "@/components/Weights.vue";
 
 export default {
   data() {
@@ -20,10 +35,10 @@ export default {
       dialog: false,
     };
   },
-  props: ['values'],
+  props: ["values"],
   methods: {
     update(value) {
-      this.$emit('update', value);
+      this.$emit("update", value);
     },
   },
   components: {

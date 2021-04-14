@@ -6,19 +6,41 @@
       </v-col>
 
       <v-col cols="3">
-        <v-select v-model="layout" :items="layoutItems" item-value="key" item-text="name" prepend-inner-icon="mdi-view-compact-outline" style="font-size: 14px;" solo hide-details flat dense></v-select>
+        <v-select
+          v-model="layout"
+          :items="layoutItems"
+          item-value="key"
+          item-text="name"
+          prepend-inner-icon="mdi-view-compact-outline"
+          style="font-size: 14px"
+          solo
+          hide-details
+          flat
+          dense
+        ></v-select>
       </v-col>
 
       <v-col cols="5">
-        <v-btn :title="$t('drawer.settings.size.increase')" @click="zoomIn" :disabled="!zoomInEnabled" icon>
+        <v-btn
+          :title="$t('drawer.settings.size.increase')"
+          @click="zoomIn"
+          :disabled="!zoomInEnabled"
+          icon
+        >
           <v-icon>mdi-plus-circle-outline</v-icon>
         </v-btn>
-        <v-btn :title="$t('drawer.settings.size.reduce')" @click="zoomOut" :disabled="!zoomOutEnabled" class="ml-n2" icon>
+        <v-btn
+          :title="$t('drawer.settings.size.reduce')"
+          @click="zoomOut"
+          :disabled="!zoomOutEnabled"
+          class="ml-n2"
+          icon
+        >
           <v-icon>mdi-minus-circle-outline</v-icon>
         </v-btn>
       </v-col>
 
-      <v-col cols="1" style="text-align: right;">
+      <v-col cols="1" style="text-align: right">
         <v-btn @click="close" icon>
           <v-icon>mdi-close</v-icon>
         </v-btn>
@@ -28,25 +50,25 @@
 </template>
 
 <script>
-import ModalWeights from '@/components/ModalWeights.vue';
+import ModalWeights from "@/components/ModalWeights.vue";
 
 export default {
   data() {
     return {
       weights: {},
       zoomLevel: 0,
-      layout: 'flexible',
+      layout: "flexible",
       layoutItems: [
-        { key: 'flexible', name: this.$t('drawer.settings.layout.flexible') },
-        { key: 'regular', name: this.$t('drawer.settings.layout.regular') },
-        { key: 'umap', name: this.$t('drawer.settings.layout.umap') },
+        { key: "flexible", name: this.$t("drawer.settings.layout.flexible") },
+        { key: "regular", name: this.$t("drawer.settings.layout.regular") },
+        { key: "umap", name: this.$t("drawer.settings.layout.umap") },
       ],
       drawer: this.$store.state.user.drawer.settings,
     };
   },
   methods: {
     close() {
-      this.$store.commit('toggleDrawer', 'settings');
+      this.$store.commit("toggleDrawer", "settings");
     },
     commit() {
       const settings = {
@@ -55,7 +77,7 @@ export default {
         zoomLevel: this.zoomLevel,
       };
 
-      this.$store.commit('updateSettings', settings);
+      this.$store.commit("updateSettings", settings);
     },
     zoomIn() {
       if (this.zoomLevel < 7) {
@@ -82,7 +104,7 @@ export default {
       const { filter } = this.$store.state.user.drawer;
 
       return {
-        'margin-right': `${filter * 350}px`,
+        "margin-right": `${filter * 350}px`,
       };
     },
     zoomInEnabled() {
@@ -128,7 +150,8 @@ export default {
   background-color: #fff;
 }
 
-.theme--light.v-banner.v-sheet:not(.v-sheet--outlined):not(.v-sheet--shaped) .v-banner__wrapper {
+.theme--light.v-banner.v-sheet:not(.v-sheet--outlined):not(.v-sheet--shaped)
+  .v-banner__wrapper {
   border-bottom: none;
 }
 

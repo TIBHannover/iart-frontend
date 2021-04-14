@@ -71,7 +71,7 @@ const api = {
               if (keyInObj('entries', res.data)) {
                 commit('updateHits', res.data.entries);
               }
-              
+
               if (keyInObj('aggregations', res.data)) {
                 commit('updateCounts', res.data.aggregations);
               }
@@ -112,12 +112,36 @@ const api = {
           commit('updateLoading', false);
         });
     },
-    upload({ commit }, params) {
-      axios.post(`${config.API_LOCATION}/upload`, { params })
+    upload({ commit, dispatch, state }, params) {
+      let formData = new FormData();
+      if (params.type == "file") {
+        formData.append("file", params.value);
+      }
+      else if (params.type == "url") {
+        formData.append("url", params.value);
+
+      }
+
+      axios.post(`${config.API_LOCATION}/upload`, formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
         .then((res) => {
           if (res.data.status === 'ok') {
-            console.log(res.data);
-            // commit('updateQuery', []);
+
+            const query = {
+              type: "idx",
+              positive: true,
+              value: res.data.entries[0].id,
+              weights: state.settings.weights,
+              label: res.data.entries[0].meta.title,
+            };
+
+            console.log(JSON.stringify(query));
+            // TODO @stefanie add or replace?
+            commit("addQuery", query);
           }
 
           commit('updateLoading', false);

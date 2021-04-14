@@ -1,10 +1,21 @@
 <template>
-  <v-navigation-drawer v-model="drawer" width="350" app right hide-overlay disable-resize-watcher>
+  <v-navigation-drawer
+    v-model="drawer"
+    width="350"
+    app
+    right
+    hide-overlay
+    disable-resize-watcher
+  >
     <v-toolbar flat class="v-bar--underline">
-      <v-toolbar-title>{{ $t('drawer.filter.title') }}</v-toolbar-title>
+      <v-toolbar-title>{{ $t("drawer.filter.title") }}</v-toolbar-title>
 
-      <div class="v-btn--absolute v-btn--right" style="position: absolute;">
-        <v-btn @click="removeAllFilters" :title="$t('drawer.filter.remove')" icon>
+      <div class="v-btn--absolute v-btn--right" style="position: absolute">
+        <v-btn
+          @click="removeAllFilters"
+          :title="$t('drawer.filter.remove')"
+          icon
+        >
           <v-icon>mdi-trash-can-outline</v-icon>
         </v-btn>
 
@@ -16,22 +27,53 @@
 
     <v-container class="ml-1 mt-n1">
       <div v-for="(count, index) in counts" :key="index">
-        <label v-if="notEmpty(count.field.split('.')[1])" class="v-label v-label--active theme--light ml-6">{{ $t('drawer.filter.field')[count.field.split('.')[1]] }}</label>
+        <label
+          v-if="notEmpty(count.field.split('.')[1])"
+          class="v-label v-label--active theme--light ml-6"
+          >{{ $t("drawer.filter.field")[count.field.split(".")[1]] }}</label
+        >
 
-        <v-autocomplete v-model="data[count.field.split('.')[1]]" item-value="name" :items="count.entries" :label="$t('drawer.filter.field')[count.field.split('.')[1]]" :disabled="!count.entries.length" :filter="filterAutocomplete" @click:clear="remove(-1, count.field.split('.')[1])" class="mb-4" background-color="grey lighten-4" solo rounded hide-details hide-selected flat clearable multiple>
+        <v-autocomplete
+          v-model="data[count.field.split('.')[1]]"
+          item-value="name"
+          :items="count.entries"
+          :label="$t('drawer.filter.field')[count.field.split('.')[1]]"
+          :disabled="!count.entries.length"
+          :filter="filterAutocomplete"
+          @click:clear="remove(-1, count.field.split('.')[1])"
+          class="mb-4"
+          background-color="grey lighten-4"
+          solo
+          rounded
+          hide-details
+          hide-selected
+          flat
+          clearable
+          multiple
+        >
           <template v-slot:item="{ on, item }">
             <v-list-item v-on="on">
               <v-list-item-content>
                 <v-list-item-title class="meta">
                   <div :title="item.name">{{ item.name }}</div>
-                  <div class="ml-3" :title="item.count+' '+$t('drawer.filter.objects')">({{ item.count }})</div>
+                  <div
+                    class="ml-3"
+                    :title="item.count + ' ' + $t('drawer.filter.objects')"
+                  >
+                    ({{ item.count }})
+                  </div>
                 </v-list-item-title>
               </v-list-item-content>
             </v-list-item>
           </template>
 
           <template v-slot:selection="{ attrs, selected, item }">
-            <v-chip v-bind="attrs" :input-value="selected" @click:close="remove(item.name, count.field.split('.')[1])" close>
+            <v-chip
+              v-bind="attrs"
+              :input-value="selected"
+              @click:close="remove(item.name, count.field.split('.')[1])"
+              close
+            >
               <span :title="item.name">{{ item.name }}</span>
             </v-chip>
           </template>
@@ -40,31 +82,89 @@
 
       <div class="date-range mb-4">
         <v-layout row class="mx-6 ma-1">
-          <label class="v-input v-label v-label--active theme--light">{{ $t('drawer.filter.field.period') }}</label>
+          <label class="v-input v-label v-label--active theme--light">{{
+            $t("drawer.filter.field.period")
+          }}</label>
 
-          <v-btn v-if="dateToggle" @click="dateToggle=false" :title="$t('drawer.filter.period.hide')" icon small>
+          <v-btn
+            v-if="dateToggle"
+            @click="dateToggle = false"
+            :title="$t('drawer.filter.period.hide')"
+            icon
+            small
+          >
             <v-icon>mdi-eye-off-outline</v-icon>
           </v-btn>
-          <v-btn v-else @click="dateToggle=true" :title="$t('drawer.filter.period.show')" icon small>
+          <v-btn
+            v-else
+            @click="dateToggle = true"
+            :title="$t('drawer.filter.period.show')"
+            icon
+            small
+          >
             <v-icon>mdi-eye-outline</v-icon>
           </v-btn>
         </v-layout>
 
-        <v-range-slider v-if="dateToggle" v-model="dateRange" min="1000" max="2000" color="secondary" :disabled="!dateToggle" @end="commitDateRange" hide-details>
+        <v-range-slider
+          v-if="dateToggle"
+          v-model="dateRange"
+          min="1000"
+          max="2000"
+          color="secondary"
+          :disabled="!dateToggle"
+          @end="commitDateRange"
+          hide-details
+        >
           <template v-slot:prepend>
-            <v-text-field :value="dateRange[0]" type="number" class="mt-0 pt-0" background-color="grey lighten-4" style="width: 85px" @change="$set(dateRange, 0, $event)" hide-details single-line rounded flat></v-text-field>
+            <v-text-field
+              :value="dateRange[0]"
+              type="number"
+              class="mt-0 pt-0"
+              background-color="grey lighten-4"
+              style="width: 85px"
+              @change="$set(dateRange, 0, $event)"
+              hide-details
+              single-line
+              rounded
+              flat
+            ></v-text-field>
           </template>
 
           <template v-slot:append>
-            <v-text-field :value="dateRange[1]" type="number" class="mt-0 pt-0" background-color="grey lighten-4" style="width: 85px" @change="$set(dateRange, 1, $event)" hide-details single-line rounded flat></v-text-field>
+            <v-text-field
+              :value="dateRange[1]"
+              type="number"
+              class="mt-0 pt-0"
+              background-color="grey lighten-4"
+              style="width: 85px"
+              @change="$set(dateRange, 1, $event)"
+              hide-details
+              single-line
+              rounded
+              flat
+            ></v-text-field>
           </template>
         </v-range-slider>
       </div>
 
       <div>
-        <label v-if="select" class="v-label v-label--active theme--light ml-6">{{ $t('drawer.filter.field.index') }}</label>
+        <label
+          v-if="select"
+          class="v-label v-label--active theme--light ml-6"
+          >{{ $t("drawer.filter.field.index") }}</label
+        >
 
-        <v-autocomplete v-model="select" :items="selectItems" label="Index" background-color="grey lighten-4" solo rounded hide-details flat>
+        <v-autocomplete
+          v-model="select"
+          :items="selectItems"
+          label="Index"
+          background-color="grey lighten-4"
+          solo
+          rounded
+          hide-details
+          flat
+        >
           <template v-slot:item="{ on, item }">
             <v-list-item v-on="on">
               <v-list-item-content>
@@ -94,22 +194,22 @@ export default {
       dateToggle: false,
       dateRange: [1400, 1900],
       select: this.$store.state.api.index,
-      selectItems: ['artigo', 'wikidata', 'rijksmuseum'],
+      selectItems: ["artigo", "wikidata", "rijksmuseum"],
       drawer: this.$store.state.user.drawer.filter,
     };
   },
   methods: {
     close() {
-      this.$store.commit('toggleDrawer', 'filter');
+      this.$store.commit("toggleDrawer", "filter");
     },
     remove(value, field) {
-      this.$store.commit('removeFilter', { value, field });
+      this.$store.commit("removeFilter", { value, field });
     },
     removeAllFilters() {
-      this.$store.commit('removeAllFilters');
+      this.$store.commit("removeAllFilters");
     },
     commitDateRange() {
-      this.$store.commit('updateDateRange', this.dateRange);
+      this.$store.commit("updateDateRange", this.dateRange);
     },
     filterAutocomplete(item, queryText) {
       const key = item.key.toLocaleLowerCase();
@@ -152,7 +252,7 @@ export default {
       handler(data) {
         Object.keys(data).forEach((field) => {
           data[field].forEach((value) => {
-            this.$store.commit('addFilter', { value, field });
+            this.$store.commit("addFilter", { value, field });
           });
         });
       },
@@ -163,14 +263,14 @@ export default {
     },
     drawer(value) {
       if (!value && this.$store.state.user.drawer.filter) {
-        this.$store.commit('toggleDrawer', 'filter');
+        this.$store.commit("toggleDrawer", "filter");
       }
     },
     dateToggle(value) {
       if (value) {
-        this.$store.commit('updateDateRange', this.dateRange);
+        this.$store.commit("updateDateRange", this.dateRange);
       } else {
-        this.$store.commit('updateDateRange', []);
+        this.$store.commit("updateDateRange", []);
       }
     },
     updateDateToggle(value) {
@@ -179,7 +279,7 @@ export default {
       }
     },
     select(value) {
-      this.$store.commit('updateIndex', value);
+      this.$store.commit("updateIndex", value);
     },
   },
   created() {
@@ -197,7 +297,8 @@ export default {
 
 <style>
 .v-navigation-drawer:not(.v-navigation-drawer--close) {
-  box-shadow: 0 8px 10px -5px rgb(0 0 0 / 20%), 0 16px 24px 2px rgb(0 0 0 / 14%), 0 6px 30px 5px rgb(0 0 0 / 12%);
+  box-shadow: 0 8px 10px -5px rgb(0 0 0 / 20%), 0 16px 24px 2px rgb(0 0 0 / 14%),
+    0 6px 30px 5px rgb(0 0 0 / 12%);
 }
 
 .container > div > label {
@@ -209,11 +310,12 @@ export default {
   font-size: 12px;
 }
 
-.v-select__slot label, .container > div > label {
+.v-select__slot label,
+.container > div > label {
   text-transform: capitalize;
 }
 
-.v-select__slot .v-chip__content > span  {
+.v-select__slot .v-chip__content > span {
   text-overflow: ellipsis;
   max-width: 160px;
   overflow: hidden;
@@ -243,16 +345,18 @@ export default {
   color: #bbb;
 }
 
-.v-menu__content .v-list-item__title.index, .v-chip__content > .index  {
+.v-menu__content .v-list-item__title.index,
+.v-chip__content > .index {
   text-transform: capitalize;
 }
 
-input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-input[type=number] {
+input[type="number"] {
   -moz-appearance: textfield;
 }
 </style>

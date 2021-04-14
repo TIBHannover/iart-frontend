@@ -78,6 +78,7 @@
                   <span class="capitalize">{{ $t('drawer.filter.field')[field] }}</span>
                 </v-col>
 
+
                 <v-col cols="9">
                   <v-chip v-for="(value, index) in values" :key="index" :disabled="value.disable" class="mr-1 mb-2" @click="filter(value.name, field)" :title="$t('drawer.filter.title')" outlined>
                     <span>{{ value.name }}</span>
@@ -137,7 +138,7 @@
 
 <script>
 export default {
-  props: ['value', 'entry'],
+  props: ["value", "entry"],
   data() {
     return {
       moreTags: true,
@@ -148,23 +149,24 @@ export default {
       const { settings } = this.$store.state.api;
       const query = { type, positive: true, value };
 
-      if (type === 'idx') {
+      if (type === "idx") {
         query.value = this.entry.id;
         query.weights = settings.weights;
-        query.label = this.title.join(' ');
+        query.label = this.title.join(" ");
       }
 
+      console.log(JSON.stringify(query));
       if (append) {
-        this.$store.commit('addQuery', query);
+        this.$store.commit("addQuery", query);
       } else {
-        this.$store.commit('updateQuery', [query]);
+        this.$store.commit("updateQuery", [query]);
       }
 
-      this.$emit('input');
+      this.$emit("input");
     },
     filter(value, field) {
-      this.$store.commit('addFilter', { value, field });
-      this.$emit('input');
+      this.$store.commit("addFilter", { value, field });
+      this.$emit("input");
     },
   },
   computed: {
@@ -172,35 +174,35 @@ export default {
       const title = [];
 
       this.entry.meta.forEach(({ name, value_str }) => {
-        if (name === 'title' && value_str) {
+        if (name === "title" && value_str) {
           title.push(value_str);
         }
       });
 
-      if (title.length) return title[0].split(' ');
-      return [this.$t('griditem.notitle')];
+      if (title.length) return title[0].split(" ");
+      return [this.$t("griditem.notitle")];
     },
     artist() {
       const artist = [];
 
       this.entry.meta.forEach(({ name, value_str }) => {
-        if (name === 'artist_name' && value_str) {
+        if (name === "artist_name" && value_str) {
           artist.push(value_str);
         }
       });
 
       if (artist.length) return artist;
-      return [this.$t('griditem.noartist')];
+      return [this.$t("griditem.noartist")];
     },
     date() {
       let year_min = null;
       let year_max = null;
 
       this.entry.meta.forEach(({ name, value_str }) => {
-        if (value_str)  {
-          if (name === 'year_min') {
+        if (value_str) {
+          if (name === "year_min") {
             year_min = value_str;
-          } else if (name === 'yaer_max') {
+          } else if (name === "yaer_max") {
             year_max = value_str;
           }
         }
@@ -247,16 +249,20 @@ export default {
     },
     metadata() {
       const selectedFields = [
-        'depicts', 'genre', 'location', 'medium',
-        'object_type', 'institution',
+        "depicts",
+        "genre",
+        "location",
+        "medium",
+        "object_type",
+        "institution",
       ];
 
       const metadata = {};
       const counts = {};
 
       this.$store.state.api.counts.forEach(({ entries, field }) => {
-        const field_name = field.split('.')[1];
-        
+        const field_name = field.split(".")[1];
+
         entries.forEach(({ name }) => {
           if (Object.prototype.hasOwnProperty.call(counts, field_name)) {
             counts[field_name].push(name);
@@ -267,7 +273,7 @@ export default {
       });
 
       this.entry.meta.forEach(({ name, value_str }) => {
-        if (selectedFields.includes(name))  {
+        if (selectedFields.includes(name)) {
           const disable = !counts[name].includes(value_str);
 
           if (Object.prototype.hasOwnProperty.call(metadata, name)) {
@@ -281,11 +287,11 @@ export default {
       return metadata;
     },
     references() {
-      const wd = 'https://www.wikidata.org/wiki/';
+      const wd = "https://www.wikidata.org/wiki/";
       const references = [];
 
       this.entry.meta.forEach(({ name, value_str }) => {
-        if (name === 'wikidata' && value_str)  {
+        if (name === "wikidata" && value_str) {
           references.push({
             name,
             value: value_str,
@@ -317,32 +323,36 @@ export default {
   padding: 0;
 }
 
-.v-dialog .text-h5, .v-dialog .text-h6 {
+.v-dialog .text-h5,
+.v-dialog .text-h6 {
   word-break: break-word;
 }
 
-.v-dialog .text-h5 > span, .v-dialog .text-h6 > span, .v-dialog .v-expansion-panel .capitalize {
+.v-dialog .text-h5 > span,
+.v-dialog .text-h6 > span,
+.v-dialog .v-expansion-panel .capitalize {
   text-transform: capitalize;
 }
 
-.v-dialog .text-h6 > span, .v-dialog .text-h5 > span {
+.v-dialog .text-h6 > span,
+.v-dialog .text-h5 > span {
   cursor: pointer;
 }
 
 .v-dialog .text-h6 > span:after {
-  content: ', ';
+  content: ", ";
 }
 
 .v-dialog .text-h6 > span:last-child:after {
-  content: '';
+  content: "";
 }
 
 .v-dialog .text-h5 > span:after {
-  content: ' ';
+  content: " ";
 }
 
 .v-dialog .text-h5 > span:last-child:after {
-  content: '';
+  content: "";
 }
 
 .v-dialog span.clip {

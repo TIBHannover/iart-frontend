@@ -59,13 +59,13 @@
 </template>
 
 <script>
-import Main from '@/components/Main.vue';
-import Loader from '@/components/Loader.vue';
-import Weights from '@/components/Weights.vue';
-import UserMenu from '@/components/UserMenu.vue';
-import ModalSearch from '@/components/ModalSearch.vue';
-import DrawerFilter from '@/components/DrawerFilter.vue';
-import DrawerSettings from '@/components/DrawerSettings.vue';
+import Main from "@/components/Main.vue";
+import Loader from "@/components/Loader.vue";
+import Weights from "@/components/Weights.vue";
+import UserMenu from "@/components/UserMenu.vue";
+import ModalSearch from "@/components/ModalSearch.vue";
+import DrawerFilter from "@/components/DrawerFilter.vue";
+import DrawerSettings from "@/components/DrawerSettings.vue";
 
 export default {
   data() {
@@ -76,11 +76,11 @@ export default {
   },
   methods: {
     submit(random = false) {
-      this.$store.commit('updateRandom', random);
-      this.$store.dispatch('load');
+      this.$store.commit("updateRandom", random);
+      this.$store.dispatch("load");
     },
     load() {
-      this.$store.dispatch('load');
+      this.$store.dispatch("load");
     },
     remove(index) {
       if (index === -1) {
@@ -91,14 +91,14 @@ export default {
     },
     insert() {
       const params = { data: this.data };
-      this.$store.dispatch('insert', params);
+      this.$store.dispatch("insert", params);
     },
     toggle(index) {
       const value = this.query[index].positive;
       this.query[index].positive = !value;
     },
     toggleDrawer(value) {
-      this.$store.commit('toggleDrawer', value);
+      this.$store.commit("toggleDrawer", value);
     },
     updateWeights(index, value) {
       this.query[index].weights = value;
@@ -108,7 +108,8 @@ export default {
     nFilters() {
       const { filters, dateRange } = this.$store.state.api;
       let total = Object.values(filters).reduce(
-        (t, values) => t + values.length, 0,
+        (t, values) => t + values.length,
+        0
       );
 
       if (dateRange.length) total += 1;
@@ -139,7 +140,7 @@ export default {
       this.load();
     },
     layout(new_value, old_value) {
-      if (new_value != old_value && new_value === 'umap') {
+      if (new_value != old_value && new_value === "umap") {
         this.load();
       }
     },
@@ -147,22 +148,22 @@ export default {
       handler(new_values, old_values) {
         if (new_values.length !== old_values.length) {
           this.query = new_values.map((value) => {
-            if (typeof value === 'string') {
+            if (typeof value === "string") {
               let positive = true;
 
-              if (value.charAt(0) === '-') {
+              if (value.charAt(0) === "-") {
                 value = value.slice(1);
                 positive = false;
               }
 
-              value = { type: 'txt', positive, value };
+              value = { type: "txt", positive, value };
             }
 
             return value;
           });
         }
 
-        this.$store.commit('updateQuery', this.query);
+        this.$store.commit("updateQuery", this.query);
       },
       deep: true,
     },
@@ -178,14 +179,14 @@ export default {
     },
   },
   created() {
-    this.$store.dispatch('setState', this.$route.query);
+    this.$store.dispatch("setState", this.$route.query);
   },
   mounted() {
     const self = this;
 
     window.onpopstate = function () {
-      self.$store.dispatch('setState', self.$route.query);
-      self.$store.commit('toggleBackBtn');
+      self.$store.dispatch("setState", self.$route.query);
+      self.$store.commit("toggleBackBtn");
     };
   },
   components: {
@@ -225,7 +226,11 @@ header .v-autocomplete {
   max-height: 25px !important;
 }
 
-header .v-autocomplete .v-text-field.v-text-field--solo .v-input__control input {
+header
+  .v-autocomplete
+  .v-text-field.v-text-field--solo
+  .v-input__control
+  input {
   max-width: fit-content;
   min-width: 0;
 }
@@ -264,7 +269,7 @@ header .v-autocomplete .v-select__selections > .v-chip {
 .theme--light.v-list-item:not(.v-list-item--active):not(.v-list-item--disabled),
 .v-card.login .v-btn.register,
 .v-banner .v-btn--text:hover .v-icon {
-  color: #1D3557 !important;
+  color: #1d3557 !important;
 }
 
 .theme--light.v-icon,
