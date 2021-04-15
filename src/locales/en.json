@@ -18,15 +18,15 @@
         "hide": "Hide Period Filter"
       },
       "field": {
-        "depicts": "Depicts",
-        "object_type": "Object Type",
-        "location": "Location",
-        "artist_name": "Artist",
-        "medium": "Medium",
-        "institution": "Institution",
-        "genre": "Genre",
-        "period": "Period",
-        "index": "Index"
+        "meta.depicts": "Depicts",
+        "meta.object_type": "Object Type",
+        "meta.location": "Location",
+        "meta.artist_name": "Artist",
+        "meta.medium": "Medium",
+        "meta.institution": "Institution",
+        "meta.genre": "Genre",
+        "meta.period": "Period",
+        "origin.name": "Database"
       }
     },
     "settings": {

@@ -23,7 +23,6 @@ function lsplit(x, sep, maxsplit) {
 
 const api = {
   state: {
-    index: 'wikidata',
     loading: false,
     random: null,
     query: [],
@@ -41,7 +40,6 @@ const api = {
   actions: {
     load({ commit, dispatch, state }) {
       const params = {
-        data: state.index,
         query: state.query,
         random: state.random,
         filters: state.filters,
@@ -112,14 +110,13 @@ const api = {
           commit('updateLoading', false);
         });
     },
-    upload({ commit, dispatch, state }, params) {
+    upload({ commit, state }, params) {
       let formData = new FormData();
-      if (params.type == "file") {
-        formData.append("file", params.value);
-      }
-      else if (params.type == "url") {
-        formData.append("url", params.value);
 
+      if (params.type === 'file') {
+        formData.append('file', params.value);
+      } else if (params.type === 'url') {
+        formData.append('url', params.value);
       }
 
       axios.post(`${config.API_LOCATION}/upload`, formData,
@@ -130,18 +127,15 @@ const api = {
         })
         .then((res) => {
           if (res.data.status === 'ok') {
-
             const query = {
-              type: "idx",
+              type: 'idx',
               positive: true,
               value: res.data.entries[0].id,
               weights: state.settings.weights,
               label: res.data.entries[0].meta.title,
             };
 
-            console.log(JSON.stringify(query));
-            // TODO @stefanie add or replace?
-            commit("addQuery", query);
+            commit('updateQuery', [query]);
           }
 
           commit('updateLoading', false);
@@ -153,11 +147,6 @@ const api = {
         });
     },
     setState({ commit }, params) {
-      const selectedFields = [
-        'depicts', 'genre', 'location', 'medium',
-        'object_type', 'institution', 'artist_name',
-      ];
-
       if (!keyInObj('period', params)) {
         commit('updateDateRange', []);
       }
@@ -220,7 +209,7 @@ const api = {
           }
         }
 
-        if (selectedFields.includes(field)) {
+        if (config.DEFAULT_AGGREGATION_FIELDS.includes(field)) {
           const values = params[field].split(',');
 
           values.forEach((value) => {
@@ -269,9 +258,6 @@ const api = {
     },
     updateHits(state, hits) {
       state.hits = hits;
-    },
-    updateIndex(state, index) {
-      state.index = index;
     },
     updateCounts(state, counts) {
       state.counts = counts;

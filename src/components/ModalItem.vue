@@ -46,7 +46,7 @@
         </div>
 
         <div class="artist text-h6 max-w font-weight-regular grey--text mt-1">
-          <span v-for="(name, index) in artist" :key="index" @click="filter(name, 'artist_name')">{{ name }}<span>
+          <span v-for="(name, index) in artist" :key="index" @click="filter(name, 'meta.artist_name')">{{ name }}<span>
         </div>
       </v-card-title>
 
@@ -155,7 +155,6 @@ export default {
         query.label = this.title.join(" ");
       }
 
-      console.log(JSON.stringify(query));
       if (append) {
         this.$store.commit("addQuery", query);
       } else {
@@ -249,37 +248,37 @@ export default {
     },
     metadata() {
       const selectedFields = [
-        "depicts",
-        "genre",
-        "location",
-        "medium",
-        "object_type",
-        "institution",
+        "meta.depicts",
+        "meta.genre",
+        "meta.location",
+        "meta.medium",
+        "meta.object_type",
+        "meta.institution",
       ];
 
       const metadata = {};
       const counts = {};
 
       this.$store.state.api.counts.forEach(({ entries, field }) => {
-        const field_name = field.split(".")[1];
-
         entries.forEach(({ name }) => {
-          if (Object.prototype.hasOwnProperty.call(counts, field_name)) {
-            counts[field_name].push(name);
+          if (Object.prototype.hasOwnProperty.call(counts, field)) {
+            counts[field].push(name);
           } else {
-            counts[field_name] = [name];
+            counts[field] = [name];
           }
         });
       });
 
       this.entry.meta.forEach(({ name, value_str }) => {
-        if (selectedFields.includes(name)) {
-          const disable = !counts[name].includes(value_str);
+        const field = `meta.${name}`;
 
-          if (Object.prototype.hasOwnProperty.call(metadata, name)) {
-            metadata[name].push({ name: value_str, disable });
+        if (selectedFields.includes(field)) {
+          const disable = !counts[field].includes(value_str);
+
+          if (Object.prototype.hasOwnProperty.call(metadata, field)) {
+            metadata[field].push({ name: value_str, disable });
           } else {
-            metadata[name] = [{ name: value_str, disable }];
+            metadata[field] = [{ name: value_str, disable }];
           }
         }
       });

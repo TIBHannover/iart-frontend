@@ -28,19 +28,19 @@
     <v-container class="ml-1 mt-n1">
       <div v-for="(count, index) in counts" :key="index">
         <label
-          v-if="notEmpty(count.field.split('.')[1])"
+          v-if="notEmpty(count.field)"
           class="v-label v-label--active theme--light ml-6"
-          >{{ $t("drawer.filter.field")[count.field.split(".")[1]] }}</label
+          >{{ $t("drawer.filter.field")[count.field] }}</label
         >
 
         <v-autocomplete
-          v-model="data[count.field.split('.')[1]]"
+          v-model="data[count.field]"
           item-value="name"
           :items="count.entries"
-          :label="$t('drawer.filter.field')[count.field.split('.')[1]]"
+          :label="$t('drawer.filter.field')[count.field]"
           :disabled="!count.entries.length"
           :filter="filterAutocomplete"
-          @click:clear="remove(-1, count.field.split('.')[1])"
+          @click:clear="remove(-1, count.field)"
           class="mb-4"
           background-color="grey lighten-4"
           solo
@@ -71,7 +71,7 @@
             <v-chip
               v-bind="attrs"
               :input-value="selected"
-              @click:close="remove(item.name, count.field.split('.')[1])"
+              @click:close="remove(item.name, count.field)"
               close
             >
               <span :title="item.name">{{ item.name }}</span>
@@ -82,9 +82,9 @@
 
       <div class="date-range mb-4">
         <v-layout row class="mx-6 ma-1">
-          <label class="v-input v-label v-label--active theme--light">{{
-            $t("drawer.filter.field.period")
-          }}</label>
+          <label class="v-input v-label v-label--active theme--light">
+            {{ $t("drawer.filter.field['meta.period']") }}
+          </label>
 
           <v-btn
             v-if="dateToggle"
@@ -147,41 +147,6 @@
           </template>
         </v-range-slider>
       </div>
-
-      <div>
-        <label
-          v-if="select"
-          class="v-label v-label--active theme--light ml-6"
-          >{{ $t("drawer.filter.field.index") }}</label
-        >
-
-        <v-autocomplete
-          v-model="select"
-          :items="selectItems"
-          label="Index"
-          background-color="grey lighten-4"
-          solo
-          rounded
-          hide-details
-          flat
-        >
-          <template v-slot:item="{ on, item }">
-            <v-list-item v-on="on">
-              <v-list-item-content>
-                <v-list-item-title class="index">
-                  {{ item }}
-                </v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </template>
-
-          <template v-slot:selection="{ attrs, selected, item }">
-            <v-chip v-bind="attrs" :input-value="selected">
-              <span class="index">{{ item }}</span>
-            </v-chip>
-          </template>
-        </v-autocomplete>
-      </div>
     </v-container>
   </v-navigation-drawer>
 </template>
@@ -193,8 +158,6 @@ export default {
       data: {},
       dateToggle: false,
       dateRange: [1400, 1900],
-      select: this.$store.state.api.index,
-      selectItems: ["artigo", "wikidata", "rijksmuseum"],
       drawer: this.$store.state.user.drawer.filter,
     };
   },
@@ -278,9 +241,6 @@ export default {
         this.dateToggle = false;
       }
     },
-    select(value) {
-      this.$store.commit("updateIndex", value);
-    },
   },
   created() {
     const { dateRange } = this.$store.state.api;
@@ -343,11 +303,6 @@ export default {
   text-align: right;
   flex-grow: 1;
   color: #bbb;
-}
-
-.v-menu__content .v-list-item__title.index,
-.v-chip__content > .index {
-  text-transform: capitalize;
 }
 
 input::-webkit-outer-spin-button,

@@ -119,9 +119,6 @@ export default {
     dateRange() {
       return this.$store.state.api.dateRange;
     },
-    data() {
-      return this.$store.state.api.index;
-    },
     layout() {
       return this.$store.state.api.settings.layout;
     },
@@ -134,9 +131,6 @@ export default {
       this.load();
     },
     dateRange() {
-      this.load();
-    },
-    data() {
       this.load();
     },
     layout(new_value, old_value) {
