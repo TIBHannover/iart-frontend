@@ -173,7 +173,10 @@ export default {
     },
   },
   created() {
-    this.$store.dispatch("setState", this.$route.query);
+    const self = this;
+    this.$store.dispatch("getCSRFToken").then(function () {
+      self.$store.dispatch("setState", self.$route.query);
+    });
   },
   mounted() {
     const self = this;
