@@ -54,7 +54,10 @@ const user = {
 
       axios.post(`${config.API_LOCATION}/login`, { params })
         .then((res) => {
-          commit('updateUserData', res.data);
+          if (res.data.status === "ok") {
+            commit('updateUserData', { ...res.data.data, login: true });
+          }
+
         })
         .catch(() => {
           commit('updateUserData', { login: false });
@@ -69,7 +72,12 @@ const user = {
 
       axios.post(`${config.API_LOCATION}/logout`, { params })
         .then((res) => {
-          commit('updateUserData', res.data);
+
+          if (res.data.status === "ok") {
+            commit('updateUserData', { login: false });
+          }
+
+
         })
         .catch((error) => {
           console.log(error);
