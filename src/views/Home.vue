@@ -48,7 +48,9 @@
           <v-icon>mdi-cog-outline</v-icon>
         </v-btn>
 
+        <History />
         <UserMenu />
+      </v-layout>
     </v-app-bar>
 
     <DrawerSettings />
@@ -59,8 +61,11 @@
 </template>
 
 <script>
+import { isEqual } from "@/plugins/helpers";
+
 import Main from "@/components/Main.vue";
 import Loader from "@/components/Loader.vue";
+import History from "@/components/History.vue";
 import Weights from "@/components/Weights.vue";
 import UserMenu from "@/components/UserMenu.vue";
 import ModalSearch from "@/components/ModalSearch.vue";
@@ -76,11 +81,11 @@ export default {
   },
   methods: {
     submit(random = false) {
-      this.$store.commit("updateRandom", random);
-      this.$store.dispatch("load");
+      this.$store.commit("api/updateRandom", random);
+      this.$store.dispatch("api/load");
     },
     load() {
-      this.$store.dispatch("load");
+      this.$store.dispatch("api/load");
     },
     remove(index) {
       if (index === -1) {
@@ -91,14 +96,14 @@ export default {
     },
     insert() {
       const params = { data: this.data };
-      this.$store.dispatch("insert", params);
+      this.$store.dispatch("api/insert", params);
     },
     toggle(index) {
       const value = this.query[index].positive;
       this.query[index].positive = !value;
     },
     toggleDrawer(value) {
-      this.$store.commit("toggleDrawer", value);
+      this.$store.commit("user/toggleDrawer", value);
     },
     updateWeights(index, value) {
       this.query[index].weights = value;
@@ -134,13 +139,13 @@ export default {
       this.load();
     },
     layout(new_value, old_value) {
-      if (new_value != old_value && new_value === "umap") {
+      if (new_value !== old_value && new_value === "umap") {
         this.load();
       }
     },
     query: {
       handler(new_values, old_values) {
-        if (new_values.length !== old_values.length) {
+        if (!isEqual(new_values.length, old_values.length)) {
           this.query = new_values.map((value) => {
             if (typeof value === "string") {
               let positive = true;
@@ -155,9 +160,9 @@ export default {
 
             return value;
           });
-        }
 
-        this.$store.commit("updateQuery", this.query);
+          this.$store.commit("api/updateQuery", this.query);
+        }
       },
       deep: true,
     },
@@ -174,21 +179,23 @@ export default {
   },
   created() {
     const self = this;
-    this.$store.dispatch("getCSRFToken").then(function () {
-      self.$store.dispatch("setState", self.$route.query);
+    
+    this.$store.dispatch("user/getCSRFToken").then(function () {
+      self.$store.dispatch("api/setState", self.$route.query);
     });
   },
   mounted() {
     const self = this;
 
     window.onpopstate = function () {
-      self.$store.dispatch("setState", self.$route.query);
-      self.$store.commit("toggleBackBtn");
+      self.$store.dispatch("api/setState", self.$route.query);
+      self.$store.commit("api/toggleBackBtn");
     };
   },
   components: {
     Main,
     Loader,
+    History,
     Weights,
     UserMenu,
     ModalSearch,

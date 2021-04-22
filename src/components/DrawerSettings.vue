@@ -68,7 +68,7 @@ export default {
   },
   methods: {
     close() {
-      this.$store.commit("toggleDrawer", "settings");
+      this.$store.commit("user/toggleDrawer", "settings");
     },
     commit() {
       const settings = {
@@ -77,7 +77,7 @@ export default {
         zoomLevel: this.zoomLevel,
       };
 
-      this.$store.commit("updateSettings", settings);
+      this.$store.commit("api/updateSettings", settings);
     },
     zoomIn() {
       if (this.zoomLevel < 7) {

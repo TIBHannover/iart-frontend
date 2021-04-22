@@ -2,10 +2,7 @@
   <v-menu v-model="menu" min-width="175" offset-y bottom left open-on-hover>
     <template v-slot:activator="{ attrs, on: menu }">
       <v-btn
-        icon
-        v-bind="attrs"
-        v-on="menu"
-        class="ml-n2"
+        icon v-bind="attrs" v-on="menu" class="ml-n2"
         :title="$t('user.menu.title')"
       >
         <v-icon color="primary">mdi-account-circle</v-icon>
@@ -13,16 +10,17 @@
     </template>
 
     <v-list class="pa-0">
-      <v-list-item v-if="!loggedIn" class="px-0 h44"
-        ><UserLogin @close="menu = false"
-      /></v-list-item>
-      <v-list-item v-if="!loggedIn" class="px-0 h44"
-        ><UserRegister @close="menu = false"
-      /></v-list-item>
-
-      <v-list-item v-if="loggedIn" class="px-0 h44">
-        <v-btn @click="logout" text block large> Logout </v-btn>
-      </v-list-item>
+      <v-list-item-group>
+        <v-list-item v-if="!loggedIn" class="px-0">
+          <UserLogin @close="menu = false" />
+        </v-list-item>
+        <v-list-item v-if="!loggedIn" class="px-0">
+          <UserRegister @close="menu = false" />
+        </v-list-item>
+        <v-list-item v-if="loggedIn" class="px-0">
+          <v-btn @click="logout" text block large> Logout </v-btn>
+        </v-list-item>
+      </v-list-item-group>
     </v-list>
   </v-menu>
 </template>
@@ -39,7 +37,7 @@ export default {
   },
   methods: {
     logout() {
-      this.$store.dispatch("logout");
+      this.$store.dispatch("user/logout");
     },
   },
   computed: {
@@ -66,7 +64,7 @@ export default {
   justify-content: left;
 }
 
-.v-list-item.h44 {
-  min-height: 44px;
+.v-btn:not(.v-btn--round).v-size--large {
+  height: 48px;
 }
 </style>

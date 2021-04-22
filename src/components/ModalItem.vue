@@ -156,15 +156,15 @@ export default {
       }
 
       if (append) {
-        this.$store.commit("addQuery", query);
+        this.$store.commit("api/addQuery", query);
       } else {
-        this.$store.commit("updateQuery", [query]);
+        this.$store.commit("api/updateQuery", [query]);
       }
 
       this.$emit("input");
     },
     filter(value, field) {
-      this.$store.commit("addFilter", { value, field });
+      this.$store.commit("api/addFilter", { value, field });
       this.$emit("input");
     },
   },

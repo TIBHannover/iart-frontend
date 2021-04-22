@@ -26,7 +26,7 @@
         "meta.institution": "Institution",
         "meta.genre": "Genre",
         "meta.period": "Period",
-        "origin.name": "Database"
+        "origin.name": "Data"
       }
     },
     "settings": {
@@ -39,6 +39,17 @@
         "flexible": "Flexible Layout",
         "regular": "Regular Layout",
         "umap": "Canvas Layout"
+      }
+    },
+    "history": {
+      "title": "Search History",
+      "query": {
+        "empty": "Empty Query",
+        "filled": "Query"
+      },
+      "filter": {
+        "empty": "No Filters",
+        "filled": "Filters"
       }
     }
   },
@@ -115,13 +126,14 @@
   "search": {
     "random": "Random Search",
     "object": "Search Object",
-    "append": "Append To Search",
+    "append": "Append to Search",
     "new": "Launch New Search"
   },
   "button": {
     "update": "Update",
     "cancel": "Cancel",
-    "submit": "Submit"
+    "submit": "Submit",
+    "remove": "Remove"
   },
   "field": {
     "required": "This is a required field."

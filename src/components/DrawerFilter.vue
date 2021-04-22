@@ -10,7 +10,7 @@
     <v-toolbar flat class="v-bar--underline">
       <v-toolbar-title>{{ $t("drawer.filter.title") }}</v-toolbar-title>
 
-      <div class="v-btn--absolute v-btn--right" style="position: absolute">
+      <div class="v-btn--absolute v-btn--right">
         <v-btn
           @click="removeAllFilters"
           :title="$t('drawer.filter.remove')"
@@ -163,16 +163,16 @@ export default {
   },
   methods: {
     close() {
-      this.$store.commit("toggleDrawer", "filter");
+      this.$store.commit("user/toggleDrawer", "filter");
     },
     remove(value, field) {
-      this.$store.commit("removeFilter", { value, field });
+      this.$store.commit("api/removeFilter", { value, field });
     },
     removeAllFilters() {
-      this.$store.commit("removeAllFilters");
+      this.$store.commit("api/removeAllFilters");
     },
     commitDateRange() {
-      this.$store.commit("updateDateRange", this.dateRange);
+      this.$store.commit("api/updateDateRange", this.dateRange);
     },
     filterAutocomplete(item, queryText) {
       const key = item.key.toLocaleLowerCase();
@@ -215,7 +215,7 @@ export default {
       handler(data) {
         Object.keys(data).forEach((field) => {
           data[field].forEach((value) => {
-            this.$store.commit("addFilter", { value, field });
+            this.$store.commit("api/addFilter", { value, field });
           });
         });
       },
@@ -226,14 +226,14 @@ export default {
     },
     drawer(value) {
       if (!value && this.$store.state.user.drawer.filter) {
-        this.$store.commit("toggleDrawer", "filter");
+        this.$store.commit("user/toggleDrawer", "filter");
       }
     },
     dateToggle(value) {
       if (value) {
-        this.$store.commit("updateDateRange", this.dateRange);
+        this.$store.commit("api/updateDateRange", this.dateRange);
       } else {
-        this.$store.commit("updateDateRange", []);
+        this.$store.commit("api/updateDateRange", []);
       }
     },
     updateDateToggle(value) {

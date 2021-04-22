@@ -27,6 +27,9 @@ export default {
     data() {
       return this.$store.state.api.hits;
     },
+    settings() {
+      return this.$store.state.user.drawer.settings;
+    },
     meshSize() {
       const { settings } = this.$store.state.api;
 
@@ -170,7 +173,13 @@ export default {
       });
     },
     getSize() {
-      const { clientWidth, clientHeight } = document.querySelector(".umap");
+      const umap = document.querySelector(".umap");
+      let { clientWidth, clientHeight } = umap;
+      const rect = umap.getBoundingClientRect();
+
+      if (rect.bottom >= window.innerHeight) {
+        clientHeight -= (rect.bottom - window.innerHeight + 6);
+      }
 
       return [clientWidth, clientHeight];
     },
@@ -226,8 +235,7 @@ export default {
           this.dialog = true;
         }, 250);
       } else {
-        clearTimeout(this.timer);
-        TWEEN.removeAll();
+        clearTimeout(this.timer); TWEEN.removeAll();
         const { x, y, z } = event.data.target.position;
 
         this.resetCamera(x, y, z + 1.5 * this.meshSize);
@@ -240,6 +248,11 @@ export default {
       this.resetCamera(0, 0, 12 * this.zoomStep);
       this.resetControls(0, 0, 0);
       this.resetScene();
+    },
+    settings() {
+      setTimeout(() => {
+        this.onResize();
+      }, 250);
     },
     meshSize() {
       this.resetScene();

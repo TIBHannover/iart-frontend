@@ -73,7 +73,7 @@ export default {
   },
   methods: {
     login() {
-      this.$store.dispatch("login", this.user);
+      this.$store.dispatch("user/login", this.user);
       this.dialog = false;
     },
     checkLength(value) {

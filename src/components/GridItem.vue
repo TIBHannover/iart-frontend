@@ -57,8 +57,9 @@ import ModalItem from "@/components/ModalItem.vue";
 export default {
   data() {
     return {
-      height: "200px",
       width: "auto",
+      height: "200px",
+
       dialog: false,
       disabled: false,
       bookmarked: false,
@@ -76,13 +77,19 @@ export default {
       };
 
       if (append) {
-        this.$store.commit("addQuery", query);
+        this.$store.commit("api/addQuery", query);
       } else {
-        this.$store.commit("updateQuery", [query]);
+        this.$store.commit("api/updateQuery", [query]);
       }
     },
     bookmark(event) {
       if (event.target.nodeName !== "I") {
+        if (!this.bookmarked) {
+          this.$store.commit("user/addBookmark", this.entry.id);
+        } else {
+          this.$store.commit("user/removeBookmark", this.entry.id);
+        }
+
         this.bookmarked = !this.bookmarked;
       }
     },
@@ -101,6 +108,11 @@ export default {
           this.width = `${200 + pixels}px`;
         }
       }
+    },
+    isBookmarked() {
+      const history = this.$store.state.user.history[0];
+
+      return history.bookmarks.includes(this.entry.id);
     },
   },
   computed: {
@@ -145,7 +157,7 @@ export default {
   watch: {
     update(new_entry, old_entry) {
       if (new_entry.id !== old_entry.id) {
-        this.bookmarked = false;
+        this.bookmarked = this.isBookmarked();
         this.disabled = false;
       }
     },
@@ -157,6 +169,7 @@ export default {
     },
   },
   created() {
+    this.bookmarked = this.isBookmarked();
     this.updateSize();
   },
   components: {

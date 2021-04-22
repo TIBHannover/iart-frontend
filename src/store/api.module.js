@@ -1,29 +1,11 @@
 import Vue from 'vue';
 import axios from '../plugins/axios';
 import config from '../../app.config';
-
-function keyInObj(key, obj) {
-  return Object.prototype.hasOwnProperty.call(obj, key);
-}
-
-function isEqual(x, y) {
-  return JSON.stringify(x) === JSON.stringify(y);
-}
-
-function lsplit(x, sep, maxsplit) {
-  x = x.split(sep);
-  const result = x.splice(0, maxsplit);
-
-  if (x.length) {
-    result.push(x.join(sep));
-  }
-
-  return result;
-}
+import { isEqual, lsplit, keyInObj } from '../plugins/helpers';
 
 const api = {
+  namespaced: true,
   state: {
-    loading: false,
     random: null,
     query: [],
 
@@ -50,7 +32,9 @@ const api = {
 
       if (!isEqual(params, state.prevParams)) {
         commit('updateParams', params);
-        commit('updateLoading', true);
+
+        commit('loading/update', true, { root: true });
+        commit('user/addHistory', params, { root: true });
 
         if (!state.backBtn) {
           dispatch('getState');
@@ -62,7 +46,7 @@ const api = {
           .then((res) => {
             if (res.data.job_id !== undefined) {
               commit('updateJobID', res.data.job_id);
-              setTimeout(() => this.dispatch('checkLoad'), 500);
+              setTimeout(() => dispatch('checkLoad'), 500);
             } else {
               // TODO: add cache here
 
@@ -74,14 +58,14 @@ const api = {
                 commit('updateCounts', res.data.aggregations);
               }
 
-              commit('updateLoading', false);
+              commit('loading/update', false, { root: true });
               window.scrollTo(0, 0);
             }
           })
           .catch((error) => {
             console.error(error);
-            commit('updateLoading', false);
-          });
+            commit('loading/update', false, { root: true });
+          });;
       }
     },
     checkLoad({ commit, dispatch, state }) {
@@ -91,7 +75,7 @@ const api = {
         .then((res) => {
           if (res.data.job_id !== undefined) {
             commit('updateJobID', res.data.job_id);
-            setTimeout(() => this.dispatch('checkLoad'), 500);
+            setTimeout(() => dispatch('checkLoad'), 500);
           } else {
             if (keyInObj('entries', res.data)) {
               commit('updateHits', res.data.entries);
@@ -101,13 +85,13 @@ const api = {
               commit('updateCounts', res.data.aggregations);
             }
 
-            commit('updateLoading', false);
+            commit('loading/update', false, { root: true });
             window.scrollTo(0, 0);
           }
         })
         .catch((error) => {
           console.error(error);
-          commit('updateLoading', false);
+          commit('loading/update', false, { root: true });
         });
     },
     upload({ commit, state }, params) {
@@ -138,12 +122,13 @@ const api = {
             commit('updateQuery', [query]);
           }
 
-          commit('updateLoading', false);
           window.scrollTo(0, 0);
         })
         .catch((error) => {
           console.error(error);
-          commit('updateLoading', false);
+        })
+        .finally(() => {
+          commit('loading/update', false, { root: true });
         });
     },
     setState({ commit }, params) {
@@ -262,9 +247,6 @@ const api = {
     updateCounts(state, counts) {
       state.counts = counts;
     },
-    updateLoading(state, loading) {
-      state.loading = loading;
-    },
     updateRandom(state, random) {
       if (typeof random === 'boolean') {
         if (random) {
@@ -348,6 +330,23 @@ const api = {
 
       if (state.dateRange.length) {
         state.dateRange = [];
+      }
+    },
+    updateAll(state, params) {
+      if (keyInObj('query', params)) {
+        state.query = params.query;
+      }
+
+      if (keyInObj('random', params)) {
+        state.random = params.random;
+      }
+
+      if (keyInObj('filters', params)) {
+        state.filters = params.filters;
+      }
+
+      if (keyInObj('date_range', params)) {
+        state.dateRange = params.date_range;
       }
     },
   },

@@ -76,7 +76,7 @@ export default {
   },
   methods: {
     register() {
-      this.$store.dispatch("register", this.user);
+      this.$store.dispatch("user/register", this.user);
       this.dialog = false;
     },
     checkLength(value) {

@@ -89,7 +89,7 @@ export default {
         query.value = this.user.url;
       }
 
-      this.$store.dispatch("upload", query);
+      this.$store.dispatch("api/upload", query);
       this.dialog = false;
     },
     checkFile() {

@@ -28,7 +28,7 @@ export default {
   props: ["value"],
   methods: {
     removeAllFilters() {
-      this.$store.commit("removeAllFilters");
+      this.$store.commit("api/removeAllFilters");
       this.$emit("input");
     },
   },
