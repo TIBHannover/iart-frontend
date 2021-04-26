@@ -175,7 +175,7 @@ export default {
       this.$store.commit("api/updateDateRange", this.dateRange);
     },
     filterAutocomplete(item, queryText) {
-      const key = item.key.toLocaleLowerCase();
+      const key = item.name.toLocaleLowerCase();
       const query = queryText.toLocaleLowerCase();
 
       return key.indexOf(query) > -1;

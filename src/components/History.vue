@@ -81,13 +81,19 @@ export default {
       let values = [];
 
       if (Object.keys(item.filters).length) {
-        values = Object.keys(item.filters).map(
-          (key) => `${this.$t("drawer.filter.field")[key]}: ${item.filters[key].join(", ")}`
-        );
+        Object.keys(item.filters).forEach((key) => {
+          if (item.filters[key]) {
+            const title = this.$t("drawer.filter.field")[key];
+            const value = item.filters[key].join(", ");
+
+            values.push(`${title}: ${value}`);
+          }
+        });
       }
 
       if (item.date_range.length) {
-        values.push(`${this.$t("drawer.filter.field")["meta.period"]}: ${item.date_range.join("–")}`);
+        const title = this.$t("drawer.filter.field")["meta.period"];
+        values.push(`${title}: ${item.date_range.join("–")}`);
       }
 
       if (values.length) return `${values.join(" · ")}`;
