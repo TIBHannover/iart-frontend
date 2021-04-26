@@ -1,5 +1,5 @@
 <template>
-  <v-menu v-model="menu" min-width="350" max-width="350" max-height="600" offset-y bottom left open-on-hover>
+  <v-menu v-model="menu" min-width="350" max-width="350" max-height="600" offset-y bottom left open-on-hover :close-on-content-click="false">
     <template v-slot:activator="{ attrs, on: menu }">
       <v-btn icon v-bind="attrs" v-on="menu" class="ml-n2" :title="$t('drawer.history.title')">
         <v-badge v-if="data.length" color="accent" :content="data.length">
@@ -13,8 +13,8 @@
       <v-list-item-group>
         <v-list-item v-for="(item, index) in data">
           <v-list-item-content @click="submit(item, ...arguments)">
-            <div style="line-height: 1.25;">
-              <span v-html="title(item)">{{ title(item) }}</span>
+            <div class="query">
+              <span :title="title(item)" class="clip mr-1">{{ title(item) }}</span>
               <span class="v-label theme--light"> · {{ date(item) }}</span>
             </div>
 
@@ -52,9 +52,9 @@ export default {
 
         item.query.forEach(({ value, label }) => {
           if (label) {
-            values.push(`<span>${label}</span>`);
+            values.push(label);
           } else {
-            values.push(`<span>${value}</span>`);
+            values.push(value);
           }
         });
 
@@ -116,20 +116,14 @@ export default {
   box-shadow: none;
 }
 
-.v-menu__content .clip,
-.history .v-list-item__content span > span {
+.v-menu__content .clip {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
 }
 
-.history .v-list-item__content span > span {
-  display: table-cell;
-  max-width: 150px;
-}
-
-.history .v-list-item__content:hover > div {
-  max-width: 80%;
+.v-menu__content span.clip {
+  max-width: 200px;
 }
 
 .history .v-list-item__content > button {
@@ -138,5 +132,15 @@ export default {
 
 .history .v-list-item__content:hover > button {
   opacity: 1;
+}
+
+.history .v-list-item__content .query {
+   line-height: 1.25;
+}
+
+.history .v-list-item__content .query > span {
+   display: inline-block;
+   vertical-align: top;
+   max-width: 225px;
 }
 </style>

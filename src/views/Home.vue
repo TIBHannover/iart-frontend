@@ -27,6 +27,9 @@
                     <v-icon>mdi-minus</v-icon>
                   </v-btn>
 
+                  <v-icon v-if="item.type==='idx'" class="mr-1">mdi-file-image-outline</v-icon>
+                  <v-icon v-else class="mr-1">mdi-file-document-outline</v-icon>
+
                   <span v-if="item.type==='idx'" :title="item.label">{{ item.label }}</span>
                   <span v-else :title="item.value">{{ item.value }}</span>
                 </v-chip>
@@ -113,8 +116,7 @@ export default {
     nFilters() {
       const { filters, dateRange } = this.$store.state.api;
       let total = Object.values(filters).reduce(
-        (t, values) => t + values.length,
-        0
+        (t, values) => t + values.length, 0
       );
 
       if (dateRange.length) total += 1;
@@ -223,7 +225,7 @@ export default {
 }
 
 header .v-autocomplete {
-  max-width: calc(100% - 295px);
+  max-width: calc(100% - 335px);
 }
 
 .v-autocomplete:not(.v-input--is-focused).v-select--chips input {
