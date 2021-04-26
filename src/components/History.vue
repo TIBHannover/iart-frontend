@@ -65,11 +65,15 @@ export default {
     },
     date(item) {
       const date = new Date(item.date);
-
+      
       const hours = date.getHours();
-      const minutes = date.getMinutes();
+      let minutes = date.getMinutes();
 
       if (date.setHours(0, 0, 0, 0) === (new Date()).setHours(0, 0, 0, 0)) {
+        if (minutes < 10) {
+          return `${hours}:0${minutes}`;
+        }
+
         return `${hours}:${minutes}`;
       }
 
