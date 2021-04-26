@@ -1,5 +1,5 @@
 <template>
-  <v-menu v-model="menu" min-width="300" max-width="300" max-height="600" offset-y bottom left open-on-hover>
+  <v-menu v-model="menu" min-width="350" max-width="350" max-height="600" offset-y bottom left open-on-hover>
     <template v-slot:activator="{ attrs, on: menu }">
       <v-btn icon v-bind="attrs" v-on="menu" class="ml-n2" :title="$t('drawer.history.title')">
         <v-badge v-if="data.length" color="accent" :content="data.length">
@@ -14,7 +14,7 @@
         <v-list-item v-for="(item, index) in data">
           <v-list-item-content @click="submit(item, ...arguments)">
             <div style="line-height: 1.25;">
-              <span>{{ title(item) }}</span>
+              <span v-html="title(item)">{{ title(item) }}</span>
               <span class="v-label theme--light"> · {{ date(item) }}</span>
             </div>
 
@@ -47,8 +47,16 @@ export default {
       }
 
       if (item.query.length) {
-        const values = item.query.map((x) => x.value);
         const title = this.$t("drawer.history.query.filled");
+        const values = [];
+
+        item.query.forEach(({ value, label }) => {
+          if (label) {
+            values.push(`<span>${label}</span>`);
+          } else {
+            values.push(`<span>${value}</span>`);
+          }
+        });
 
         return `${title}: ${values.join(", ")}`;
       }
@@ -70,13 +78,19 @@ export default {
       return `${date.getDate()}. ${month}.`;
     },
     filters(item) {
+      let values = [];
+
       if (Object.keys(item.filters).length) {
-        const values = Object.keys(item.filters).map(
+        values = Object.keys(item.filters).map(
           (key) => `${this.$t("drawer.filter.field")[key]}: ${item.filters[key].join(", ")}`
         );
-
-        return `${values.join(" · ")}`;
       }
+
+      if (item.date_range.length) {
+        values.push(`${this.$t("drawer.filter.field")["meta.period"]}: ${item.date_range.join("–")}`);
+      }
+
+      if (values.length) return `${values.join(" · ")}`;
 
       return this.$t("drawer.history.filter.empty");
     },
@@ -102,10 +116,16 @@ export default {
   box-shadow: none;
 }
 
-.v-menu__content .clip {
+.v-menu__content .clip,
+.history .v-list-item__content span > span {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+}
+
+.history .v-list-item__content span > span {
+  display: table-cell;
+  max-width: 150px;
 }
 
 .history .v-list-item__content:hover > div {
