@@ -3,39 +3,27 @@
     <Umap v-if="settings.layout === 'umap'" />
     <Grid v-else />
 
-    <ModalNoResults v-model="modalNoResults" />
+    <ModalNoResults />
+    <ModalError />
   </v-main>
 </template>
 
 <script>
 import Grid from "@/components/Grid.vue";
 import Umap from "@/components/Umap.vue";
+import ModalError from "@/components/ModalError.vue";
 import ModalNoResults from "@/components/ModalNoResults.vue";
 
 export default {
-  data() {
-    return {
-      modalNoResults: false,
-    };
-  },
   computed: {
-    data() {
-      return this.$store.state.api.hits;
-    },
     settings() {
       return this.$store.state.api.settings;
-    },
-  },
-  watch: {
-    data(value) {
-      if (value.length === 0) {
-        this.modalNoResults = true;
-      }
     },
   },
   components: {
     Grid,
     Umap,
+    ModalError,
     ModalNoResults,
   },
 };

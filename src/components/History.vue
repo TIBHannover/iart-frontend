@@ -77,14 +77,18 @@ export default {
         return `${hours}:${minutes}`;
       }
 
-      const month = date.toLocaleString("default", { month: "short" });
+      let month = date.toLocaleString("default", { month: "short" });
 
-      return `${date.getDate()}. ${month}.`;
+      if (navigator.language.startsWith("en-")) {
+        return `${month}, ${date.getDate()}`;
+      }
+
+      return `${date.getDate()}. ${month}`;
     },
     filters(item) {
       let values = [];
 
-      if (Object.keys(item.filters).length) {
+      if (item.filters && Object.keys(item.filters).length) {
         Object.keys(item.filters).forEach((key) => {
           if (item.filters[key]) {
             const title = this.$t("drawer.filter.field")[key];
@@ -95,7 +99,7 @@ export default {
         });
       }
 
-      if (item.date_range.length) {
+      if (item.date_range && item.date_range.length) {
         const title = this.$t("drawer.filter.field")["meta.period"];
         values.push(`${title}: ${item.date_range.join("–")}`);
       }
@@ -150,7 +154,7 @@ export default {
 
 .history .v-list-item__content .query > span {
    display: inline-block;
-   vertical-align: top;
-   max-width: 225px;
+   vertical-align: middle;
+   max-width: 210px;
 }
 </style>

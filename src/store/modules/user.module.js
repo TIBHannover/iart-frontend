@@ -1,6 +1,6 @@
-import axios from '../plugins/axios';
-import config from '../../app.config';
-import { keyInObj } from '../plugins/helpers';
+import axios from '../../plugins/axios';
+import config from '../../../app.config';
+import { keyInObj } from '../../plugins/helpers';
 
 function getCookie(name) {
   let cookieValue = null;
@@ -126,7 +126,7 @@ const user = {
         params.bookmarks = [];
       }
 
-      state.history.unshift({date: Date(), ...params, hash });
+      state.history.unshift({ date: Date(), ...params, hash });
     },
     removeHistory(state, params) {
       const index = state.history.indexOf(params);

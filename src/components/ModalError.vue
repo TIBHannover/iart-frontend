@@ -2,7 +2,7 @@
   <v-dialog v-model="dialog" max-width="450px">
     <v-card>
       <v-card-title class="mb-2">
-        {{ $t("modal.noresults.title") }}
+        {{ $t("modal.error.title") }}
 
         <v-btn icon @click.native="dialog=false" absolute top right>
           <v-icon>mdi-close</v-icon>
@@ -10,10 +10,10 @@
       </v-card-title>
 
       <v-card-text>
-        <div class="mb-4">{{ $t("modal.noresults.text") }}</div>
+        <div class="mb-4">{{ $t("modal.error.text") }}</div>
 
-        <v-btn color="primary" width="50%" plain @click="removeAllFilters">
-          {{ $t("drawer.filter.remove") }}
+        <v-btn color="primary" width="50%" plain @click="reload">
+          {{ $t("button.reload") }}
         </v-btn>
         <v-btn color="grey" width="50%" plain @click="dialog=false">
           {{ $t("button.cancel") }}
@@ -31,21 +31,19 @@ export default {
     };
   },
   methods: {
-    removeAllFilters() {
-      this.$store.commit("api/removeAllFilters");
+    reload() {
+      window.location.reload();
       this.dialog = false;
     },
   },
   computed: {
-    data() {
-      return this.$store.state.api.hits;
+    update() {
+      return this.$store.state.error.status;
     },
   },
   watch: {
-    data(value) {
-      if (value.length === 0) {
-        this.dialog = true;
-      }
+    update() {
+      this.dialog = true;
     },
   },
 };

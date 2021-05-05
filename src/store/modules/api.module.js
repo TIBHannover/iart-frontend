@@ -1,7 +1,8 @@
 import Vue from 'vue';
-import axios from '../plugins/axios';
-import config from '../../app.config';
-import { isEqual, lsplit, keyInObj } from '../plugins/helpers';
+
+import axios from '../../plugins/axios';
+import config from '../../../app.config';
+import { isEqual, lsplit, keyInObj } from '../../plugins/helpers';
 
 const api = {
   namespaced: true,
@@ -52,10 +53,9 @@ const api = {
 
               if (keyInObj('entries', res.data)) {
                 commit('updateHits', res.data.entries);
-              }
-
-              if (keyInObj('aggregations', res.data)) {
                 commit('updateCounts', res.data.aggregations);
+              } else {
+                commit('error/update', Date(), { root: true });
               }
 
               commit('loading/update', false, { root: true });
@@ -63,7 +63,7 @@ const api = {
             }
           })
           .catch((error) => {
-            console.error(error);
+            commit('error/update', error, { root: true });
             commit('loading/update', false, { root: true });
           });;
       }
@@ -79,10 +79,9 @@ const api = {
           } else {
             if (keyInObj('entries', res.data)) {
               commit('updateHits', res.data.entries);
-            }
-
-            if (keyInObj('aggregations', res.data)) {
               commit('updateCounts', res.data.aggregations);
+            } else {
+              commit('error/update', Date(), { root: true });
             }
 
             commit('loading/update', false, { root: true });
@@ -90,7 +89,7 @@ const api = {
           }
         })
         .catch((error) => {
-          console.error(error);
+          commit('error/update', error, { root: true });
           commit('loading/update', false, { root: true });
         });
     },
@@ -125,7 +124,7 @@ const api = {
           window.scrollTo(0, 0);
         })
         .catch((error) => {
-          console.error(error);
+          commit('error/update', error, { root: true });
         })
         .finally(() => {
           commit('loading/update', false, { root: true });

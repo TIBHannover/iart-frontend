@@ -93,6 +93,10 @@
     "noresults": {
       "title": "Information",
       "text": "Your search did not yield any results. Please modify your query or extend the range of your search, e. g., by removing filters."
+    },
+    "error": {
+      "title": "Error",
+      "text": "An error has occurred while processing your search. Please try again later or contact support."
     }
   },
   "user": {
@@ -133,7 +137,9 @@
     "update": "Update",
     "cancel": "Cancel",
     "submit": "Submit",
-    "remove": "Remove"
+    "remove": "Remove",
+    "reload": "Reload",
+    "retry": "Retry"
   },
   "field": {
     "required": "This is a required field."

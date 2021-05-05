@@ -20,15 +20,15 @@
 
           <v-list class="pa-0">
             <v-list-item class="px-0 h44">
-              <v-btn @click="query(false)" text block large>{{
-                $t("search.new")
-              }}</v-btn>
+              <v-btn @click="query(false)" text block large>
+                {{ $t("search.new") }}
+              </v-btn>
             </v-list-item>
 
             <v-list-item class="px-0 h44">
-              <v-btn @click="query(true)" text block large>{{
-                $t("search.append")
-              }}</v-btn>
+              <v-btn @click="query(true)" text block large>
+                {{ $t("search.append") }}
+              </v-btn>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -81,6 +81,8 @@ export default {
       } else {
         this.$store.commit("api/updateQuery", [query]);
       }
+
+      this.$store.commit("api/updateRandom", false);
     },
     bookmark(event) {
       if (event.target.nodeName !== "I") {

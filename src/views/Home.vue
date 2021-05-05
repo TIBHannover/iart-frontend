@@ -6,10 +6,19 @@
           <img src="/assets/images/logo.png" />
         </div>
 
-        <v-combobox v-model="query" @click:clear="remove(-1)" @keyup.enter="submit(random=false)" :placeholder="$t('home.search.placeholder')" class="mx-1" allow-overflow rounded solo hide-details flat clearable multiple single-line>
+        <v-combobox 
+          v-model="query" @click:clear="remove(-1)" @keyup.enter="submit(random=false)"
+          :placeholder="$t('home.search.placeholder')" class="mx-1" allow-overflow 
+          rounded solo hide-details flat clearable multiple single-line
+        >
           <template v-slot:prepend-inner>
             <v-icon @click="submit">mdi-magnify</v-icon>
-            <v-icon :title="$t('search.random')" @click="submit(random=true)" class="ml-1">mdi-slot-machine-outline</v-icon>
+            <v-icon 
+              :title="$t('search.random')" @click="submit(random=true)" 
+              class="ml-1"
+            >
+              mdi-slot-machine-outline
+            </v-icon>
           </template>
 
           <template v-slot:append>
@@ -17,37 +26,67 @@
           </template>
 
           <template v-slot:selection="{ attrs, selected, item, index }">
-            <v-menu v-model="weightDialog[index]" :close-on-content-click="false" offset-y bottom right open-on-hover>
+            <v-menu 
+              v-model="weightDialog[index]" :close-on-content-click="false" 
+              offset-y bottom right open-on-hover
+            >
               <template v-slot:activator="{ on }">
-                <v-chip v-on="on" v-bind="attrs" :input-value="selected" @click:close="remove(index)" close>
-                  <v-btn v-if="item.positive" @click="toggle(index)" :title="$t('home.search.query.negative')" font-size="18" class="ml-n2" icon small>
+                <v-chip 
+                  v-on="on" v-bind="attrs" :input-value="selected" 
+                  @click:close="remove(index)" close
+                >
+                  <v-btn 
+                    v-if="item.positive" @click="toggle(index)" 
+                    :title="$t('home.search.query.negative')" 
+                    font-size="18" class="ml-n2" icon small
+                  >
                     <v-icon>mdi-plus</v-icon>
                   </v-btn>
-                  <v-btn v-else @click="toggle(index)" :title="$t('home.search.query.positive')" font-size="18" class="ml-n2" icon small>
+                  <v-btn 
+                    v-else @click="toggle(index)" 
+                    :title="$t('home.search.query.positive')" 
+                    font-size="18" class="ml-n2" icon small
+                  >
                     <v-icon>mdi-minus</v-icon>
                   </v-btn>
 
-                  <v-icon v-if="item.type==='idx'" class="mr-1">mdi-file-image-outline</v-icon>
-                  <v-icon v-else class="mr-1">mdi-file-document-outline</v-icon>
+                  <v-icon 
+                    v-if="item.type==='idx'" class="mr-1"
+                  >
+                    mdi-file-image-outline
+                  </v-icon>
+                  <v-icon v-else class="mr-1">
+                    mdi-file-document-outline
+                  </v-icon>
 
                   <span v-if="item.type==='idx'" :title="item.label">{{ item.label }}</span>
                   <span v-else :title="item.value">{{ item.value }}</span>
                 </v-chip>
               </template>
 
-              <Weights v-if="item.type==='idx'" :default="item.features" :local="true" :visible="weightDialog[index]" @update="updateWeights(index, ...arguments)" />
+              <Weights 
+                v-if="item.type==='idx'" :default="item.weights" 
+                :local="true" :visible="weightDialog[index]" 
+                @update="updateWeights(index, ...arguments)" 
+              />
             </v-menu>
           </template>
         </v-combobox>
 
-        <v-btn @click="toggleDrawer('filter')" :title="$t('drawer.filter.title')" class="ml-1" icon>
+        <v-btn 
+          @click="toggleDrawer('filter')" :title="$t('drawer.filter.title')" 
+          class="ml-1" icon
+        >
           <v-badge v-if="nFilters" color="accent" :content="nFilters">
             <v-icon>mdi-tune</v-icon>
           </v-badge>
           <v-icon v-else>mdi-tune</v-icon>
         </v-btn>
 
-        <v-btn @click="toggleDrawer('settings')" :title="$t('drawer.settings.title')" class="ml-n2" icon>
+        <v-btn 
+          @click="toggleDrawer('settings')" 
+          :title="$t('drawer.settings.title')" class="ml-n2" icon
+        >
           <v-icon>mdi-cog-outline</v-icon>
         </v-btn>
 
