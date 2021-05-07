@@ -1,5 +1,5 @@
 <template>
-  <v-banner v-model="drawer" :style="getCss" elevation="0" app sticky>
+  <v-banner v-model="drawer" :style="getCss" class="settings" app>
     <v-row align="center">
       <v-col cols="3">
         <ModalWeights :values="weights" @update="updateWeights" />
@@ -146,7 +146,7 @@ export default {
 </script>
 
 <style>
-.theme--light.v-banner.v-sheet {
+.theme--light.v-banner.v-sheet.settings {
   background-color: #fff;
 }
 
@@ -155,7 +155,7 @@ export default {
   border-bottom: none;
 }
 
-.v-application--is-ltr .v-banner__wrapper {
+.settings .v-banner__wrapper {
   padding: 8px 10px;
 }
 

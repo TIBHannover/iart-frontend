@@ -93,7 +93,7 @@
             v-for="(tag, index) in keywords" :key="index" class="mr-1 mb-2" 
             :text-color="tag.disable ? 'grey lighten-1' : ''" outlined
           >
-            <span class="tag" :title="tag.plugin.replaceAll('_', ' ')">{{ tag.name }}</span>
+            <span class="tag clip" :title="tag.name">{{ tag.name }}</span>
             <v-icon v-if="tag.disable" class="ml-1 mr-n1" size="14">mdi-help</v-icon>
           </v-chip>
 
@@ -115,7 +115,9 @@
           <v-expansion-panel v-if="Object.keys(metadata).length">
             <v-expansion-panel-header class="pa-0">
               <v-icon class="mr-3" size="18">mdi-information-outline</v-icon>
-              <span class="text-subtitle-1">{{ $t('modal.item.information') }}</span>
+              <span class="text-subtitle-1">
+                {{ $t('modal.item.information') }}
+              </span>
             </v-expansion-panel-header>
 
             <v-expansion-panel-content>
@@ -124,7 +126,9 @@
                 justify="space-around" no-gutters
               >
                 <v-col cols="3">
-                  <span class="capitalize">{{ $t('drawer.filter.field')[field] }}</span>
+                  <span class="capitalize">
+                    {{ $t('drawer.filter.field')[field] }}
+                  </span>
                 </v-col>
 
                 <v-col cols="9">
@@ -144,21 +148,28 @@
           <v-expansion-panel v-if="texts.length">
             <v-expansion-panel-header class="pa-0">
               <v-icon class="mr-3" size="18">mdi-tag-text-outline</v-icon>
-              <span class="text-subtitle-1">{{ $t('modal.item.iconclass.text') }}</span>
+              <span class="text-subtitle-1">
+                {{ $t('modal.item.iconclass.text') }}
+              </span>
             </v-expansion-panel-header>
 
             <v-expansion-panel-content>
               <v-row justify="space-around" no-gutters>
                 <v-col cols="3">
-                  <span class="capitalize">{{ $t('modal.item.iconclass.notations') }}</span>
+                  <span class="capitalize">
+                    {{ $t('modal.item.iconclass.notations') }}
+                  </span>
                 </v-col>
 
                 <v-col cols="9">
                   <v-chip 
-                    v-for="(tag, index) in texts" :key="index" class="mr-1 mb-2" 
-                    :text-color="tag.disable ? 'grey lighten-1' : ''" outlined
+                    v-for="(tag, index) in texts" :key="index" 
+                    :text-color="tag.disable ? 'grey lighten-1' : ''"
+                    class="mr-1 mb-2" outlined
                   >
-                    <span :title="tag.name" class="clip">{{ tag.name }}</span>
+                    <span :title="tag.code+' '+tag.label" class="clip">
+                      {{ tag.code }} {{ tag.label }}
+                    </span>
                     <v-icon v-if="tag.disable" class="ml-1 mr-n1" size="14">mdi-help</v-icon>
                   </v-chip>
                 </v-col>
@@ -196,6 +207,10 @@
 </template>
 
 <script>
+import { keyInObj } from '@/plugins/helpers';
+
+const scheme = new RegExp(/^(\d{1,2})([A-IK-Z]{1,2})?(\d+)?(\([^+)]+\))?(\d+)?(\(\+[0-9]+\))?$/, "m");
+
 export default {
   props: ["value", "entry"],
   data() {
@@ -297,17 +312,24 @@ export default {
       return null;
     },
     keywords() {
+      const deselectedPlugins = [
+        "iconclass_clip_classifier",
+        "iconclass_lstm_classifier",
+      ];
+
       let keywords = [];
 
       this.entry.classifier.forEach(({ plugin, annotations }) => {
-        annotations.forEach(({ name, value }) => {
-          keywords.push({
-            name,
-            value,
-            plugin,
-            disable: value < 0.4,
+        if (!deselectedPlugins.includes(plugin)) {
+          annotations.forEach(({ name, value }) => {
+            keywords.push({
+              name: name.split(",")[0],
+              value,
+              plugin,
+              disable: value < 0.4,
+            });
           });
-        });
+        }
       });
 
       keywords.sort((a, b) => b.value - a.value);
@@ -319,8 +341,35 @@ export default {
       return keywords;
     },
     texts() {
-      // TODO: Iconclass notations
-      return [];
+      const selectedPlugins = [
+        "iconclass_clip_classifier",
+        "iconclass_lstm_classifier",
+      ];
+
+      let texts = [];
+
+      this.entry.classifier.forEach(({ plugin, annotations }) => {
+        if (selectedPlugins.includes(plugin)) {
+          annotations.forEach(({ name, value }) => {
+            const [code, keywords, label] = name.split("; ");
+            const codeParts = scheme.exec(code).slice(1, 7);
+
+            if (!codeParts[3] && value > 0.01) {
+              texts.push({
+                code,
+                label,
+                value,
+                plugin,
+                disable: value < 0.1,
+              });
+            }
+          });
+        }
+      });
+
+      texts.sort((a, b) => b.value - a.value);
+
+      return texts;
     },
     metadata() {
       const selectedFields = [
@@ -337,7 +386,7 @@ export default {
 
       this.$store.state.api.counts.forEach(({ entries, field }) => {
         entries.forEach(({ name }) => {
-          if (Object.prototype.hasOwnProperty.call(counts, field)) {
+          if (keyInObj(field, counts)) {
             counts[field].push(name);
           } else {
             counts[field] = [name];

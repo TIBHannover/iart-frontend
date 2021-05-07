@@ -1,10 +1,6 @@
 <template>
   <v-navigation-drawer
-    v-model="drawer"
-    width="350"
-    app
-    right
-    hide-overlay
+    v-model="drawer" width="350" app right hide-overlay
     disable-resize-watcher
   >
     <v-toolbar flat class="v-bar--underline">
@@ -30,8 +26,9 @@
         <label
           v-if="notEmpty(count.field)"
           class="v-label v-label--active theme--light ml-6"
-          >{{ $t("drawer.filter.field")[count.field] }}</label
         >
+          {{ $t("drawer.filter.field")[count.field] }}
+        </label>
 
         <v-autocomplete
           v-model="data[count.field]"

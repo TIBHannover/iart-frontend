@@ -59,8 +59,12 @@
                     mdi-file-document-outline
                   </v-icon>
 
-                  <span v-if="item.type==='idx'" :title="item.label">{{ item.label }}</span>
-                  <span v-else :title="item.value">{{ item.value }}</span>
+                  <span v-if="item.type==='idx'" :title="item.label">
+                    {{ item.label }}
+                  </span>
+                  <span v-else :title="item.value">
+                    {{ item.value }}
+                  </span>
                 </v-chip>
               </template>
 
@@ -99,6 +103,7 @@
     <Main />
     <Loader />
     <DrawerFilter />
+    <ModalCookies />
   </v-app>
 </template>
 
@@ -111,6 +116,7 @@ import History from "@/components/History.vue";
 import Weights from "@/components/Weights.vue";
 import UserMenu from "@/components/UserMenu.vue";
 import ModalSearch from "@/components/ModalSearch.vue";
+import ModalCookies from "@/components/ModalCookies.vue";
 import DrawerFilter from "@/components/DrawerFilter.vue";
 import DrawerSettings from "@/components/DrawerSettings.vue";
 
@@ -218,13 +224,6 @@ export default {
       deep: true,
     },
   },
-  created() {
-    const self = this;
-    
-    this.$store.dispatch("user/getCSRFToken").then(function () {
-      self.$store.dispatch("api/setState", self.$route.query);
-    });
-  },
   mounted() {
     const self = this;
 
@@ -240,6 +239,7 @@ export default {
     Weights,
     UserMenu,
     ModalSearch,
+    ModalCookies,
     DrawerFilter,
     DrawerSettings,
   },

@@ -36,9 +36,6 @@ const user = {
   },
   actions: {
     getCSRFToken({ commit, state }, params) {
-      console.log('Request Token');
-
-      // TODO
       axios.get(`${config.API_LOCATION}/get_csrf_token`, { params, withCredentials: true })
         .then((res) => {
           const csrftoken = getCookie('csrftoken');
