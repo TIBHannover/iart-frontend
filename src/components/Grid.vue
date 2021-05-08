@@ -1,6 +1,6 @@
 <template>
   <div class="grid-view">
-    <GridItem v-for="(entry, index) in data" :key="index" :entry="entry" />
+    <GridItem v-for="entry in data" :key="entry" :entry="entry" />
   </div>
 </template>
 

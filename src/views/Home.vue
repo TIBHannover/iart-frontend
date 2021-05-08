@@ -50,9 +50,7 @@
                     <v-icon>mdi-minus</v-icon>
                   </v-btn>
 
-                  <v-icon 
-                    v-if="item.type==='idx'" class="mr-1"
-                  >
+                  <v-icon v-if="item.type==='idx'" class="mr-1">
                     mdi-file-image-outline
                   </v-icon>
                   <v-icon v-else class="mr-1">
@@ -70,7 +68,7 @@
 
               <Weights 
                 v-if="item.type==='idx'" :default="item.weights" 
-                :local="true" :visible="weightDialog[index]" 
+                :local="true" :key="item" :visible="weightDialog[index]"
                 @update="updateWeights(index, ...arguments)" 
               />
             </v-menu>

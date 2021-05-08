@@ -130,7 +130,7 @@ const api = {
           commit('loading/update', false, { root: true });
         });
     },
-    setState({ commit }, params) {
+    setState({ commit, state }, params) {
       if (!keyInObj('period', params)) {
         commit('updateDateRange', []);
       }
@@ -142,6 +142,7 @@ const api = {
         if (field === 'query') {
           try {
             const values = params[field].split(',');
+            const weights = state.settings.weights;
 
             values.forEach((value) => {
               let positive = true;
@@ -163,7 +164,7 @@ const api = {
                 }
               }
 
-              commit('addQuery', { type, positive, value });
+              commit('addQuery', { type, positive, value, weights });
             });
           } catch (e) {
             console.log('query', e);

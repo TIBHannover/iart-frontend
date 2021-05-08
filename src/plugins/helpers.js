@@ -18,3 +18,9 @@ export function lsplit(x, sep, maxsplit) {
 
   return result;
 };
+
+export function getHash(x) {
+  const md5 = require('crypto').createHash('md5');
+
+  return md5.update(JSON.stringify(x)).digest('hex');
+};

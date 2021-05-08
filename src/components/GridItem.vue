@@ -157,12 +157,8 @@ export default {
     },
   },
   watch: {
-    update(new_entry, old_entry) {
+    update() {
       this.bookmarked = this.isBookmarked();
-
-      if (new_entry.id !== old_entry.id) {
-        this.disabled = false;
-      }
     },
     settings: {
       handler() {

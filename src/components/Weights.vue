@@ -1,5 +1,5 @@
 <template>
-  <v-card :id="id" class="weights" width="300">
+  <v-card class="weights" width="300">
     <v-card-text class="mb-n4">
       <v-switch
         v-if="local" v-model="selectWeights" class="mt-0"
@@ -19,9 +19,9 @@
           >
             <template v-slot:append>
               <v-text-field
-                :value="weights[key].value" type="number" class="mt-0 pt-0"
+                v-model="weights[key].value" type="number" class="mt-0 pt-0"
                 background-color="grey lighten-4" style="width: 80px"
-                hide-details single-line rounded flat
+                @change="check(key)" hide-details single-line rounded flat
               ></v-text-field>
 
               <v-btn
@@ -73,7 +73,6 @@
 export default {
   data() {
     return {
-      id: `w${String(Math.round(Math.random() * 1000))}`,
       selectWeights: false,
       weights: {
         color: {
@@ -133,6 +132,10 @@ export default {
     },
   },
   created() {
+    if (typeof this.default === "undefined") {
+      this.default = this.$store.state.api.settings.weights;
+    }
+
     if (this.default && Object.keys(this.default).length) {
       Object.keys(this.weights).forEach((group) => {
         const keys = this.weights[group].items.map((x) => x.key);

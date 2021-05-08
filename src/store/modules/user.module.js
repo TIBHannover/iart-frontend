@@ -1,6 +1,6 @@
 import axios from '../../plugins/axios';
 import config from '../../../app.config';
-import { keyInObj } from '../../plugins/helpers';
+import { keyInObj, getHash } from '../../plugins/helpers';
 
 function getCookie(name) {
   let cookieValue = null;
@@ -110,9 +110,7 @@ const user = {
       params = JSON.parse(JSON.stringify(params));
       delete params['settings'];
 
-      const hash = require('crypto').createHash('md5')
-        .update(JSON.stringify(params)).digest('hex');
-
+      const hash = getHash(params);
       const hashes = state.history.map((x) => x.hash);
       const index = hashes.indexOf(hash);
 

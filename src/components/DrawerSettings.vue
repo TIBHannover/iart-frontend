@@ -7,25 +7,18 @@
 
       <v-col cols="3">
         <v-select
-          v-model="layout"
-          :items="layoutItems"
-          item-value="key"
-          item-text="name"
+          v-model="layout" :items="layoutItems"
+          item-value="key" item-text="name"
           prepend-inner-icon="mdi-view-compact-outline"
-          style="font-size: 14px"
-          solo
-          hide-details
-          flat
-          dense
+          style="font-size: 14px" solo hide-details
+          flat dense
         ></v-select>
       </v-col>
 
       <v-col cols="5">
         <v-btn
           :title="$t('drawer.settings.size.increase')"
-          @click="zoomIn"
-          :disabled="!zoomInEnabled"
-          icon
+          @click="zoomIn" :disabled="!zoomInEnabled" icon
         >
           <v-icon>mdi-plus-circle-outline</v-icon>
         </v-btn>
