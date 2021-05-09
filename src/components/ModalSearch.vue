@@ -2,11 +2,11 @@
   <v-dialog v-model="dialog" max-width="350px">
     <template v-slot:activator="{ on }">
       <v-icon
-        v-on="on"
-        :title="$t('modal.search.title')"
+        v-on="on" :title="$t('modal.search.title')"
         @click="searchImage = true"
-        >mdi-image-outline</v-icon
       >
+        mdi-image-outline
+      </v-icon>
     </template>
 
     <v-card>
@@ -22,41 +22,29 @@
 
       <v-card-text>
         <v-switch
-          v-model="selectFile"
-          class="pt-1 pb-2"
+          v-model="selectFile" class="pt-1 pb-2"
           :label="$t('modal.search.toggle')"
-          color="secondary"
-          inset
-          hide-details
+          color="secondary" inset hide-details
         ></v-switch>
 
         <v-file-input
-          v-if="selectFile"
-          v-model="user.file"
+          v-if="selectFile" v-model="user.file"
           accept="image/png, image/jpeg, image/gif"
           :placeholder="$t('modal.search.file.label')"
-          prepend-icon="mdi-camera"
-          :rules="[checkFile]"
+          prepend-icon="mdi-camera" :rules="[checkFile]"
           show-size
         ></v-file-input>
         <v-text-field
-          v-else
-          v-model="user.url"
+          v-else v-model="user.url" :rules="[checkURL]"
           :placeholder="$t('modal.search.url.label')"
-          prepend-icon="mdi-link-variant"
-          :rules="[checkURL]"
-          clearable
+          prepend-icon="mdi-link-variant" clearable
         ></v-text-field>
       </v-card-text>
 
       <v-card-actions class="px-6 pb-6">
         <v-btn
-          @click="search"
-          :disabled="disabled"
-          color="accent"
-          block
-          rounded
-          depressed
+          @click="search" :disabled="disabled"
+          color="accent" block rounded depressed
         >
           {{ $t("button.submit") }}
         </v-btn>
@@ -95,7 +83,7 @@ export default {
     checkFile() {
       const value = this.user.file;
 
-      if (typeof value !== "undefined") {
+      if (value) {
         if (value.size < 2000000) {
           return true;
         }
@@ -108,7 +96,7 @@ export default {
     checkURL() {
       const value = this.user.url;
 
-      if (typeof value !== "undefined") {
+      if (value) {
         if (value.length && isURL(value)) {
           return true;
         }
@@ -121,7 +109,7 @@ export default {
   },
   computed: {
     disabled() {
-      if (Object.keys(this.user).length) {
+      if (this.user && Object.keys(this.user).length) {
         if (this.selectFile && this.checkFile() === true) {
           return false;
         }
