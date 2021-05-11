@@ -1,12 +1,15 @@
 const error = {
   namespaced: true,
   state: {
-    status: null,
+    date: null,
+    text: null,
   },
   mutations: {
-    update(state, text) {
-    	console.log('error', text);
-      state.status = text;
+    update(state, { date, text }) {
+    	console.log('error', date, text);
+
+      state.date = date;
+      state.text = text;
     },
   },
 };

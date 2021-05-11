@@ -1,13 +1,10 @@
 <template>
-  <div class="grid-item" :disabled="disabled" :style="getCss" @click="bookmark">
+  <div 
+    class="grid-item" :disabled="disabled" :title="$t('griditem.view')" 
+    :style="getCss" @click="showDetails"
+  >
     <ModalItem v-model="dialog" :entry="entry" />
     <img :src="entry.path" v-on:error="onError" />
-
-    <div v-if="bookmarked" class="bookmark">
-      <v-btn icon>
-        <v-icon color="accent" class="shadow">mdi-record-circle-outline</v-icon>
-      </v-btn>
-    </div>
 
     <div class="overlay">
       <div class="view">
@@ -32,21 +29,34 @@
             </v-list-item>
           </v-list>
         </v-menu>
-
-        <v-btn
-          icon
-          @click="dialog = true"
-          :title="$t('griditem.view')"
-          class="ml-n1"
-        >
-          <v-icon color="white" class="shadow">mdi-eye-outline</v-icon>
-        </v-btn>
       </div>
 
       <div class="meta">
         <div class="text-subtitle-1" :title="title">{{ title }}</div>
         <div class="text-caption" :title="artist">{{ artist }}</div>
       </div>
+    </div>
+
+    <div class="bookmark">
+      <v-btn 
+        v-if="bookmarked" @click="bookmark"
+        class="ml-n1 clicked" icon
+      >
+        <v-icon 
+          color="accent" class="shadow"
+          :title="$t('griditem.bookmark.remove')"
+        >
+          mdi-bookmark-remove-outline
+        </v-icon>
+      </v-btn>
+      <v-btn v-else @click="bookmark" class="ml-n1" icon>
+        <v-icon 
+          color="white" class="shadow"
+          :title="$t('griditem.bookmark.add')"
+        >
+          mdi-bookmark-outline
+        </v-icon>
+      </v-btn>
     </div>
   </div>
 </template>
@@ -85,7 +95,7 @@ export default {
       this.$store.commit("api/updateRandom", false);
     },
     bookmark(event) {
-      if (event.target.nodeName !== "I") {
+      if (event.target.nodeName === "I") {
         if (!this.bookmarked) {
           this.$store.commit("user/addBookmark", this.entry.id);
         } else {
@@ -93,6 +103,11 @@ export default {
         }
 
         this.bookmarked = !this.bookmarked;
+      }
+    },
+    showDetails(event) {
+      if (event.target.nodeName !== "I") {
+       this.dialog = true;
       }
     },
     onError() {
@@ -204,12 +219,17 @@ export default {
   transition: opacity 0.25s ease;
   position: absolute;
   padding: 5px;
-  opacity: 1;
+  right: 0;
   top: 0;
 }
 
-.grid-item:hover > .bookmark {
+.grid-item > .bookmark button {
   opacity: 0;
+}
+
+.grid-item > .bookmark button.clicked,
+.grid-item:hover > .bookmark button {
+  opacity: 1;
 }
 
 .grid-item > img {
@@ -246,7 +266,7 @@ export default {
 }
 
 .grid-item > .overlay .view {
-  padding: 5px 5px 0 0;
+  padding: 5px 35px 0 0;
   text-align: right;
 }
 

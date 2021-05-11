@@ -88,6 +88,11 @@ export default {
     filters(item) {
       let values = [];
 
+      if (item.full_text && item.full_text.length) {
+        const title = this.$t("drawer.filter.field")["full.text"];
+        values.push(`${title}: ${item.full_text.join(", ")}`);
+      }
+
       if (item.filters && Object.keys(item.filters).length) {
         Object.keys(item.filters).forEach((key) => {
           if (item.filters[key]) {

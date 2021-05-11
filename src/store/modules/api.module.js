@@ -11,6 +11,7 @@ const api = {
     query: [],
 
     dateRange: [],
+    fullText: [],
     settings: {},
     filters: {},
     counts: [],
@@ -27,6 +28,7 @@ const api = {
         random: state.random,
         filters: state.filters,
         settings: state.settings,
+        full_text: state.fullText,
         date_range: state.dateRange,
         aggregate: config.DEFAULT_AGGREGATION_FIELDS,
       };
@@ -55,7 +57,8 @@ const api = {
                 commit('updateHits', res.data.entries);
                 commit('updateCounts', res.data.aggregations);
               } else {
-                commit('error/update', Date(), { root: true });
+                const info = { date: Date(), text: '' };
+                commit('error/update', info, { root: true });
               }
 
               commit('loading/update', false, { root: true });
@@ -63,7 +66,8 @@ const api = {
             }
           })
           .catch((error) => {
-            commit('error/update', error, { root: true });
+            const info = { date: Date(), text: error };
+            commit('error/update', info, { root: true });
             commit('loading/update', false, { root: true });
           });;
       }
@@ -81,7 +85,8 @@ const api = {
               commit('updateHits', res.data.entries);
               commit('updateCounts', res.data.aggregations);
             } else {
-              commit('error/update', Date(), { root: true });
+              const info = { date: Date(), text: '' };
+              commit('error/update', info, { root: true });
             }
 
             commit('loading/update', false, { root: true });
@@ -89,6 +94,7 @@ const api = {
           }
         })
         .catch((error) => {
+          const info = { date: Date(), text: error };
           commit('error/update', error, { root: true });
           commit('loading/update', false, { root: true });
         });
@@ -102,29 +108,33 @@ const api = {
         formData.append('url', params.value);
       }
 
-      axios.post(`${config.API_LOCATION}/upload`, formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        })
+      commit('loading/update', true, { root: true });
+
+      axios.post(`${config.API_LOCATION}/upload`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
         .then((res) => {
           if (res.data.status === 'ok') {
-            const query = {
-              type: 'idx',
-              positive: true,
-              value: res.data.entries[0].id,
-              weights: state.settings.weights,
-              label: res.data.entries[0].meta.title,
-            };
+            const queries = [];
 
-            commit('updateQuery', [query]);
+            res.data.entries.forEach(({ id, meta }) => {
+              queries.push({
+                type: 'idx',
+                positive: true,
+                value: id,
+                weights: state.settings.weights,
+                label: meta.title,
+              });
+            });
+
+            commit('updateQuery', queries);
           }
 
           window.scrollTo(0, 0);
         })
         .catch((error) => {
-          commit('error/update', error, { root: true });
+          const info = { date: Date(), text: error };
+          commit('error/update', info, { root: true });
         })
         .finally(() => {
           commit('loading/update', false, { root: true });
@@ -177,7 +187,7 @@ const api = {
 
         if (field === 'period') {
           try {
-            let period = params.period.split('-');
+            let period = params[field].split('-');
             period = period.map((x) => parseInt(x, 10));
 
             if (period.length === 1) {
@@ -192,6 +202,11 @@ const api = {
           } catch (e) {
             console.log('period', e);
           }
+        }
+
+        if (field === 'full.text') {
+          const fullText = params[field].split(',');
+          commit('updateFullText', fullText);
         }
 
         if (config.DEFAULT_AGGREGATION_FIELDS.includes(field)) {
@@ -224,6 +239,11 @@ const api = {
       if (state.dateRange.length) {
         const period = state.dateRange.join('-');
         params.append('period', period);
+      }
+
+      if (state.fullText.length) {
+        const fullText = state.fullText.join(',');
+        params.append('full.text', fullText);
       }
 
       if (Object.keys(state.filters).length) {
@@ -264,6 +284,9 @@ const api = {
     },
     updateDateRange(state, dateRange) {
       state.dateRange = dateRange;
+    },
+    updateFullText(state, fullText) {
+      state.fullText = fullText;
     },
     updateParams(state, params) {
       const clone = JSON.stringify(params);
@@ -331,6 +354,10 @@ const api = {
       if (state.dateRange.length) {
         state.dateRange = [];
       }
+
+      if (state.fullText.length) {
+        state.fullText = [];
+      }
     },
     updateAll(state, params) {
       if (keyInObj('query', params)) {
@@ -343,6 +370,10 @@ const api = {
 
       if (keyInObj('filters', params)) {
         state.filters = params.filters;
+      }
+
+      if (keyInObj('full_text', params)) {
+        state.fullText = params.full_text;
       }
 
       if (keyInObj('date_range', params)) {

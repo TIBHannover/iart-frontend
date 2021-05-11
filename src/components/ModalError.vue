@@ -38,7 +38,7 @@ export default {
   },
   computed: {
     update() {
-      return this.$store.state.error.status;
+      return this.$store.state.error.date;
     },
   },
   watch: {

@@ -157,17 +157,22 @@ export default {
   },
   computed: {
     nFilters() {
-      const { filters, dateRange } = this.$store.state.api;
+      const { filters, dateRange, fullText } = this.$store.state.api;
+      
       let total = Object.values(filters).reduce(
         (t, values) => t + values.length, 0
       );
 
       if (dateRange.length) total += 1;
+      total += fullText.length
 
       return total;
     },
     dateRange() {
       return this.$store.state.api.dateRange;
+    },
+    fullText() {
+      return this.$store.state.api.fullText;
     },
     layout() {
       return this.$store.state.api.settings.layout;
@@ -182,6 +187,9 @@ export default {
     },
     dateRange() {
       this.load();
+    },
+    fullText() {
+      this.load()
     },
     layout(new_value, old_value) {
       if (new_value !== old_value && new_value === "umap") {

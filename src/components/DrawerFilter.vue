@@ -22,6 +22,21 @@
     </v-toolbar>
 
     <v-container class="ml-1 mt-n1">
+      <div>
+        <label 
+          v-if="fullText.length"
+          class="v-label v-label--active theme--light ml-6"
+        >
+          {{ $t("drawer.filter.field")["full.text"] }}
+        </label>
+
+        <v-combobox
+          v-model="fullText" :label="$t('drawer.filter.field')['full.text']" 
+          background-color="grey lighten-4" class="mb-4" rounded hide-details 
+          flat clearable multiple solo chips deletable-chips
+        ></v-combobox>
+      </div>
+
       <div v-for="(count, index) in counts" :key="index">
         <label
           v-if="notEmpty(count.field)"
@@ -31,22 +46,11 @@
         </label>
 
         <v-autocomplete
-          v-model="data[count.field]"
-          item-value="name"
-          :items="count.entries"
-          :label="$t('drawer.filter.field')[count.field]"
-          :disabled="!count.entries.length"
-          :filter="filterAutocomplete"
-          @click:clear="remove(-1, count.field)"
-          class="mb-4"
-          background-color="grey lighten-4"
-          solo
-          rounded
-          hide-details
-          hide-selected
-          flat
-          clearable
-          multiple
+          v-model="data[count.field]" item-value="name" :items="count.entries"
+          :disabled="!count.entries.length" background-color="grey lighten-4"
+          :filter="filterAutocomplete" @click:clear="remove(-1, count.field)"
+          :label="$t('drawer.filter.field')[count.field]" class="mb-4" solo
+          rounded hide-details hide-selected flat clearable multiple
         >
           <template v-slot:item="{ on, item }">
             <v-list-item v-on="on">
@@ -66,8 +70,7 @@
 
           <template v-slot:selection="{ attrs, selected, item }">
             <v-chip
-              v-bind="attrs"
-              :input-value="selected"
+              v-bind="attrs" :input-value="selected"
               @click:close="remove(item.name, count.field)"
               close
             >
@@ -84,62 +87,42 @@
           </label>
 
           <v-btn
-            v-if="dateToggle"
-            @click="dateToggle = false"
+            v-if="dateToggle" @click="dateToggle = false"
             :title="$t('drawer.filter.period.hide')"
-            icon
-            small
+            icon small
           >
             <v-icon>mdi-eye-off-outline</v-icon>
           </v-btn>
           <v-btn
-            v-else
-            @click="dateToggle = true"
+            v-else @click="dateToggle = true"
             :title="$t('drawer.filter.period.show')"
-            icon
-            small
+            icon small
           >
             <v-icon>mdi-eye-outline</v-icon>
           </v-btn>
         </v-layout>
 
         <v-range-slider
-          v-if="dateToggle"
-          v-model="dateRange"
-          min="1000"
-          max="2000"
-          color="secondary"
-          :disabled="!dateToggle"
-          @end="commitDateRange"
+          v-if="dateToggle" v-model="dateRange"
+          min="1000" max="2000" color="secondary"
+          :disabled="!dateToggle" @end="commitDateRange"
           hide-details
         >
           <template v-slot:prepend>
             <v-text-field
-              :value="dateRange[0]"
-              type="number"
-              class="mt-0 pt-0"
-              background-color="grey lighten-4"
-              style="width: 85px"
-              @change="$set(dateRange, 0, $event)"
-              hide-details
-              single-line
-              rounded
-              flat
+              :value="dateRange[0]" type="number" class="mt-0 pt-0"
+              background-color="grey lighten-4" style="width: 85px"
+              @change="$set(dateRange, 0, $event)" hide-details
+              single-line rounded flat
             ></v-text-field>
           </template>
 
           <template v-slot:append>
             <v-text-field
-              :value="dateRange[1]"
-              type="number"
-              class="mt-0 pt-0"
-              background-color="grey lighten-4"
-              style="width: 85px"
-              @change="$set(dateRange, 1, $event)"
-              hide-details
-              single-line
-              rounded
-              flat
+              :value="dateRange[1]" type="number" class="mt-0 pt-0"
+              background-color="grey lighten-4" style="width: 85px"
+              @change="$set(dateRange, 1, $event)" hide-details
+              single-line rounded flat
             ></v-text-field>
           </template>
         </v-range-slider>
@@ -153,6 +136,7 @@ export default {
   data() {
     return {
       data: {},
+      fullText: [],
       dateToggle: false,
       dateRange: [1400, 1900],
       drawer: this.$store.state.user.drawer.filter,
@@ -200,6 +184,9 @@ export default {
     updateDateToggle() {
       return this.$store.state.api.dateRange.length;
     },
+    updateFullText() {
+      return this.$store.state.api.fullText;
+    },
   },
   watch: {
     filters: {
@@ -238,15 +225,22 @@ export default {
         this.dateToggle = false;
       }
     },
+    fullText() {
+      this.$store.commit("api/updateFullText", this.fullText);
+    },
+    updateFullText(value) {
+      this.fullText = value;
+    },
   },
   created() {
-    const { dateRange } = this.$store.state.api;
+    const { dateRange, fullText } = this.$store.state.api;
 
     if (dateRange.length) {
       this.dateRange = dateRange;
       this.dateToggle = true;
     }
 
+    this.fullText = fullText;
     this.data = this.filters;
   },
 };

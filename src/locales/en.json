@@ -26,7 +26,8 @@
         "meta.institution": "Institution",
         "meta.genre": "Genre",
         "meta.period": "Period",
-        "origin.name": "Data"
+        "origin.name": "Data",
+        "full.text": "Full-Text"
       }
     },
     "settings": {
@@ -127,9 +128,13 @@
     }
   },
   "griditem": {
-    "view": "View Object",
+    "view": "View Details",
     "noartist": "Unknown",
-    "notitle": "No Title"
+    "notitle": "No Title",
+    "bookmark": {
+      "add": "Add Bookmark",
+      "remove": "Remove Bookmark"
+    }
   },
   "search": {
     "random": "Random Search",
