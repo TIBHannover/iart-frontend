@@ -4,6 +4,18 @@ import axios from '../../plugins/axios';
 import config from '../../../app.config';
 import { isEqual, lsplit, keyInObj } from '../../plugins/helpers';
 
+function generateRandomStr(length) {
+  var result = [];
+  var characters = 'ABCDEFabcdef0123456789';
+  var charactersLength = characters.length;
+  for (var i = 0; i < length; i++) {
+    result.push(characters.charAt(Math.floor(Math.random() *
+      charactersLength)));
+  }
+  return result.join('');
+}
+
+
 const api = {
   namespaced: true,
   state: {
@@ -270,7 +282,7 @@ const api = {
     updateRandom(state, random) {
       if (typeof random === 'boolean') {
         if (random) {
-          state.random = Math.random();
+          state.random = generateRandomStr(16);
           state.query = [];
         } else {
           state.random = null;
