@@ -32,7 +32,7 @@ export default {
       this.dialog = false;
 
       this.$store.dispatch("user/getCSRFToken").then(function () {
-        self.$store.dispatch("api/setState", self.$route.query);
+        setTimeout(() => self.$store.dispatch("api/setState", self.$route.query), 500);
       });
     },
   },

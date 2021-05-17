@@ -112,13 +112,15 @@ export default {
     update() {
       const weights = {};
 
-      Object.values(this.weights).forEach((weight) => {
-        weight.items.forEach((item) => {
-          if (item.key === weight.default && weight.value > 0) {
-            weights[item.key] = weight.value;
-          }
+      if (this.selectWeights) {
+        Object.values(this.weights).forEach((weight) => {
+          weight.items.forEach((item) => {
+            if (item.key === weight.default && weight.value > 0) {
+              weights[item.key] = weight.value;
+            }
+          });
         });
-      });
+      }
 
       this.$emit("update", weights);
       this.$emit("close");
@@ -132,10 +134,6 @@ export default {
     },
   },
   created() {
-    if (typeof this.default === "undefined") {
-      this.default = this.$store.state.api.settings.weights;
-    }
-
     if (this.default && Object.keys(this.default).length) {
       Object.keys(this.weights).forEach((group) => {
         const keys = this.weights[group].items.map((x) => x.key);

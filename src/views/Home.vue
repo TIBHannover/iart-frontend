@@ -140,10 +140,6 @@ export default {
         this.query.splice(index, 1);
       }
     },
-    insert() {
-      const params = { data: this.data };
-      this.$store.dispatch("api/insert", params);
-    },
     toggle(index) {
       const value = this.query[index].positive;
       this.query[index].positive = !value;
@@ -158,7 +154,7 @@ export default {
   computed: {
     nFilters() {
       const { filters, dateRange, fullText } = this.$store.state.api;
-      
+
       let total = Object.values(filters).reduce(
         (t, values) => t + values.length, 0
       );
@@ -223,7 +219,7 @@ export default {
       handler(values) {
         this.query = values;
 
-        if (!this.$store.state.api.random) {
+        if (!this.$store.state.api.random && values.length) {
           this.submit();
         }
       },

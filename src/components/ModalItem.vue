@@ -225,7 +225,7 @@ export default {
 
       if (type === "idx") {
         query.value = this.entry.id;
-        query.weights = settings.weights;
+        query.weights = {};
         query.label = this.title.join(" ");
       }
 

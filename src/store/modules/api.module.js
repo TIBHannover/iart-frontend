@@ -5,13 +5,16 @@ import config from '../../../app.config';
 import { isEqual, lsplit, keyInObj } from '../../plugins/helpers';
 
 function generateRandomStr(length) {
-  var result = [];
-  var characters = 'ABCDEFabcdef0123456789';
-  var charactersLength = characters.length;
-  for (var i = 0; i < length; i++) {
-    result.push(characters.charAt(Math.floor(Math.random() *
-      charactersLength)));
+  const characters = 'ABCDEFabcdef0123456789';
+  const charactersLength = characters.length;
+
+  let result = [];
+
+  for (let i = 0; i < length; i++) {
+    const num = Math.random() * charactersLength;
+    result.push(characters.charAt(Math.floor(num)));
   }
+
   return result.join('');
 }
 
@@ -134,7 +137,7 @@ const api = {
                 type: 'idx',
                 positive: true,
                 value: id,
-                weights: state.settings.weights,
+                weights: {},
                 label: meta.title,
               });
             });
@@ -164,7 +167,6 @@ const api = {
         if (field === 'query') {
           try {
             const values = params[field].split(',');
-            const weights = state.settings.weights;
 
             values.forEach((value) => {
               let positive = true;
@@ -186,7 +188,7 @@ const api = {
                 }
               }
 
-              commit('addQuery', { type, positive, value, weights });
+              commit('addQuery', { type, positive, value, weights: {} });
             });
           } catch (e) {
             console.log('query', e);
@@ -235,6 +237,7 @@ const api = {
 
       if (state.query.length) {
         const query = state.query.map((v) => {
+          // TODO: add weights
           let prefix = '+';
           if (!v.positive) prefix = '-';
 

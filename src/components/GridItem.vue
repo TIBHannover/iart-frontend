@@ -83,7 +83,7 @@ export default {
         positive: true,
         label: this.title,
         value: this.entry.id,
-        weights: this.settings.weights,
+        weights: {},
       };
 
       if (append) {
