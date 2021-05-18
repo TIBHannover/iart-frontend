@@ -5,14 +5,12 @@ import config from '../../../app.config';
 import { isEqual, lsplit, keyInObj } from '../../plugins/helpers';
 
 function generateRandomStr(length) {
-  const characters = 'ABCDEFabcdef0123456789';
-  const charactersLength = characters.length;
-
-  let result = [];
-
-  for (let i = 0; i < length; i++) {
-    const num = Math.random() * charactersLength;
-    result.push(characters.charAt(Math.floor(num)));
+  var result = [];
+  var characters = 'abcdef0123456789';
+  var charactersLength = characters.length;
+  for (var i = 0; i < length; i++) {
+    result.push(characters.charAt(Math.floor(Math.random() *
+      charactersLength)));
   }
 
   return result.join('');
@@ -60,7 +58,7 @@ const api = {
           commit('toggleBackBtn');
         }
 
-        axios.post(`${config.API_LOCATION}/load`, { params })
+        axios.post(`${config.API_LOCATION}/search`, { params })
           .then((res) => {
             if (res.data.job_id !== undefined) {
               commit('updateJobID', res.data.job_id);
@@ -90,7 +88,7 @@ const api = {
     checkLoad({ commit, dispatch, state }) {
       const params = { job_id: state.jobID };
 
-      axios.post(`${config.API_LOCATION}/load`, { params })
+      axios.post(`${config.API_LOCATION}/search`, { params })
         .then((res) => {
           if (res.data.job_id !== undefined) {
             commit('updateJobID', res.data.job_id);
