@@ -1,5 +1,5 @@
 <template>
-  <v-card class="weights" width="300">
+  <v-card :id="id" class="weights" width="300">
     <v-card-text class="mb-n4">
       <v-switch
         v-if="local" v-model="selectWeights" class="mt-0"
@@ -73,6 +73,7 @@
 export default {
   data() {
     return {
+      id: `w${String(Math.round(Math.random() * 1000))}`,
       selectWeights: false,
       weights: {
         color: {
