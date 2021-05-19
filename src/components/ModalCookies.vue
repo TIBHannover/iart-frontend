@@ -8,11 +8,11 @@
       <v-card-text>
         <div class="mb-4">{{ $t("modal.cookies.text") }}</div>
 
-        <v-btn color="primary" width="50%" plain @click="accept">
+        <v-btn color="primary" width="50%" plain @click="dialog=false">
           {{ $t("button.accept") }}
         </v-btn>
-        <v-btn color="grey" width="50%" plain @click="accept">
-          {{ $t("button.decline") }}
+        <v-btn color="grey" width="50%" plain @click="dialog=false">
+          {{ $t("button.cancel") }}
         </v-btn>
       </v-card-text>
     </v-card>
@@ -26,19 +26,9 @@ export default {
       dialog: true,
     };
   },
-  methods: {
-    accept() {
-      const self = this;
-      this.dialog = false;
-
-      this.$store.dispatch("user/getCSRFToken").then(function () {
-        setTimeout(() => self.$store.dispatch("api/setState", self.$route.query), 500);
-      });
-    },
-  },
   created() {
     const { csrfToken } = this.$store.state.user;
-    if (csrfToken !== null) this.accept();
+    if (csrfToken !== null) this.dialog = false;
   },
 };
 </script>

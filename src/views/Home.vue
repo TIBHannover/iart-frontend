@@ -226,6 +226,13 @@ export default {
       deep: true,
     },
   },
+  created() {
+    const self = this;
+    
+    this.$store.dispatch("user/getCSRFToken").then(function () {
+      setTimeout(() => self.$store.dispatch("api/setState", self.$route.query), 500);
+    });
+  },
   mounted() {
     const self = this;
 
