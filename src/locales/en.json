@@ -102,6 +102,16 @@
     "error": {
       "title": "Error",
       "text": "An error has occurred while processing your search. Please try again later or contact support."
+    },
+    "collection": {
+      "title": "Collection",
+      "imagefile": {
+        "label": "Image Files"
+      },
+      "metafile": {
+        "label": "Meta Files",
+        "unknown_fields": "Some fields cannot be assigned ({field_names})"
+      }
     }
   },
   "user": {
