@@ -170,8 +170,8 @@ export default {
     fullText() {
       return this.$store.state.api.fullText;
     },
-    layout() {
-      return this.$store.state.api.settings.layout;
+    settings() {
+      return this.$store.state.api.settings;
     },
     updateQuery() {
       return this.$store.state.api.query;
@@ -187,15 +187,24 @@ export default {
     fullText() {
       this.load()
     },
-    layout(new_value, old_value) {
-      if (new_value !== old_value && new_value === "umap") {
-        this.load();
-      }
+    settings: {
+      handler(newValues, oldValues) {
+        if (newValues.layout === "umap") {
+          if (oldValues.layout === "umap") {
+            if (newValues.grid !== oldValues.grid) {
+              this.load();
+            }
+          } else {
+            this.load();
+          }
+        }
+      },
+      deep: true,
     },
     query: {
-      handler(new_values, old_values) {
-        if (!isEqual(new_values.length, old_values.length)) {
-          this.query = new_values.map((value) => {
+      handler(newValues, oldValues) {
+        if (!isEqual(newValues.length, oldValues.length)) {
+          this.query = newValues.map((value) => {
             if (typeof value === "string") {
               let positive = true;
 

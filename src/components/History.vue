@@ -1,5 +1,5 @@
 <template>
-  <v-menu v-model="menu" min-width="350" max-width="350" max-height="600" offset-y bottom left open-on-hover :close-on-content-click="false">
+  <v-menu v-model="menu" min-width="365" max-width="365" max-height="600" offset-y bottom left open-on-hover :close-on-content-click="false">
     <template v-slot:activator="{ attrs, on: menu }">
       <v-btn icon v-bind="attrs" v-on="menu" class="ml-n2" :title="$t('drawer.history.title')">
         <v-badge v-if="data.length" color="accent" :content="data.length">

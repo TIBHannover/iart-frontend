@@ -26,7 +26,7 @@
         "meta.institution": "Institution",
         "meta.genre": "Genre",
         "meta.period": "Period",
-        "origin.name": "Data",
+        "origin.name": "Data Set",
         "full.text": "Full-Text"
       }
     },
@@ -38,12 +38,16 @@
       },
       "layout": {
         "flexible": "Flexible Layout",
-        "regular": "Regular Layout",
-        "umap": "Canvas Layout"
+        "regular": "Grid Layout",
+        "umap": "2D Canvas Layout"
+      },
+      "umap": {
+        "grid": "Align To Grid"
       }
     },
     "history": {
       "title": "Search History",
+      "remove": "Remove Entries",
       "query": {
         "empty": "Empty Query",
         "filled": "Query"
@@ -57,7 +61,7 @@
   "modal": {
     "cookies": {
       "title": "Cookies",
-      "text": "We are using cookies to help with the basic functionality of our website, e. g., remember if you gave consent to cookies."
+      "text": "We are using cookies to help with the basic functionality of our website. The website cannot function properly without these cookies." 
     },
     "item": {
       "information": "Basic Information",
@@ -70,6 +74,9 @@
         "text": "Iconclass",
         "notations": "Notations"
       }
+    },
+    "grid": {
+      "title": "Selected Objects"
     },
     "weights": {
       "title": "Global Weights",
@@ -153,5 +160,12 @@
   },
   "field": {
     "required": "This is a required field."
+  },
+  "plugin": {
+    "iconclass_clip_classifier": "CLIP Classifier",
+    "iconclass_lstm_classifier": "LSTM Classifier",
+    "kaggle_resnet_classifier": "Kaggle Classifier",
+    "i_met2020_resnet_classifier": "iMet Classifier",
+    "image_net_resnet_classifier": "ImageNet Classifier"
   }
 }

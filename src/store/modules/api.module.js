@@ -142,14 +142,10 @@ const api = {
 
             commit('updateQuery', queries);
           }
-
-          window.scrollTo(0, 0);
         })
         .catch((error) => {
           const info = { date: Date(), text: error };
           commit('error/update', info, { root: true });
-        })
-        .finally(() => {
           commit('loading/update', false, { root: true });
         });
     },

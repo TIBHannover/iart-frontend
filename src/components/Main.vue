@@ -1,7 +1,7 @@
 <template>
   <v-main class="ma-1">
-    <Umap v-if="settings.layout === 'umap'" />
-    <Grid v-else />
+    <Umap v-if="settings.layout==='umap'" />
+    <Grid v-else :entries="entries" />
 
     <ModalNoResults />
     <ModalError />
@@ -10,12 +10,15 @@
 
 <script>
 import Grid from "@/components/Grid.vue";
-import Umap from "@/components/Umap.vue";
+import Umap from "@/components/Umap2D.vue";
 import ModalError from "@/components/ModalError.vue";
 import ModalNoResults from "@/components/ModalNoResults.vue";
 
 export default {
   computed: {
+    entries() {
+      return this.$store.state.api.hits;
+    },
     settings() {
       return this.$store.state.api.settings;
     },
@@ -28,13 +31,3 @@ export default {
   },
 };
 </script>
-
-<style>
-.grid-view {
-  flex-grow: 1;
-  display: flex;
-  flex-wrap: wrap;
-  overflow: hidden;
-  transition: flex-basis 0.2s ease;
-}
-</style>

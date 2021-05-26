@@ -55,7 +55,9 @@
           <template v-slot:item="{ on, item }">
             <v-list-item v-on="on">
               <v-list-item-content>
-                <v-list-item-title class="meta">
+                <v-list-item-title
+                  :class="'meta ' + count.field.replace('.', '-')"
+                >
                   <div :title="item.name">{{ item.name }}</div>
                   <div
                     class="ml-3"
@@ -72,7 +74,7 @@
             <v-chip
               v-bind="attrs" :input-value="selected"
               @click:close="remove(item.name, count.field)"
-              close
+              close :class="count.field.replace('.', '-')"
             >
               <span :title="item.name">{{ item.name }}</span>
             </v-chip>
@@ -304,5 +306,10 @@ input::-webkit-inner-spin-button {
 
 input[type="number"] {
   -moz-appearance: textfield;
+}
+
+.v-autocomplete__content .meta.origin-name,
+.v-autocomplete .v-chip.origin-name {
+  text-transform: capitalize;
 }
 </style>

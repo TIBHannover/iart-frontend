@@ -15,7 +15,15 @@
         ></v-select>
       </v-col>
 
-      <v-col cols="5">
+      <v-col v-if="layout==='umap'" cols="3">
+        <v-switch
+          v-model="grid" class="pt-1 pb-2"
+          :label="$t('drawer.settings.umap.grid')"
+          color="secondary" inset dense hide-details
+        ></v-switch>
+      </v-col>
+
+      <v-col :cols="layout==='umap' ? 2 : 5">
         <v-btn
           :title="$t('drawer.settings.size.increase')"
           @click="zoomIn" :disabled="!zoomInEnabled" icon
@@ -49,6 +57,7 @@ export default {
   data() {
     return {
       weights: {},
+      grid: false,
       zoomLevel: 0,
       layout: "flexible",
       layoutItems: [
@@ -65,6 +74,7 @@ export default {
     },
     commit() {
       const settings = {
+        grid: this.grid,
         layout: this.layout,
         weights: this.weights,
         zoomLevel: this.zoomLevel,
@@ -101,14 +111,14 @@ export default {
       };
     },
     zoomInEnabled() {
-      if (this.zoomLevel === 6) {
+      if (this.zoomLevel === 6 || (this.layout === "umap" && this.grid)) {
         return false;
       }
 
       return true;
     },
     zoomOutEnabled() {
-      if (this.zoomLevel === -6) {
+      if (this.zoomLevel === -6 || (this.layout === "umap" && this.grid)) {
         return false;
       }
 
@@ -122,11 +132,15 @@ export default {
     layout() {
       this.commit();
     },
+    grid() {
+      this.commit();
+    },
   },
   created() {
     const { settings } = this.$store.state.api;
 
     if (Object.keys(settings).length) {
+      this.grid = settings.grid;
       this.layout = settings.layout;
       this.weights = settings.weights;
       this.zoomLevel = settings.zoomLevel;
@@ -158,6 +172,16 @@ export default {
 
 .v-banner__text .v-input {
   align-items: center;
+}
+
+.v-banner__text .v-label {
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 14px;
+}
+
+.v-banner__text .v-input--switch {
+  padding-bottom: 0 !important;
+  margin-top: 0;
 }
 
 .v-banner .v-btn--text {

@@ -3,7 +3,7 @@
     class="grid-item" :disabled="disabled" :title="$t('griditem.view')" 
     :style="getCss" @click="showDetails"
   >
-    <ModalItem v-model="dialog" :entry="entry" />
+    <ModalItem v-model="dialog" :entry="entry" :entries="entries" />
     <img :src="entry.path" v-on:error="onError" />
 
     <div class="overlay">
@@ -75,7 +75,7 @@ export default {
       bookmarked: false,
     };
   },
-  props: ["entry"],
+  props: ["entry", "entries"],
   methods: {
     query(append) {
       const query = {
@@ -205,10 +205,6 @@ export default {
 
 .grid-item[disabled] {
   display: none;
-}
-
-.grid-item:last-child {
-  max-width: 400px;
 }
 
 .grid-item i {

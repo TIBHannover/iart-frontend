@@ -94,6 +94,9 @@
             :text-color="tag.disable ? 'grey lighten-1' : ''" outlined
           >
             <span class="tag clip" :title="tag.name">{{ tag.name }}</span>
+            <v-icon class="ml-1" size="18" :title="$t('plugin')[tag.plugin]">
+              {{ pluginIcon[tag.plugin] }}
+            </v-icon>
             <v-icon v-if="tag.disable" class="ml-1 mr-n1" size="14">mdi-help</v-icon>
           </v-chip>
 
@@ -137,6 +140,7 @@
                     :key="index" :disabled="value.disable" 
                     class="mr-1 mb-2" @click="filter(value.name, field)" 
                     :title="$t('drawer.filter.title')" outlined
+                    :class="field.replace('.', '-')"
                   >
                     <span>{{ value.name }}</span>
                   </v-chip>
@@ -170,6 +174,9 @@
                     <span :title="tag.code+' '+tag.label" class="clip">
                       {{ tag.code }} {{ tag.label }}
                     </span>
+                    <v-icon class="ml-1" size="18" :title="$t('plugin')[tag.plugin]">
+                      {{ pluginIcon[tag.plugin] }}
+                    </v-icon>
                     <v-icon v-if="tag.disable" class="ml-1 mr-n1" size="14">mdi-help</v-icon>
                   </v-chip>
                 </v-col>
@@ -212,9 +219,16 @@ import { keyInObj } from '@/plugins/helpers';
 const scheme = new RegExp(/^(\d{1,2})([A-IK-Z]{1,2})?(\d+)?(\([^+)]+\))?(\d+)?(\(\+[0-9]+\))?$/, "m");
 
 export default {
-  props: ["value", "entry"],
+  props: ["value", "entry", "entries"],
   data() {
     return {
+      pluginIcon: {
+        iconclass_clip_classifier: "mdi-alpha-c-circle-outline",
+        iconclass_lstm_classifier: "mdi-alpha-l-circle-outline",
+        kaggle_resnet_classifier: "mdi-alpha-k-circle-outline",
+        i_met2020_resnet_classifier: "mdi-alpha-m-circle-outline",
+        image_net_resnet_classifier: "mdi-alpha-i-circle-outline",
+      },
       moreTags: true,
     };
   },
@@ -243,19 +257,17 @@ export default {
       this.$emit("input");
     },
     getNext() {
-      const { hits } = this.$store.state.api;
-      const index = hits.indexOf(this.entry);
+      const index = this.entries.indexOf(this.entry);
 
-      if (index + 1 < hits.length) {
-        this.entry = hits[index + 1];
+      if (index + 1 < this.entries.length) {
+        this.entry = this.entries[index + 1];
       }
     },
     getPrevious() {
-      const { hits } = this.$store.state.api;
-      const index = hits.indexOf(this.entry);
+      const index = this.entries.indexOf(this.entry);
 
       if (index > 0) {
-        this.entry = hits[index - 1];
+        this.entry = this.entries[index - 1];
       }
     },
   },
@@ -354,7 +366,7 @@ export default {
             const [code, keywords, label] = name.split("; ");
             const codeParts = scheme.exec(code).slice(1, 7);
 
-            if (!codeParts[3] && value > 0.01) {
+            if (!codeParts[3]) {
               texts.push({
                 code,
                 label,
@@ -408,6 +420,10 @@ export default {
         }
       });
 
+      this.entry.origin.forEach(({ value_str }) => {
+        metadata["origin.name"] = [{ name: value_str, disable: false }]
+      });
+
       return metadata;
     },
     references() {
@@ -427,16 +443,14 @@ export default {
       return references;
     },
     isFirst() {
-      const { hits } = this.$store.state.api;
-      const index = hits.indexOf(this.entry);
+      const index = this.entries.indexOf(this.entry);
 
       return index === 0;
     },
     isLast() {
-      const { hits } = this.$store.state.api;
-      const index = hits.indexOf(this.entry);
+      const index = this.entries.indexOf(this.entry);
 
-      return index + 1 === hits.length;
+      return index + 1 === this.entries.length;
     },
   },
 };
@@ -466,7 +480,8 @@ export default {
 
 .v-dialog .text-h5 > span,
 .v-dialog .text-h6 > span,
-.v-dialog .v-expansion-panel .capitalize {
+.v-dialog .v-expansion-panel .capitalize,
+.v-dialog .v-chip.origin-name {
   text-transform: capitalize;
 }
 
@@ -494,7 +509,7 @@ export default {
 .v-dialog span.clip {
   text-overflow: ellipsis;
   overflow: hidden;
-  max-width: 200px;
+  max-width: 190px;
 }
 
 .v-dialog span.tag {

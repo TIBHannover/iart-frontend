@@ -1,6 +1,11 @@
 <template>
-  <div class="grid-view">
-    <GridItem v-for="entry in data" :key="entry" :entry="entry" />
+  <div class="flex-view">
+    <GridItem 
+      v-for="entry in entries" :key="entry" 
+      :entry="entry" :entries="entries"
+    />
+    
+    <div class="grid-item-fill"></div>
   </div>
 </template>
 
@@ -8,16 +13,7 @@
 import GridItem from "@/components/GridItem.vue";
 
 export default {
-  data() {
-    return {
-      modalNoResults: false,
-    };
-  },
-  computed: {
-    data() {
-      return this.$store.state.api.hits;
-    },
-  },
+  props: ["entries"],
   components: {
     GridItem,
   },
@@ -25,11 +21,20 @@ export default {
 </script>
 
 <style>
-.grid-view {
+.flex-view {
   flex-grow: 1;
   display: flex;
   flex-wrap: wrap;
   overflow: hidden;
   transition: flex-basis 0.2s ease;
+}
+
+.flex-view:after {
+  content: "";
+  flex: auto;
+}
+
+.grid-item-fill {
+  flex-grow: 50;
 }
 </style>

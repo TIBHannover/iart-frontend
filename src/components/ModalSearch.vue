@@ -12,7 +12,7 @@
     <v-card>
       <v-card-title>
         <div class="text-h6">
-          <span>{{ $t("modal.search.title") }}</span>
+          {{ $t("modal.search.title") }}
         </div>
 
         <v-btn icon @click.native="dialog = false" absolute top right>
