@@ -39,7 +39,7 @@ export default {
         },
       },
       focusOptions: {
-        scale: 40,
+        scale: 25,
         animation: {
           easingFunction: "easeInOutQuad",
           duration: 1000,
