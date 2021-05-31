@@ -36,6 +36,11 @@ export default {
       return this.entries.slice(firstEntry, lastEntry);
     },
   },
+  watch: {
+    entries() {
+      this.page = 1;
+    },
+  },
   components: {
     GridItem,
   },
