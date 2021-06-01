@@ -42,12 +42,30 @@
       </v-card-text>
 
       <v-card-actions class="px-6 pb-6">
-        <v-btn
-          @click="search" :disabled="disabled"
-          color="accent" block rounded depressed
-        >
-          {{ $t("button.submit") }}
-        </v-btn>
+        <v-menu offset-y bottom right>
+          <template v-slot:activator="{ attrs, on: menu }">
+            <v-btn
+              v-bind="attrs" v-on="menu" :disabled="disabled"
+              color="accent" block rounded depressed
+            >
+              {{ $t("button.submit") }}
+            </v-btn>
+          </template>
+
+          <v-list class="pa-0">
+            <v-list-item class="px-0 h44">
+              <v-btn @click="search(false)" text block large>
+                {{ $t("search.new") }}
+              </v-btn>
+            </v-list-item>
+
+            <v-list-item class="px-0 h44">
+              <v-btn @click="search(true)" text block large>
+                {{ $t("search.append") }}
+              </v-btn>
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -66,8 +84,8 @@ export default {
   },
   props: ["value"],
   methods: {
-    search() {
-      const query = { positive: true };
+    search(append) {
+      const query = { positive: true, append };
 
       if (this.selectFile) {
         query.type = "file";

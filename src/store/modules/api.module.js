@@ -128,19 +128,33 @@ const api = {
       })
         .then((res) => {
           if (res.data.status === 'ok') {
-            const queries = [];
+            if (params.append) {
+              res.data.entries.forEach(({ id, meta }) => {
+                const query = {
+                  type: 'idx',
+                  positive: true,
+                  value: id,
+                  weights: {},
+                  label: meta.title,
+                };
 
-            res.data.entries.forEach(({ id, meta }) => {
-              queries.push({
-                type: 'idx',
-                positive: true,
-                value: id,
-                weights: {},
-                label: meta.title,
+                commit("addQuery", query);
               });
-            });
+            } else {
+              const queries = [];
 
-            commit('updateQuery', queries);
+              res.data.entries.forEach(({ id, meta }) => {
+                queries.push({
+                  type: 'idx',
+                  positive: true,
+                  value: id,
+                  weights: {},
+                  label: meta.title,
+                });
+              });
+
+              commit('updateQuery', queries);
+            }
           }
         })
         .catch((error) => {

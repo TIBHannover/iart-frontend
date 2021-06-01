@@ -2,7 +2,7 @@
   <v-app>
     <v-app-bar app flat>
       <v-layout row>
-        <div class="logo ml-3 mr-5">
+        <div class="logo ml-3 mr-5" @click="reset" style="cursor: pointer;">
           <img src="/assets/images/logo.png" />
         </div>
 
@@ -131,6 +131,11 @@ export default {
       this.$store.dispatch("api/load");
     },
     load() {
+      this.$store.dispatch("api/load");
+    },
+    reset() {
+      this.$store.commit("api/removeAllFilters");
+      this.$store.commit("api/updateQuery", []);
       this.$store.dispatch("api/load");
     },
     remove(index) {
