@@ -199,12 +199,12 @@ export default {
           return {
             id: entry.id,
             shape: "custom",
-            image: entry.path, 
+            image: entry.preview, 
             x: entry.coordinates[0] * minSize, 
             y: entry.coordinates[1] * minSize,
             entry,
             ctxRenderer: function({ ctx, x, y }) {
-              const img = new Image(); img.src = entry.path;
+              const img = new Image(); img.src = entry.preview;
               const imgSize = Math.min(img.width, img.height);
 
               return {
@@ -234,7 +234,7 @@ export default {
           return {
             id: entry.id,
             shape: "image",
-            image: entry.path, 
+            image: entry.preview, 
             x: entry.coordinates[0] * minSize, 
             y: entry.coordinates[1] * minSize,
             entry,

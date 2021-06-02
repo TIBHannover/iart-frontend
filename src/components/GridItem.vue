@@ -4,7 +4,7 @@
     :style="getCss" @click="showDetails"
   >
     <ModalItem v-model="dialog" :entry="entry" :entries="entries" />
-    <img :src="entry.path" v-on:error="onError" />
+    <img :src="entry.preview" v-on:error="onError" />
 
     <div class="overlay">
       <div class="view">
