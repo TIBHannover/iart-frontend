@@ -298,7 +298,7 @@ const api = {
         } else {
           state.random = null;
         }
-      } else {
+      } else if (typeof random === 'string') {
         state.random = random;
       }
     },

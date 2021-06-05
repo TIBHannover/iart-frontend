@@ -7,14 +7,15 @@
         </div>
 
         <v-combobox 
-          v-model="query" @click:clear="remove(-1)" @keyup.enter="submit(random=false)"
-          :placeholder="$t('home.search.placeholder')" class="mx-1" allow-overflow 
-          rounded solo hide-details flat clearable multiple single-line
+          v-model="query" class="mx-1" @click:clear="remove(-1)"
+          :placeholder="$t('home.search.placeholder')" allow-overflow 
+          @keyup.enter="submit(null, random=false)" rounded solo 
+          hide-details flat clearable multiple single-line
         >
           <template v-slot:prepend-inner>
             <v-icon @click="submit">mdi-magnify</v-icon>
             <v-icon 
-              :title="$t('search.random')" @click="submit(random=true)" 
+              :title="$t('search.random')" @click="submit(null, random=true)" 
               class="ml-1"
             >
               mdi-slot-machine-outline
@@ -126,7 +127,7 @@ export default {
     };
   },
   methods: {
-    submit(random = false) {
+    submit(value, random = false) {
       this.$store.commit("api/updateRandom", random);
       this.$store.dispatch("api/load");
     },
