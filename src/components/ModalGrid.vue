@@ -12,19 +12,38 @@
       </v-card-title>
 
       <v-card-text class="mt-4">
-        <Grid :entries="entries" />
+        <GridCluster v-if="layout==='cluster'" :entries="entries" />
+        <GridRanked v-if="layout==='ranked'" :entries="entries" />
       </v-card-text>
     </v-card>
   </v-dialog>
 </template>
 
 <script>
-import Grid from "@/components/Grid.vue";
+import { keyInObj } from "@/plugins/helpers";
+
+import GridRanked from "@/components/GridRanked.vue";
+import GridCluster from "@/components/GridCluster.vue";
 
 export default {
   props: ["value", "entries"],
+  computed: {
+    layout() {
+      const { settings } = this.$store.state.api;
+
+      if (
+        keyInObj('n', settings.cluster) &&
+        settings.cluster.n > 1
+      ) {
+        return 'cluster';
+      }
+
+      return 'ranked';
+    },
+  },
   components: {
-    Grid,
+    GridRanked,
+    GridCluster,
   },
 };
 </script>

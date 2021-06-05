@@ -19,6 +19,13 @@ import { Network } from "vis-network/peer";
 import ModalItem from "@/components/ModalItem.vue";
 import ModalGrid from "@/components/ModalGrid.vue";
 
+const Colors = [
+  "#F44336", "#2196F3", "#8BC34A", "#FF5722", "#E91E63",
+  "#03A9F4", "#CDDC39", "#795548", "#9C27B0", "#00BCD4",
+  "#FFEB3B", "#607D8B", "#673AB7", "#009688", "#FFC107",
+  "#9E9E9E", "#3F51B5", "#4CAF50", "#FF9800", "#000000",
+];
+
 export default {
   data() {
     return {
@@ -185,79 +192,116 @@ export default {
     },
     drawNodes() {
       const minSize = Math.min(...this.getSize());
+      let [boxSize, { grid }] = [0, this.state];
 
-      if (this.state.grid) {
-        const x = this.data.map(({ coordinates }) => coordinates[0]);
-        const y = this.data.map(({ coordinates }) => coordinates[1]);
-
+      if (grid) {
+        const x = this.data.map(
+          ({ coordinates }) => coordinates[0]
+        );
         const nX = [...new Set(x)].length;
+
+        const y = this.data.map(
+          ({ coordinates }) => coordinates[1]
+        );
         const nY = [...new Set(y)].length;
 
-        const boxSize = minSize / Math.max(nX, nY);
+        boxSize = minSize / Math.max(nX, nY);
+      } else {
+        let { settings } = this.$store.state.api;
+        if (!settings) settings.itemSize = 0;
 
-        this.nodes = this.data.map((entry) => {
-          return {
-            id: entry.id,
-            shape: "custom",
-            image: entry.preview, 
-            x: entry.coordinates[0] * minSize, 
-            y: entry.coordinates[1] * minSize,
-            entry,
-            ctxRenderer: function({ ctx, x, y }) {
-              const img = new Image(); img.src = entry.preview;
-              const imgSize = Math.min(img.width, img.height);
+        boxSize = (settings.itemSize + 8) * 1.25;
+      }
 
-              return {
-                drawNode() {
+      this.nodes = this.data.map((entry) => {
+        return {
+          id: entry.id,
+          shape: "custom",
+          image: entry.preview,
+          group: entry.cluster,
+          x: entry.coordinates[0] * minSize,
+          y: entry.coordinates[1] * minSize,
+          entry,
+          ctxRenderer: ({ ctx, x, y }) => {
+            const img = new Image();
+            img.src = entry.preview;
+
+            let minImgSize = img.width;
+            let maxImgSize = img.height;
+
+            if (img.width > img.height) {
+              minImgSize = img.height;
+              maxImgSize = img.width;
+            }
+
+            return {
+              drawNode() {
+                if (grid) {
                   ctx.drawImage(
                     img,
-                    (img.width - imgSize) / 2,
-                    (img.height - imgSize) / 2,
-                    imgSize,
-                    imgSize,
+                    (img.width - minImgSize) / 2,
+                    (img.height - minImgSize) / 2,
+                    minImgSize,
+                    minImgSize,
                     x - boxSize / 2,
                     y - boxSize / 2,
                     boxSize,
                     boxSize,
                   );
-                },
-                nodeDimensions: {
-                  width: boxSize,
-                  height: boxSize,
-                },
-              }
-            },
-          };
-        });
-      } else {
-        this.nodes = this.data.map((entry) => {
-          return {
-            id: entry.id,
-            shape: "image",
-            image: entry.preview, 
-            x: entry.coordinates[0] * minSize, 
-            y: entry.coordinates[1] * minSize,
-            entry,
-          };
-        });
-      }
+
+                  if (typeof entry.cluster !== "undefined") {
+                    ctx.fillStyle = Colors[entry.cluster];
+                    ctx.beginPath();
+
+                    ctx.arc(
+                      x + boxSize / 2 - boxSize / 5,
+                      y - boxSize / 2 + boxSize / 5,
+                      boxSize / 7,
+                      0,
+                      2 * Math.PI,
+                    );
+
+                    ctx.fill();
+                  }
+                } else {
+                  const width = img.width / maxImgSize;
+                  const height = img.height / maxImgSize;
+
+                  ctx.drawImage(
+                    img,
+                    x - (width * boxSize) / 2,
+                    y - (height * boxSize) / 2,
+                    width * boxSize,
+                    height * boxSize,
+                  );
+
+                  if (typeof entry.cluster !== "undefined") {
+                    ctx.fillStyle = Colors[entry.cluster];
+                    ctx.beginPath();
+
+                    ctx.arc(
+                      x + (width * boxSize) / 2 - boxSize / 5,
+                      y - (height * boxSize) / 2 + boxSize / 5,
+                      boxSize / 7,
+                      0,
+                      2 * Math.PI,
+                    );
+
+                    ctx.fill();
+                  }
+                }
+              },
+              nodeDimensions: {
+                width: boxSize,
+                height: boxSize,
+              },
+            }
+          },
+        };
+      });
 
       this.network.setData({ nodes: this.nodes });
-
-      this.resizeNodes();
       this.onResize();
-    },
-    resizeNodes() {
-      if (this.network) {
-        let { settings } = this.$store.state.api;
-        if (!settings) settings.zoomLevel = 0;
-
-        this.network.setOptions({
-          nodes: {
-            size: settings.zoomLevel + 7,
-          },
-        });
-      }
     },
     selectNodes() {
       const start = this.toCanvas(this.rect.startX, this.rect.startY);
@@ -288,7 +332,7 @@ export default {
     },
     settings(values) {
       this.state.grid = values.grid;
-      this.resizeNodes();
+      this.drawNodes();
     },
     drawerSettings() {
       setTimeout(() => {

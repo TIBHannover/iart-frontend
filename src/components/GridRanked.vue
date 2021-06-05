@@ -21,7 +21,7 @@ export default {
   props: ["entries"],
   data() {
     return {
-      perPage: 100,
+      perPage: 150,
       page: 1,
     };
   },
@@ -39,6 +39,9 @@ export default {
   watch: {
     entries() {
       this.page = 1;
+    },
+    page() {
+      window.scrollTo(0, 0);
     },
   },
   components: {
@@ -62,7 +65,7 @@ export default {
 }
 
 .grid-item-fill {
-  flex-grow: 50;
+  flex-grow: 150;
 }
 
 nav[role=navigation] {

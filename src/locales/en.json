@@ -1,10 +1,10 @@
 {
   "home": {
     "search": {
-      "placeholder": "Start Typing To Search",
+      "placeholder": "Start Typing to Search",
       "query": {
-        "positive": "Set As Positive Query",
-        "negative": "Set As Negative Query"
+        "positive": "Set as Positive Query",
+        "negative": "Set as Negative Query"
       }
     }
   },
@@ -31,19 +31,7 @@
       }
     },
     "settings": {
-      "title": "Settings",
-      "size": {
-        "increase": "Increase Item Size",
-        "reduce": "Reduce Item Size"
-      },
-      "layout": {
-        "flexible": "Flexible Layout",
-        "regular": "Grid Layout",
-        "umap": "2D Canvas Layout"
-      },
-      "umap": {
-        "grid": "Align To Grid"
-      }
+      "title": "Settings"
     },
     "history": {
       "title": "Search History",
@@ -55,6 +43,10 @@
       "filter": {
         "empty": "No Filters",
         "filled": "Filters"
+      },
+      "cluster": {
+        "empty": "No Clusters",
+        "filled": "Clusters"
       }
     }
   },
@@ -90,15 +82,35 @@
         "color": "Color Features"
       }
     },
+    "layout": {
+      "title": "Result View",
+      "type": {
+        "flexible": "1D List View",
+        "umap": "2D Canvas View"
+      },
+      "grid": {
+        "show": "Align to Grid",
+        "hide": "Don't Align to Grid"
+      },
+      "itemSize": "Object Size"
+    },
+    "cluster": {
+      "title": "Cluster Display",
+      "type": {
+        "kmeans": "K-Means Clustering",
+        "agglomerative": "Hierarchical Clustering"
+      },
+      "n": "Number of Clusters"
+    },
     "search": {
-      "title": "Search By Image",
-      "toggle": "Upload Image From My Computer",
+      "title": "Search by Image",
+      "toggle": "Upload Image from Computer",
       "file": {
         "label": "Select Image File",
         "rule": "Image size should be less than 2 MB."
       },
       "url": {
-        "label": "Paste URL To Image",
+        "label": "Paste URL to Image",
         "rule": "Requested URL is not valid."
       }
     },
@@ -159,7 +171,9 @@
     "decline": "Decline"
   },
   "field": {
-    "required": "This is a required field."
+    "required": "This is a required field.",
+    "cluster": "Cluster",
+    "use": "Use"
   },
   "plugin": {
     "iconclass_clip_classifier": "CLIP Classifier",

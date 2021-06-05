@@ -194,14 +194,13 @@ export default {
     },
     settings: {
       handler(newValues, oldValues) {
-        if (newValues.layout === "umap") {
-          if (oldValues.layout === "umap") {
-            if (newValues.grid !== oldValues.grid) {
-              this.load();
-            }
-          } else {
-            this.load();
-          }
+        if (
+          (newValues.cluster.type !== oldValues.cluster.type) ||
+          (newValues.cluster.n !== oldValues.cluster.n) ||
+          (newValues.layout === "umap" && oldValues.layout !== "umap") ||
+          (newValues.layout === "umap" && (newValues.grid !== oldValues.grid))
+        ) {
+          this.load();
         }
       },
       deep: true,

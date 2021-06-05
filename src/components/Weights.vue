@@ -2,7 +2,7 @@
   <v-card :id="id" class="weights" width="300">
     <v-card-text class="mb-n4">
       <v-switch
-        v-if="local" v-model="selectWeights" class="mt-0"
+        v-if="local" v-model="selectWeights" class="mt-0 mx-2"
         :label="$t('modal.weights.toggle')" color="secondary"
         inset hide-details
       ></v-switch>
@@ -49,7 +49,7 @@
             class="ml-10" :attach="'#' + id" solo hide-details flat dense
           >
             <template v-slot:prepend>
-              <span>Use</span>
+              <span>{{ $t("field.use") }}</span>
             </template>
           </v-select>
         </div>
@@ -82,7 +82,9 @@ export default {
           name: this.$t("modal.weights.group.color"),
           advanced: false,
           value: 0.0,
-          items: [{ key: "yuv_histogram_feature", name: "YUV Histogram" }],
+          items: [
+            { key: "yuv_histogram_feature", name: "YUV Histogram" },
+          ],
         },
         content: {
           default: "clip_embedding_feature",

@@ -299,7 +299,7 @@ const api = {
           state.random = null;
         }
       } else {
-        state.random = parseFloat(random);
+        state.random = random;
       }
     },
     updateSettings(state, settings) {

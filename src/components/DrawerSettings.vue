@@ -6,42 +6,14 @@
       </v-col>
 
       <v-col cols="3">
-        <v-select
-          v-model="layout" :items="layoutItems"
-          item-value="key" item-text="name"
-          prepend-inner-icon="mdi-view-compact-outline"
-          style="font-size: 14px" solo hide-details
-          flat dense
-        ></v-select>
+        <ModalLayout :values="layout" @update="updateLayout" />
       </v-col>
 
-      <v-col v-if="layout==='umap'" cols="3">
-        <v-switch
-          v-model="grid" class="pt-1 pb-2"
-          :label="$t('drawer.settings.umap.grid')"
-          color="secondary" inset dense hide-details
-        ></v-switch>
+      <v-col cols="3">
+        <ModalCluster :values="cluster" @update="updateCluster" />
       </v-col>
 
-      <v-col :cols="layout==='umap' ? 2 : 5">
-        <v-btn
-          :title="$t('drawer.settings.size.increase')"
-          @click="zoomIn" :disabled="!zoomInEnabled" icon
-        >
-          <v-icon>mdi-plus-circle-outline</v-icon>
-        </v-btn>
-        <v-btn
-          :title="$t('drawer.settings.size.reduce')"
-          @click="zoomOut"
-          :disabled="!zoomOutEnabled"
-          class="ml-n2"
-          icon
-        >
-          <v-icon>mdi-minus-circle-outline</v-icon>
-        </v-btn>
-      </v-col>
-
-      <v-col cols="1" style="text-align: right">
+      <v-col cols="3" style="text-align: right">
         <v-btn @click="close" icon>
           <v-icon>mdi-close</v-icon>
         </v-btn>
@@ -51,20 +23,20 @@
 </template>
 
 <script>
+import ModalLayout from "@/components/ModalLayout.vue";
 import ModalWeights from "@/components/ModalWeights.vue";
+import ModalCluster from "@/components/ModalCluster.vue";
 
 export default {
   data() {
     return {
       weights: {},
-      grid: false,
-      zoomLevel: 0,
-      layout: "flexible",
-      layoutItems: [
-        { key: "flexible", name: this.$t("drawer.settings.layout.flexible") },
-        { key: "regular", name: this.$t("drawer.settings.layout.regular") },
-        { key: "umap", name: this.$t("drawer.settings.layout.umap") },
-      ],
+      cluster: {},
+      layout: {
+        grid: false,
+        itemSize: -1,
+        type: "flexible",
+      },
       drawer: this.$store.state.user.drawer.settings,
     };
   },
@@ -74,28 +46,28 @@ export default {
     },
     commit() {
       const settings = {
-        grid: this.grid,
-        layout: this.layout,
         weights: this.weights,
-        zoomLevel: this.zoomLevel,
+        cluster: this.cluster,
+        grid: this.layout.grid,
+        layout: this.layout.type,
+        itemSize: this.layout.itemSize,
       };
 
       this.$store.commit("api/updateSettings", settings);
     },
-    zoomIn() {
-      if (this.zoomLevel < 7) {
-        this.zoomLevel += 1;
-        this.commit();
-      }
-    },
-    zoomOut() {
-      if (this.zoomLevel > -7) {
-        this.zoomLevel -= 1;
-        this.commit();
-      }
-    },
     updateWeights(value) {
       this.weights = value;
+      this.commit();
+    },
+    updateLayout({ type, itemSize, grid }) {
+      this.layout.type = type;
+      this.layout.itemSize = itemSize;
+      this.layout.grid = grid;
+
+      this.commit();
+    },
+    updateCluster(value) {
+      this.cluster = value;
       this.commit();
     },
   },
@@ -110,44 +82,28 @@ export default {
         "margin-right": `${filter * 350}px`,
       };
     },
-    zoomInEnabled() {
-      if (this.zoomLevel === 6 || (this.layout === "umap" && this.grid)) {
-        return false;
-      }
-
-      return true;
-    },
-    zoomOutEnabled() {
-      if (this.zoomLevel === -6 || (this.layout === "umap" && this.grid)) {
-        return false;
-      }
-
-      return true;
-    },
   },
   watch: {
     toggle(value) {
       this.drawer = value;
-    },
-    layout() {
-      this.commit();
-    },
-    grid() {
-      this.commit();
     },
   },
   created() {
     const { settings } = this.$store.state.api;
 
     if (Object.keys(settings).length) {
-      this.grid = settings.grid;
-      this.layout = settings.layout;
       this.weights = settings.weights;
-      this.zoomLevel = settings.zoomLevel;
+      this.cluster = settings.cluster;
+
+      this.layout.grid = settings.grid;
+      this.layout.type = settings.layout;
+      this.layout.itemSize = settings.itemSize;
     }
   },
   components: {
+    ModalLayout,
     ModalWeights,
+    ModalCluster,
   },
 };
 </script>
@@ -155,6 +111,7 @@ export default {
 <style>
 .theme--light.v-banner.v-sheet.settings {
   background-color: #fff;
+  border-bottom: 1px solid #f5f5f5;
 }
 
 .theme--light.v-banner.v-sheet:not(.v-sheet--outlined):not(.v-sheet--shaped)
@@ -164,6 +121,10 @@ export default {
 
 .settings .v-banner__wrapper {
   padding: 8px 10px;
+}
+
+.settings .v-btn:not(.v-btn--round).v-size--default {
+  padding: 0 8px;
 }
 
 .v-banner__text {
