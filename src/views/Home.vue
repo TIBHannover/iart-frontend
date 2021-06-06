@@ -9,14 +9,14 @@
         <v-combobox 
           v-model="query" class="mx-1" @click:clear="remove(-1)"
           :placeholder="$t('home.search.placeholder')" allow-overflow 
-          @keyup.enter="submit(null, random=false)" rounded solo 
+          @keyup.enter="submit($event, random=false)" rounded solo 
           hide-details flat clearable multiple single-line
         >
           <template v-slot:prepend-inner>
             <v-icon @click="submit">mdi-magnify</v-icon>
             <v-icon 
-              :title="$t('search.random')" @click="submit(null, random=true)" 
-              class="ml-1"
+              class="ml-1" :title="$t('search.random')" 
+              @click="submit($event, random=true)" 
             >
               mdi-slot-machine-outline
             </v-icon>
@@ -127,7 +127,7 @@ export default {
     };
   },
   methods: {
-    submit(value, random = false) {
+    submit(event, random = false) {
       this.$store.commit("api/updateRandom", random);
       this.$store.dispatch("api/load");
     },
@@ -196,8 +196,8 @@ export default {
     settings: {
       handler(newValues, oldValues) {
         if (
-          (newValues.cluster.type !== oldValues.cluster.type) ||
           (newValues.cluster.n !== oldValues.cluster.n) ||
+          (newValues.cluster.type !== oldValues.cluster.type) ||
           (newValues.layout === "umap" && oldValues.layout !== "umap") ||
           (newValues.layout === "umap" && (newValues.grid !== oldValues.grid))
         ) {
@@ -234,25 +234,21 @@ export default {
         this.query = values;
 
         if (!this.$store.state.api.random && values.length) {
-          this.submit();
+          this.submit(undefined);
         }
       },
       deep: true,
     },
   },
   created() {
-    const self = this;
-    
-    this.$store.dispatch("user/getCSRFToken").then(function () {
-      setTimeout(() => self.$store.dispatch("api/setState", self.$route.query), 500);
+    this.$store.dispatch("user/getCSRFToken").then(() => {
+      setTimeout(() => this.$store.dispatch("api/setState", this.$route.query), 500);
     });
   },
   mounted() {
-    const self = this;
-
-    window.onpopstate = function () {
-      self.$store.dispatch("api/setState", self.$route.query);
-      self.$store.commit("api/toggleBackBtn");
+    window.onpopstate = () => {
+      this.$store.dispatch("api/setState", this.$route.query);
+      this.$store.commit("api/toggleBackBtn");
     };
   },
   components: {
