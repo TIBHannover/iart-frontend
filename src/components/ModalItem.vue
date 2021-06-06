@@ -20,8 +20,8 @@
     <v-card>
       <div class="img-wrapper">
         <v-img 
-          :lazy-src="entry.path" :src="entry.path" class="grey lighten-1" 
-          max-height="500px" contain
+          :lazy-src="entry.preview" :src="entry.path"
+          class="grey lighten-1" max-height="500px" contain
         >
           <template v-slot:placeholder>
             <v-row class="fill-height ma-0" align="center" justify="center">

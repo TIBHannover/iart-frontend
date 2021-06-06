@@ -234,7 +234,7 @@ export default {
         this.query = values;
 
         if (!this.$store.state.api.random && values.length) {
-          this.submit(undefined);
+          this.submit();
         }
       },
       deep: true,

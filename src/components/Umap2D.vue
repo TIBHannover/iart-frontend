@@ -40,6 +40,7 @@ export default {
       options: {
         physics: false,
         interaction: {
+          navigationButtons: true,
           multiselect: true,
           dragNodes: false,
           hover: true,
@@ -121,7 +122,7 @@ export default {
           clientHeight -= (bottom - window.innerHeight + 6);
         }
 
-        return [clientWidth, clientHeight];
+        return [clientWidth, clientHeight - 1];
       }
 
       return [0, 0];
@@ -369,5 +370,54 @@ export default {
 
 #network .vis-network:focus {
   outline: none;
+}
+
+.vis-network .vis-navigation {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+
+.vis-network .vis-navigation .vis-button.vis-up, 
+.vis-network .vis-navigation .vis-button.vis-down, 
+.vis-network .vis-navigation .vis-button.vis-left, 
+.vis-network .vis-navigation .vis-button.vis-right, 
+.vis-network .vis-navigation .vis-button.vis-zoomIn, 
+.vis-network .vis-navigation .vis-button.vis-zoomOut, 
+.vis-network .vis-navigation .vis-button.vis-zoomExtends {
+  background-image: none !important;
+}
+
+.vis-network .vis-navigation .vis-button:hover {
+  box-shadow: none !important;
+}
+
+.vis-button {
+  margin-top: 2px;
+}
+
+.vis-button:after {
+  font: normal normal normal 24px/1 Material Design Icons;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: auto;
+  font-size: 24px;
+  line-height: 1;
+  color: #1d3557;
+}
+
+.vis-button:hover:after {
+  cursor: pointer;
+}
+
+.vis-button.vis-zoomIn:after {
+  content: "\F06ED";
+}
+
+.vis-button.vis-zoomOut:after {
+  content: "\F06EC";
+}
+
+.vis-button.vis-zoomExtends:after {
+  content: "\F0293";
 }
 </style>
