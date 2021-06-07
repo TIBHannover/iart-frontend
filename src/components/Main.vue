@@ -1,7 +1,7 @@
 <template>
   <v-main class="ma-1">
     <Umap v-if="layout==='umap'" :data="entries" />
-    
+
     <GridCluster v-if="layout==='cluster'" :entries="entries" />
     <GridRanked v-if="layout==='ranked'" :entries="entries" />
 

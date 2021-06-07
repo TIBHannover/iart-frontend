@@ -249,7 +249,7 @@ export default {
                     boxSize,
                   );
 
-                  if (typeof entry.cluster !== "undefined") {
+                  if (entry.cluster > 0 || entry.distance > 0) {
                     ctx.fillStyle = Colors[entry.cluster];
                     ctx.beginPath();
 
@@ -275,7 +275,7 @@ export default {
                     height * boxSize,
                   );
 
-                  if (typeof entry.cluster !== "undefined") {
+                  if (entry.cluster > 0 || entry.distance > 0) {
                     ctx.fillStyle = Colors[entry.cluster];
                     ctx.beginPath();
 

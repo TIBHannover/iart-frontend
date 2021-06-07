@@ -509,7 +509,7 @@ export default {
 .v-dialog span.clip {
   text-overflow: ellipsis;
   overflow: hidden;
-  max-width: 190px;
+  max-width: 185px;
 }
 
 .v-dialog span.tag {
