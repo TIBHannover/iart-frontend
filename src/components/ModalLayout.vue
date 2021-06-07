@@ -18,7 +18,7 @@
       <v-card-text class="px-6 pt-4 pb-5">
         <v-select
           v-model="layout.default" :items="layout.items"
-          class="mb-2" item-value="key" item-text="name" 
+          class="mb-0" item-value="key" item-text="name" 
           attach="#layout" solo flat dense hide-details
         >
           <template v-slot:prepend>
@@ -38,6 +38,16 @@
             >
               <v-icon>mdi-grid</v-icon>
             </v-btn>
+          </template>
+        </v-select>
+
+        <v-select
+          v-model="order.default" :items="order.items"
+          class="mb-2" item-value="key" item-text="name" 
+          attach="#layout" solo flat dense hide-details
+        >
+          <template v-slot:prepend>
+            {{ $t("modal.layout.order.title") }}
           </template>
         </v-select>
 
@@ -67,7 +77,7 @@ export default {
   data() {
     return {
       dialog: false,
-      itemSize: -1,
+      itemSize: 0,
       layout: {
         default: "flexible",
         grid: false,
@@ -76,12 +86,21 @@ export default {
           { key: "umap", name: this.$t("modal.layout.type.umap") },
         ],
       },
+      order: {
+        default: "relevance",
+        items: [
+          { key: "relevance", name: this.$t("modal.layout.order.type.relevance") },
+          { key: "title", name: this.$t("modal.layout.order.type.title") },
+          { key: "date", name: this.$t("modal.layout.order.type.date") },
+        ],
+      }
     };
   },
   props: ["values"],
   methods: {
     update() {
       const values = {
+        order: this.order.default,
         type: this.layout.default,
         itemSize: this.itemSize,
         grid: this.layout.grid,
@@ -97,12 +116,19 @@ export default {
       },
       deep: true,
     },
+    order: {
+      handler() {
+        this.update();
+      },
+      deep: true,
+    },
   },
   created() {
     if (this.values && Object.keys(this.values).length) {
       this.layout.grid = this.values.grid;
       this.itemSize = this.values.itemSize;
       this.layout.default = this.values.type;
+      this.order.default = this.values.order;
     }
   },
 };
@@ -119,5 +145,6 @@ export default {
   min-height: 27px;
   margin-right: 4px;
   align-items: center;
+  white-space: nowrap;
 }
 </style>

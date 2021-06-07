@@ -16,6 +16,7 @@
 <script>
 import { DataSet } from "vis-data/peer";
 import { Network } from "vis-network/peer";
+
 import ModalItem from "@/components/ModalItem.vue";
 import ModalGrid from "@/components/ModalGrid.vue";
 
@@ -27,6 +28,7 @@ const Colors = [
 ];
 
 export default {
+  props: ["data"],
   data() {
     return {
       itemDialog: false,
@@ -56,9 +58,6 @@ export default {
     };
   },
   computed: {
-    data() {
-      return this.$store.state.api.hits;
-    },
     settings() {
       return this.$store.state.api.settings;
     },
@@ -131,7 +130,7 @@ export default {
       const t0 = new Date();
 
       if (t0 - this.clickTime > 250) {
-        setTimeout(function () {
+        setTimeout(() => {
           if (t0 - this.clickTime > 250) {
             if (nodes && nodes.length === 1) {
               const item = this.nodes.find(
@@ -142,7 +141,7 @@ export default {
               this.itemDialog = true;
             }
           }
-        }.bind(this), 250);
+        }, 250);
       }
     },
     onDoubleClick({ nodes }) {
@@ -209,9 +208,9 @@ export default {
         boxSize = minSize / Math.max(nX, nY);
       } else {
         let { settings } = this.$store.state.api;
-        if (!settings) settings.itemSize = 0;
+        if (!settings) settings.layout = { itemSize: 0 };
 
-        boxSize = (settings.itemSize + 8) * 1.25;
+        boxSize = (settings.layout.itemSize + 8) * 1.25;
       }
 
       this.nodes = this.data.map((entry) => {
@@ -331,9 +330,12 @@ export default {
     data() {
       this.drawNodes();
     },
-    settings(values) {
-      this.state.grid = values.grid;
-      this.drawNodes();
+    settings: {
+      handler(values) {
+        this.state.grid = values.layout.grid;
+        this.drawNodes();
+      },
+      deep: true,
     },
     drawerSettings() {
       setTimeout(() => {
@@ -345,7 +347,7 @@ export default {
     const { settings } = this.$store.state.api;
 
     if (Object.keys(settings).length) {
-      this.state.grid = settings.grid;
+      this.state.grid = settings.layout.grid;
     }
   },
   mounted() {

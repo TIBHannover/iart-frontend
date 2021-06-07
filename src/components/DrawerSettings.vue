@@ -32,11 +32,7 @@ export default {
     return {
       weights: {},
       cluster: {},
-      layout: {
-        grid: false,
-        itemSize: -1,
-        type: "flexible",
-      },
+      layout: {},
       drawer: this.$store.state.user.drawer.settings,
     };
   },
@@ -48,9 +44,7 @@ export default {
       const settings = {
         weights: this.weights,
         cluster: this.cluster,
-        grid: this.layout.grid,
-        layout: this.layout.type,
-        itemSize: this.layout.itemSize,
+        layout: this.layout,
       };
 
       this.$store.commit("api/updateSettings", settings);
@@ -59,11 +53,8 @@ export default {
       this.weights = value;
       this.commit();
     },
-    updateLayout({ type, itemSize, grid }) {
-      this.layout.type = type;
-      this.layout.itemSize = itemSize;
-      this.layout.grid = grid;
-
+    updateLayout(value) {
+      this.layout = value;
       this.commit();
     },
     updateCluster(value) {
@@ -94,10 +85,7 @@ export default {
     if (Object.keys(settings).length) {
       this.weights = settings.weights;
       this.cluster = settings.cluster;
-
-      this.layout.grid = settings.grid;
-      this.layout.type = settings.layout;
-      this.layout.itemSize = settings.itemSize;
+      this.layout = settings.layout;
     }
   },
   components: {

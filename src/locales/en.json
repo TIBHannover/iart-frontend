@@ -84,6 +84,7 @@
     },
     "layout": {
       "title": "Result View",
+      "itemSize": "Object Size",
       "type": {
         "flexible": "1D List View",
         "umap": "2D Canvas View"
@@ -92,7 +93,14 @@
         "show": "Align to Grid",
         "hide": "Don't Align to Grid"
       },
-      "itemSize": "Object Size"
+      "order": {
+        "title": "Sort By",
+        "type": {
+          "relevance": "Relevance",
+          "title": "Title (A–Z)",
+          "date": "Date of Origin"
+        }
+      }
     },
     "cluster": {
       "title": "Cluster Display",

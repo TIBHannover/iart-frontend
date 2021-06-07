@@ -198,8 +198,13 @@ export default {
         if (
           (newValues.cluster.n !== oldValues.cluster.n) ||
           (newValues.cluster.type !== oldValues.cluster.type) ||
-          (newValues.layout === "umap" && oldValues.layout !== "umap") ||
-          (newValues.layout === "umap" && (newValues.grid !== oldValues.grid))
+          (
+            newValues.layout.type === "umap" && 
+            (
+              oldValues.layout.type !== "umap" ||
+              newValues.layout.grid !== oldValues.layout.grid
+            )
+          )
         ) {
           this.load();
         }

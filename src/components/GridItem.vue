@@ -115,9 +115,9 @@ export default {
     },
     updateSize() {
       if (Object.keys(this.settings).length) {
-        const pixels = this.settings.itemSize * 25;
+        const pixels = this.settings.layout.itemSize * 25;
 
-        if (!this.settings.grid) {
+        if (!this.settings.layout.grid) {
           this.height = `${200 + pixels}px`;
           this.width = "auto";
         } else {
