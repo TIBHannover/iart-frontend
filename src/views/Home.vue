@@ -107,7 +107,7 @@
 </template>
 
 <script>
-import { isEqual } from "@/plugins/helpers";
+import { isEqual, keyInObj } from "@/plugins/helpers";
 
 import Main from "@/components/Main.vue";
 import Loader from "@/components/Loader.vue";
@@ -195,18 +195,28 @@ export default {
     },
     settings: {
       handler(newValues, oldValues) {
-        if (
-          (newValues.cluster.n !== oldValues.cluster.n) ||
-          (newValues.cluster.type !== oldValues.cluster.type) ||
-          (
-            newValues.layout.type === "umap" && 
+        if (keyInObj("n", newValues.cluster)) {
+          if (
+            !keyInObj("n", oldValues.cluster) ||
+            newValues.cluster.n !== oldValues.cluster.n ||
+            newValues.cluster.type !== oldValues.cluster.type
+          ) {
+            this.load();
+            return;
+          }
+        }
+
+        if (keyInObj("viewType", newValues.layout)) {
+          if (
+            newValues.layout.viewType === "umap" && 
             (
-              oldValues.layout.type !== "umap" ||
-              newValues.layout.grid !== oldValues.layout.grid
+              oldValues.layout.viewType !== "umap" ||
+              newValues.layout.viewGrid !== oldValues.layout.viewGrid
             )
-          )
-        ) {
-          this.load();
+          ) {
+            this.load();
+            return;
+          }
         }
       },
       deep: true,

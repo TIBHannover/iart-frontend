@@ -5,12 +5,14 @@
     <GridCluster v-if="layout==='cluster'" :entries="entries" />
     <GridRanked v-if="layout==='ranked'" :entries="entries" />
 
-    <ModalNoResults />
+    <ModalNoResults :entries="entries" />
     <ModalError />
   </v-main>
 </template>
 
 <script>
+import { keyInObj } from "@/plugins/helpers";
+
 import Umap from "@/components/Umap2D.vue";
 import GridRanked from "@/components/GridRanked.vue";
 import GridCluster from "@/components/GridCluster.vue";
@@ -22,43 +24,52 @@ export default {
     entries() {
       let { hits, settings } = this.$store.state.api;
 
-      if (Object.keys(settings).length) {
-        switch (settings.layout.order) {
-          case "title":
-            hits = hits.map((entry) => {
-              entry.order = "zzzz";
+      if (hits && Object.keys(settings).length) {
+        if (keyInObj("sortType", settings.layout)) {
+          switch (settings.layout.sortType) {
+            case "title":
+              hits = hits.map((entry) => {
+                entry.order = "zzzz";
 
-              entry.meta.every(({ name, value_str }) => {
-                if (name === "title" && value_str) {
-                  entry.order = value_str;
-                  return false;
-                }
+                entry.meta.every(({ name, value_str }) => {
+                  if (name === "title" && value_str) {
+                    entry.order = value_str;
+                    return false;
+                  }
 
-                return true;
+                  return true;
+                });
+
+                return entry;
               });
 
-              return entry;
-            });
+              hits.sort((a, b) => a.order.localeCompare(b.order));
+              break;
+            case "date":
+              hits = hits.map((entry) => {
+                entry.order = 9999;
 
-            hits.sort((a, b) => a.order.localeCompare(b.order));
-            break;
-          case "date":
-            hits = hits.map((entry) => {
-              entry.order = 9999;
+                entry.meta.every(({ name, value_str }) => {
+                  if (name === "year_min" && value_str) {
+                    entry.order = value_str;
+                    return false;
+                  }
 
-              entry.meta.every(({ name, value_str }) => {
-                if (name === "year_min" && value_str) {
-                  entry.order = value_str;
-                  return false;
-                }
+                  return true;
+                });
 
-                return true;
+                return entry;
               });
 
-              return entry;
-            });
+              hits.sort((a, b) => a.order - b.order);
+          }
+        }
 
-            hits.sort((a, b) => a.order - b.order);
+        if (
+          keyInObj("sortOrder", settings.layout) &&
+          settings.layout.sortOrder === 'desc'
+        ) {
+          hits = [...hits].reverse();
         }
       }
 
@@ -68,11 +79,17 @@ export default {
       const { settings } = this.$store.state.api;
 
       if (Object.keys(settings).length) {
-        if (settings.layout.type === 'umap') {
+        if (
+          keyInObj("viewType", settings.layout) &&
+          settings.layout.viewType === 'umap'
+        ) {
           return 'umap';
         }
 
-        if (settings.cluster.n > 1) {
+        if (
+          keyInObj("n", settings.cluster) &&
+          settings.cluster.n > 1
+        ) {
           return 'cluster';
         }
       }

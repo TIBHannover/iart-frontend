@@ -107,7 +107,7 @@ export default {
     },
     showDetails(event) {
       if (event.target.nodeName !== "I") {
-       this.dialog = true;
+        this.dialog = true;
       }
     },
     onError() {
@@ -117,7 +117,7 @@ export default {
       if (Object.keys(this.settings).length) {
         const pixels = this.settings.layout.itemSize * 25;
 
-        if (!this.settings.layout.grid) {
+        if (!this.settings.layout.viewGrid) {
           this.height = `${200 + pixels}px`;
           this.width = "auto";
         } else {

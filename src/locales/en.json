@@ -85,20 +85,26 @@
     "layout": {
       "title": "Result View",
       "itemSize": "Object Size",
-      "type": {
-        "flexible": "1D List View",
-        "umap": "2D Canvas View"
+      "view": {
+        "type": {
+          "flexible": "1D List View",
+          "umap": "2D Canvas View"
+        },
+        "grid": {
+          "show": "Align to Grid",
+          "hide": "Don't Align to Grid"
+        }
       },
-      "grid": {
-        "show": "Align to Grid",
-        "hide": "Don't Align to Grid"
-      },
-      "order": {
+      "sort": {
         "title": "Sort By",
         "type": {
           "relevance": "Relevance",
-          "title": "Title (A–Z)",
+          "title": "Object Title",
           "date": "Date of Origin"
+        },
+        "order": {
+          "asc": "Ascending",
+          "desc": "Descending"
         }
       }
     },

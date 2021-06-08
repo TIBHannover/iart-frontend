@@ -332,7 +332,7 @@ export default {
     },
     settings: {
       handler(values) {
-        this.state.grid = values.layout.grid;
+        this.state.grid = values.layout.viewGrid;
         this.drawNodes();
       },
       deep: true,
@@ -347,7 +347,7 @@ export default {
     const { settings } = this.$store.state.api;
 
     if (Object.keys(settings).length) {
-      this.state.grid = settings.layout.grid;
+      this.state.grid = settings.layout.viewGrid;
     }
   },
   mounted() {

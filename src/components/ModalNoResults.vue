@@ -25,6 +25,7 @@
 
 <script>
 export default {
+  props: ["entries"],
   data() {
     return {
       dialog: false,
@@ -36,15 +37,12 @@ export default {
       this.dialog = false;
     },
   },
-  computed: {
-    data() {
-      return this.$store.state.api.hits;
-    },
-  },
   watch: {
-    data(value) {
+    entries(value) {
       if (value.length === 0) {
         this.dialog = true;
+      } else {
+        this.dialog = false;
       }
     },
   },

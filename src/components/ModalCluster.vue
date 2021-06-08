@@ -17,9 +17,9 @@
     <v-card id="cluster" width="300">
       <v-card-text class="px-6 pt-4 pb-5">
         <v-select
-          v-model="cluster.default" :items="cluster.items"
-          class="mb-2" item-value="key" item-text="name" 
-          attach="#cluster" solo flat dense hide-details
+          v-model="cluster.default" :items="cluster.items" class="mb-2"
+          item-value="key" item-text="name" attach="#cluster"
+          solo flat dense hide-details @change="update"
         >
           <template v-slot:prepend>
             {{ $t("field.use") }}
@@ -70,14 +70,6 @@ export default {
       }
 
       this.$emit("update", values);
-    },
-  },
-  watch: {
-    cluster: {
-      handler() {
-        this.update();
-      },
-      deep: true,
     },
   },
   created() {

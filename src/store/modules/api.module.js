@@ -25,11 +25,20 @@ const api = {
 
     dateRange: [],
     fullText: [],
-    settings: {},
     filters: {},
     counts: [],
     hits: [],
 
+    settings: {
+      layout: {
+        itemSize: 0,
+        sortOrder: "asc",
+        sortType: "relevance",
+        viewGrid: false,
+        viewType: "flexible",
+      }
+    },
+    
     prevParams: {},
     backBtn: false,
     jobID: null,
