@@ -11,18 +11,21 @@ const collection = {
     },
     actions: {
         upload({ commit, state }, params) {
-            console.log('upload')
-            console.log(params)
             let formData = new FormData();
 
             formData.append('image', params.image);
             formData.append('meta', params.meta);
+            formData.append('name', params.name);
 
 
             commit('loading/update', true, { root: true });
 
             axios.post(`${config.API_LOCATION}/collection_upload`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
+                onUploadProgress: progressEvent => {
+                    console.log(progressEvent.loaded);
+                    console.log(progressEvent.total)
+                }
             })
                 .then((res) => {
                     if (res.data.status === 'ok') {

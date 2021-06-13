@@ -12,6 +12,14 @@
       <v-card-text>
         <!-- <div class="mb-4">{{ $t("modal.error.text") }}</div> -->
 
+        <v-text-field
+          v-model="collection.name"
+          :placeholder="$t('modal.collection.name')"
+          counter="25"
+          :rules="[checkLength]"
+          clearable
+        ></v-text-field>
+
         <v-file-input
           v-model="collection.image"
           accept="image/png, image/jpeg, image/gif, application/zip,application/x-tar, application/x-bzip2, application/gzip, application/x-xz, application/x-gtar"
@@ -25,7 +33,7 @@
           v-model="collection.meta"
           accept="text/csv, application/json, application/jsonl"
           :placeholder="$t('modal.collection.metafile.label')"
-          prepend-icon="mdi-camera"
+          prepend-icon="mdi-file-document"
           :rules="[checkMetaFile]"
           show-size
           :error="metaErrorMessage"
@@ -101,6 +109,21 @@ export default {
         }
 
         return this.$t("modal.search.file.rule");
+      }
+
+      return this.$t("field.required");
+    },
+    checkLength(value) {
+      if (value) {
+        if (value.length < 5) {
+          return this.$t("user.register.rules.min");
+        }
+
+        if (value.length > 25) {
+          return this.$t("user.register.rules.max");
+        }
+
+        return true;
       }
 
       return this.$t("field.required");
