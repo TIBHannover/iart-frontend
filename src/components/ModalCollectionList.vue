@@ -1,5 +1,10 @@
 <template>
   <v-dialog v-model="dialog" max-width="900px">
+    <template v-slot:activator="{ on }">
+      <v-btn v-on="on" class="register" text block large>
+        {{ $t("modal.collection.title") }}
+      </v-btn>
+    </template>
     <v-card>
       <v-card-title class="mb-2">
         {{ $t("modal.collection.title") }}
@@ -74,9 +79,8 @@ export default {
       if (uploadError.type === "unknown_fields") {
         console.log("Match");
         return this.$t("modal.collection.metafile.unknown_fields", {
-          field_names: this.$store.state.collection.uploadError.unknown_fields.join(
-            ", "
-          ),
+          field_names:
+            this.$store.state.collection.uploadError.unknown_fields.join(", "),
         });
       }
       return null;
@@ -129,15 +133,12 @@ export default {
       return this.$t("field.required");
     },
   },
-  //   computed: {
-  //     update() {
-  //       return this.$store.state.error.date;
-  //     },
-  //   },
-  //   watch: {
-  //     update() {
-  //       this.dialog = true;
-  //     },
-  //   },
+  watch: {
+    dialog(value) {
+      if (value) {
+        this.$emit("close");
+      }
+    },
+  },
 };
 </script>

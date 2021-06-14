@@ -43,6 +43,30 @@ const collection = {
                     commit('loading/update', false, { root: true });
                 });
         },
+        list({ commit, state }, params) {
+
+            axios.get(`${config.API_LOCATION}/collection_list`)
+                .then((res) => {
+                    if (res.data.status === 'ok') {
+                        commit('updateCollections', res.data.collections);
+                    }
+                })
+                .catch((error) => {
+                    const info = { date: Date(), text: error };
+                });
+        },
+        delete({ commit, state }, params) {
+
+            axios.post(`${config.API_LOCATION}/collection_delete`, { params })
+                .then((res) => {
+                    if (res.data.status === 'ok') {
+                        console.log('Done');
+                    }
+                })
+                .catch((error) => {
+                    const info = { date: Date(), text: error };
+                });
+        },
     },
     mutations: {
         updateCollections(state, collections) {

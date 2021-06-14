@@ -5,7 +5,6 @@
 
     <ModalNoResults />
     <ModalError />
-    <ModalCollection />
   </v-main>
 </template>
 
@@ -14,7 +13,6 @@ import Grid from "@/components/Grid.vue";
 import Umap from "@/components/Umap.vue";
 import ModalError from "@/components/ModalError.vue";
 import ModalNoResults from "@/components/ModalNoResults.vue";
-import ModalCollection from "@/components/ModalCollection.vue";
 
 export default {
   computed: {
@@ -27,7 +25,6 @@ export default {
     Umap,
     ModalError,
     ModalNoResults,
-    ModalCollection,
   },
 };
 </script>

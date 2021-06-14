@@ -50,6 +50,17 @@ const user = {
           commit('updateUserData', { login: false });
         });
     },
+    getUserData({ commit, state }, params) {
+      axios.get(`${config.API_LOCATION}/user_get`, { params })
+        .then((res) => {
+          if (res.data.status === 'ok') {
+            commit('updateUserData', { ...res.data.data, login: true });
+          }
+        })
+        .catch(() => {
+          commit('updateUserData', { login: false });
+        });
+    },
     login({ commit }, params) {
       commit('loading/update', true, { root: true });
 
