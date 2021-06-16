@@ -6,10 +6,17 @@
     >
       <div class="text-h6 mx-3 mb-2">
         {{ $t("field.cluster") }} {{ parseInt(index) + 1 }}
+
+        <span v-if="entries.length===1" class="v-label theme--light">
+           · {{ entries.length }} {{ $t("field.object") }}
+        </span>
+        <span v-else class="v-label theme--light">
+           · {{ entries.length }} {{ $t("field.objects") }}
+        </span>
       </div>
 
       <v-slide-group multiple show-arrows>
-        <v-slide-item v-for="entry in entries" :key="entry">
+        <v-slide-item v-for="entry in filter(entries)" :key="entry">
           <GridItem :key="entry" :entry="entry" :entries="entries" />
         </v-slide-item>
 
@@ -24,15 +31,22 @@ import GridItem from "@/components/GridItem.vue";
 
 export default {
   props: ["entries"],
+  methods: {
+    filter(entries) {
+      if (entries.length > 50) {
+        return entries.slice(0, 50);
+      }
+
+      return entries;
+    },
+  },
   computed: {
     clusterEntries() {
       const entries = {};
 
       this.entries.forEach((entry) => {
         if (entries[entry.cluster] instanceof Array) {
-          if (entries[entry.cluster].length < 49) {
-            entries[entry.cluster].push(entry);
-          }
+          entries[entry.cluster].push(entry);
         } else {
           entries[entry.cluster] = [entry];
         }
@@ -61,5 +75,16 @@ export default {
 .cluster-view .v-slide-group:not(.v-slide-group--has-affixes)>.v-slide-group__next, 
 .cluster-view .v-slide-group:not(.v-slide-group--has-affixes)>.v-slide-group__prev {
     display: flex;
+}
+
+.cluster-view .v-slide-group__next--disabled > .theme--light.v-icon.v-icon.v-icon--disabled,
+.cluster-view .v-slide-group__prev--disabled > .theme--light.v-icon.v-icon.v-icon--disabled {
+  color: rgba(69, 123, 157, .2) !important;
+}
+
+.cluster-view .text-h6 > .v-label {
+  vertical-align: middle;
+  align-items: center;
+  font-size: 14px;
 }
 </style>
