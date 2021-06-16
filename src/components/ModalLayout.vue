@@ -88,6 +88,8 @@
 </template>
 
 <script>
+import { keyInObj } from "@/plugins/helpers";
+
 export default {
   data() {
     return {
@@ -136,11 +138,25 @@ export default {
   },
   created() {
     if (this.values && Object.keys(this.values).length) {
-      this.itemSize = this.values.itemSize;
-      this.view.grid = this.values.viewGrid;
-      this.view.default = this.values.viewType;
-      this.sort.order = this.values.sortOrder;
-      this.sort.default = this.values.sortType;
+      if (keyInObj("itemSize", this.values)) {
+        this.itemSize = this.values.itemSize;
+      }
+
+      if (keyInObj("viewGrid", this.values)) {
+        this.view.grid = this.values.viewGrid;
+      }
+
+      if (keyInObj("viewType", this.values)) {
+        this.view.default = this.values.viewType;
+      }
+
+      if (keyInObj("sortOrder", this.values)) {
+        this.sort.order = this.values.sortOrder;
+      }
+
+      if (keyInObj("sortType", this.values)) {
+        this.sort.default = this.values.sortType;
+      }
     }
   },
 };

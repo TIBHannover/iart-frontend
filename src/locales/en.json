@@ -197,6 +197,8 @@
   "field": {
     "required": "This is a required field.",
     "cluster": "Cluster",
+    "objects": "Objects",
+    "object": "Object",
     "use": "Use"
   },
   "plugin": {

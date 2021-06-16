@@ -47,6 +47,8 @@
 </template>
 
 <script>
+import { keyInObj } from "@/plugins/helpers";
+
 export default {
   data() {
     return {
@@ -74,8 +76,13 @@ export default {
   },
   created() {
     if (this.values && Object.keys(this.values).length) {
-      this.cluster.default = this.values.type;
-      this.nClusters = this.values.n;
+      if (keyInObj("type", this.values)) {
+        this.cluster.default = this.values.type;
+      }
+
+      if (keyInObj("n", this.values)) {
+        this.nClusters = this.values.n;
+      }
     }
   },
 };

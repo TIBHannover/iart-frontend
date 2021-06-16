@@ -17,6 +17,34 @@ export default new Vuex.Store({
         'user.drawer',
         'user.history',
       ],
+      getState(key, storage) {
+        let value = storage.getItem(key);
+
+        try {
+          value = JSON.parse(value);
+        } catch (err) {
+          return undefined;
+        }
+
+        try {
+          const { history } = value.user;
+
+          const lastDate = new Date(history[0].date);
+          const updateDate = new Date(2021, 5, 15);
+
+          if (lastDate.valueOf() < updateDate.valueOf()) {
+            return undefined;
+          }
+        } catch (err) {
+
+        }
+
+        if (value && Object.keys(value).length) {
+          return value;
+        }
+
+        return undefined;
+      },
     }),
   ],
 });
