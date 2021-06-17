@@ -31,11 +31,9 @@
                 <v-icon>mdi-cog-off-outline</v-icon>
               </v-btn>
               <v-btn
-                v-else
-                @click="weights[key].advanced = true" 
-                :title="$t('modal.weights.advanced.show')"
-                class="ml-2" :disabled="weights[key].items.length < 2"
-                icon small
+                v-else :title="$t('modal.weights.advanced.show')"
+                @click="weights[key].advanced = true" class="ml-2" 
+                :disabled="weights[key].items.length < 2" icon small
               >
                 <v-icon>mdi-cog-outline</v-icon>
               </v-btn>

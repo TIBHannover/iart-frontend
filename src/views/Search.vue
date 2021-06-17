@@ -1,0 +1,167 @@
+<template>
+  <v-app id="search">
+    <v-app-bar app flat>
+      <v-layout row>
+        <div class="logo ml-3 mr-5" @click="reset">
+          <img title="iART" src="/assets/images/logo.png" />
+        </div>
+
+        <SearchBar />
+
+        <v-btn 
+          :title="$t('drawer.filter.title')" class="ml-1"
+          @click="toggleDrawer('filter')" icon
+        >
+          <span v-intro="$t('help.filter.general')" v-intro-step="4">
+            <v-badge v-if="nFilters" color="accent" :content="nFilters">
+              <v-icon>mdi-tune</v-icon>
+            </v-badge>
+            <v-icon v-else>mdi-tune</v-icon>
+          </span>
+        </v-btn>
+
+        <v-btn 
+          @click="toggleDrawer('settings')" class="ml-n2"
+          :title="$t('drawer.settings.title')" icon
+        >
+          <span v-intro="$t('help.settings')" v-intro-step="6">
+            <v-icon>mdi-cog-outline</v-icon>
+          </span>
+        </v-btn>
+
+        <History />
+        <UserMenu />
+      </v-layout>
+    </v-app-bar>
+
+    <DrawerSettings />
+    <Main />
+    <Loader />
+    <DrawerFilter />
+    <HelpButton />
+  </v-app>
+</template>
+
+<script>
+import { keyInObj } from "@/plugins/helpers";
+
+import Main from "@/components/Main.vue";
+import Loader from "@/components/Loader.vue";
+import History from "@/components/History.vue";
+import UserMenu from "@/components/UserMenu.vue";
+import SearchBar from "@/components/SearchBar.vue";
+import HelpButton from "@/components/HelpButton.vue";
+import DrawerFilter from "@/components/DrawerFilter.vue";
+import DrawerSettings from "@/components/DrawerSettings.vue";
+
+export default {
+  methods: {
+    load() {
+      this.$store.dispatch("api/load");
+    },
+    reset() {
+      this.$store.commit("api/removeAllFilters");
+      this.$store.commit("api/updateQuery", []);
+      this.$store.dispatch("api/load");
+    },
+    toggleDrawer(value) {
+      this.$store.commit("user/toggleDrawer", value);
+    },
+  },
+  computed: {
+    nFilters() {
+      const { filters, dateRange, fullText } = this.$store.state.api;
+
+      let total = Object.values(filters).reduce(
+        (t, values) => t + values.length, 0
+      );
+
+      if (dateRange.length) total += 1;
+      total += fullText.length
+
+      return total;
+    },
+    dateRange() {
+      return this.$store.state.api.dateRange;
+    },
+    fullText() {
+      return this.$store.state.api.fullText;
+    },
+    settings() {
+      return this.$store.state.api.settings;
+    },
+  },
+  watch: {
+    nFilters() {
+      this.load();
+    },
+    dateRange() {
+      this.load();
+    },
+    fullText() {
+      this.load()
+    },
+    settings: {
+      handler(newValues, oldValues) {
+        if (keyInObj("n", newValues.cluster)) {
+          if (
+            !keyInObj("n", oldValues.cluster) ||
+            newValues.cluster.n !== oldValues.cluster.n ||
+            newValues.cluster.type !== oldValues.cluster.type
+          ) {
+            this.load();
+            return;
+          }
+        }
+
+        if (keyInObj("viewType", newValues.layout)) {
+          if (
+            newValues.layout.viewType === "umap" && 
+            (
+              oldValues.layout.viewType !== "umap" ||
+              newValues.layout.viewGrid !== oldValues.layout.viewGrid
+            )
+          ) {
+            this.load();
+            return;
+          }
+        }
+      },
+      deep: true,
+    },
+  },
+  created() {
+    this.$store.dispatch("user/getCSRFToken").then(() => {
+      setTimeout(() => this.$store.dispatch("api/setState", this.$route.query), 500);
+    });
+  },
+  mounted() {
+    window.onpopstate = () => {
+      this.$store.dispatch("api/setState", this.$route.query);
+      this.$store.commit("api/toggleBackBtn");
+    };
+  },
+  components: {
+    Main,
+    Loader,
+    History,
+    UserMenu,
+    SearchBar,
+    HelpButton,
+    DrawerFilter,
+    DrawerSettings,
+  },
+};
+</script>
+
+<style>
+#search .logo {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+}
+
+#search .logo > img {
+  max-height: 28px;
+}
+</style>

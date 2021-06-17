@@ -210,7 +210,7 @@ export default {
         let { settings } = this.$store.state.api;
         if (!settings) settings.layout = { itemSize: 0 };
 
-        boxSize = (settings.layout.itemSize + 8) * 1.25;
+        boxSize = (settings.layout.itemSize + 8) * 2;
       }
 
       this.nodes = this.data.map((entry) => {

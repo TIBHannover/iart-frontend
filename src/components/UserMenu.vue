@@ -2,10 +2,7 @@
   <v-menu v-model="menu" min-width="175" offset-y bottom left open-on-hover>
     <template v-slot:activator="{ attrs, on: menu }">
       <v-btn
-        icon
-        v-bind="attrs"
-        v-on="menu"
-        class="ml-n2"
+        icon v-bind="attrs" v-on="menu" class="ml-n2"
         :title="$t('user.menu.title')"
       >
         <v-icon color="primary">mdi-account-circle</v-icon>
@@ -15,10 +12,10 @@
     <v-list class="pa-0">
       <v-list-item-group>
         <v-list-item v-if="!loggedIn" class="px-0">
-          <UserLogin @close="menu = false" />
+          <UserLogin @close="menu=false" />
         </v-list-item>
         <v-list-item v-if="!loggedIn" class="px-0">
-          <UserRegister @close="menu = false" />
+          <UserRegister @close="menu=false" />
         </v-list-item>
         <v-list-item v-if="loggedIn" class="px-0">
           <v-btn @click="logout" text block large> Logout </v-btn>
@@ -30,10 +27,10 @@
     <v-list class="pa-0">
       <v-list-item-group>
         <v-list-item v-if="loggedIn" class="px-0">
-          <ModalCollectionList @close="menu = false" />
+          <ModalCollectionList @close="menu=false" />
         </v-list-item>
         <v-list-item v-if="loggedIn" class="px-0">
-          <ModalCollectionUpload @close="menu = false" />
+          <ModalCollectionUpload @close="menu=false" />
         </v-list-item>
       </v-list-item-group>
     </v-list>

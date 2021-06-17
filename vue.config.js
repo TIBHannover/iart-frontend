@@ -1,3 +1,5 @@
+const webpack = require('webpack');
+
 module.exports = {
   publicPath: '/',
   configureWebpack: {
@@ -7,7 +9,12 @@ module.exports = {
       watchOptions: {
         ignored: [/node_modules/, /public/],
       }
-    }
+    },
+    plugins: [
+      new webpack.ProvidePlugin({
+        'introJs': ['intro.js']
+      })
+    ],
   },
   devServer: {
     disableHostCheck: true,

@@ -1,5 +1,6 @@
 import Vue from 'vue';
 
+import router from '../../router';
 import axios from '../../plugins/axios';
 import config from '../../../app.config';
 import { isEqual, lsplit, keyInObj } from '../../plugins/helpers';
@@ -163,6 +164,7 @@ const api = {
               });
 
               commit('updateQuery', queries);
+              commit('removeAllFilters');
             }
           }
         })
@@ -285,8 +287,13 @@ const api = {
         });
       }
 
-      const href = `?${params.toString()}`;
-      window.history.pushState({}, null, href);
+      if (router.currentRoute.path === '/search') {
+        const href = `?${params.toString()}`;
+        window.history.pushState({}, null, href);
+      } else {
+        const query = Object.fromEntries(params);
+        router.push({ path: 'search', query, });
+      }
     },
   },
   mutations: {

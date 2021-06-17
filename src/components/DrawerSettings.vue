@@ -13,16 +13,20 @@
         <ModalCluster :values="cluster" @update="updateCluster" />
       </v-col>
 
-      <v-col cols="3" style="text-align: right">
-        <v-btn @click="close" icon>
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
+      <v-col cols="3">
+        <v-layout justify-end>
+          <v-btn @click="close" icon>
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-layout>
       </v-col>
     </v-row>
   </v-banner>
 </template>
 
 <script>
+import { keyInObj } from "@/plugins/helpers";
+
 import ModalLayout from "@/components/ModalLayout.vue";
 import ModalWeights from "@/components/ModalWeights.vue";
 import ModalCluster from "@/components/ModalCluster.vue";
@@ -83,9 +87,17 @@ export default {
     const { settings } = this.$store.state.api;
 
     if (Object.keys(settings).length) {
-      this.weights = settings.weights;
-      this.cluster = settings.cluster;
-      this.layout = settings.layout;
+      if (keyInObj("weights", settings)) {
+        this.weights = settings.weights;
+      }
+
+      if (keyInObj("cluster", settings)) {
+        this.cluster = settings.cluster;
+      }
+      
+      if (keyInObj("layout", settings)) {
+        this.layout = settings.layout;
+      }
     }
   },
   components: {

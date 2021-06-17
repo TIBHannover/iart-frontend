@@ -247,6 +247,7 @@ export default {
         this.$store.commit("api/addQuery", query);
       } else {
         this.$store.commit("api/updateQuery", [query]);
+        this.$store.commit("api/removeAllFilters");
       }
 
       this.$store.commit("api/updateRandom", false);

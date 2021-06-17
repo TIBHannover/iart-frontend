@@ -7,11 +7,11 @@
       <div class="text-h6 mx-3 mb-2">
         {{ $t("field.cluster") }} {{ parseInt(index) + 1 }}
 
-        <span v-if="entries.length===1" class="v-label theme--light">
-           · {{ entries.length }} {{ $t("field.object") }}
+        <span v-if="entries.length===1" class="v-label theme--light ml-1">
+          · {{ entries.length }} {{ $t("field.object") }}
         </span>
-        <span v-else class="v-label theme--light">
-           · {{ entries.length }} {{ $t("field.objects") }}
+        <span v-else class="v-label theme--light ml-1">
+          · {{ entries.length }} {{ $t("field.objects") }}
         </span>
       </div>
 
@@ -64,6 +64,13 @@ export default {
 <style>
 .cluster-view .text-h6 {
   font-size: 1.15rem !important;
+  align-items: center;
+  display: flex;
+}
+
+.cluster-view .text-h6 > .v-label {
+  font-size: 14px;
+  cursor: auto;
 }
 
 .cluster-view .v-slide-group__next,
@@ -74,17 +81,11 @@ export default {
 
 .cluster-view .v-slide-group:not(.v-slide-group--has-affixes)>.v-slide-group__next, 
 .cluster-view .v-slide-group:not(.v-slide-group--has-affixes)>.v-slide-group__prev {
-    display: flex;
+  display: flex;
 }
 
 .cluster-view .v-slide-group__next--disabled > .theme--light.v-icon.v-icon.v-icon--disabled,
 .cluster-view .v-slide-group__prev--disabled > .theme--light.v-icon.v-icon.v-icon--disabled {
   color: rgba(69, 123, 157, .2) !important;
-}
-
-.cluster-view .text-h6 > .v-label {
-  vertical-align: middle;
-  align-items: center;
-  font-size: 14px;
 }
 </style>

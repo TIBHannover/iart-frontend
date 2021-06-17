@@ -2,7 +2,10 @@
   <v-dialog v-model="dialog" max-width="350px">
     <template v-slot:activator="{ on }">
       <v-icon
+        v-intro="$t('help.search.image')" v-intro-step="2"
         v-on="on" :title="$t('modal.search.title')"
+        v-intro-highlight-class="moveClass()"
+        v-intro-tooltip-class="moveClass()"
         @click="searchImage = true"
       >
         mdi-image-outline
@@ -15,7 +18,7 @@
           {{ $t("modal.search.title") }}
         </div>
 
-        <v-btn icon @click.native="dialog = false" absolute top right>
+        <v-btn icon @click.native="dialog=false" absolute top right>
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
@@ -123,6 +126,11 @@ export default {
       }
 
       return this.$t("field.required");
+    },
+    moveClass() {
+      // to get correct position with introjs
+      const { path } = this.$router.currentRoute;
+      if (path === "/search") return "move-top12";
     },
   },
   computed: {

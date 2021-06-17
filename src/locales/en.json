@@ -8,6 +8,19 @@
       }
     }
   },
+  "help": {
+    "title": "Need Help?",
+    "search": {
+      "general": "iART supports image-oriented research processes in the humanities with the aid of machine learning. You can either search for similar objects with text ...",
+      "image": "... or by uploading a reference image, e.g., from your computer.",
+      "random": "If you like suprises, you can also display results for a randomly selected reference image."
+    },
+    "filter": {
+      "general": "The results can be easily refined by filtering with metadata.",
+      "period": "E.g., objects can be selected based on their date of origin."
+    },
+    "settings": "Different result views are available: from ranked lists to cluster overviews and 2D visualizations."
+  },
   "drawer": {
     "filter": {
       "title": "Refine",
@@ -192,7 +205,8 @@
     "remove": "Remove",
     "reload": "Reload",
     "accept": "Accept",
-    "decline": "Decline"
+    "decline": "Decline",
+    "search": "Search"
   },
   "field": {
     "required": "This is a required field.",

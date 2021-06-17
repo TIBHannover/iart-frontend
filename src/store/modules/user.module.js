@@ -26,8 +26,7 @@ const user = {
   namespaced: true,
   state: {
     drawer: {
-      settings: false,
-      history: false,
+      settings: true,
       filter: false,
     },
     history: [],
@@ -118,6 +117,9 @@ const user = {
     },
     toggleDrawer(state, drawer) {
       state.drawer[drawer] = !state.drawer[drawer];
+    },
+    updateDrawer(state, { drawer, value }) {
+      state.drawer[drawer] = value;
     },
     addHistory(state, params) {
       params = JSON.parse(JSON.stringify(params));
