@@ -255,9 +255,9 @@ header .v-text-field--outlined.v-input--is-focused fieldset {
   border: 0px solid;
 }
 
-header .v-text-field--filled>.v-input__control>.v-input__slot, 
-header .v-text-field--full-width>.v-input__control>.v-input__slot, 
-header .v-text-field--outlined>.v-input__control>.v-input__slot {
-  min-height: 30px;
+header .v-text-field--filled > .v-input__control > .v-input__slot, 
+header .v-text-field--full-width > .v-input__control > .v-input__slot, 
+header .v-text-field--outlined > .v-input__control > .v-input__slot {
+  min-height: 48px;
 }
 </style>
