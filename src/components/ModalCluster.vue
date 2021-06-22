@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import { keyInObj } from "@/plugins/helpers";
+import { keyInObj, isEqual } from "@/plugins/helpers";
 
 export default {
   data() {
@@ -73,17 +73,43 @@ export default {
 
       this.$emit("update", values);
     },
-  },
-  created() {
-    if (this.values && Object.keys(this.values).length) {
-      if (keyInObj("type", this.values)) {
-        this.cluster.default = this.values.type;
+    change() {
+      if (this.values && Object.keys(this.values).length) {
+        if (keyInObj("type", this.values)) {
+          this.cluster.default = this.values.type;
+        }
+
+        if (keyInObj("n", this.values)) {
+          this.nClusters = this.values.n;
+        }
+      } else {
+        this.cluster.default = "kmeans";
+        this.nClusters = 1;
       }
 
-      if (keyInObj("n", this.values)) {
-        this.nClusters = this.values.n;
+      this.update();
+    },
+  },
+  computed: {
+    toggle() {
+      return this.$store.state.user.modal.cluster;
+    },
+    reset() {
+      return this.$store.state.api.settings.cluster;
+    },
+  },
+  watch: {
+    toggle(value) {
+      this.dialog = value;
+    },
+    reset(newValues, oldValues) {
+      if (!isEqual(newValues, oldValues)) {
+        this.change();
       }
-    }
+    },
+  },
+  created() {
+    this.change();
   },
 };
 </script>

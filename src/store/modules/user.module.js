@@ -29,6 +29,11 @@ const user = {
       settings: true,
       filter: false,
     },
+    modal: {
+      weights: false,
+      layout: false,
+      cluster: false,
+    },
     history: [],
     userData: {},
     csrfToken: getCookie('csrftoken'),
@@ -120,6 +125,22 @@ const user = {
     },
     updateDrawer(state, { drawer, value }) {
       state.drawer[drawer] = value;
+    },
+    updateAllDrawers(state, value) {
+      Object.keys(state.drawer).forEach((drawer) => {
+        state.drawer[drawer] = value;
+      });
+    },
+    toggleModal(state, modal) {
+      state.modal[modal] = !state.modal[modal];
+    },
+    updateModal(state, { modal, value }) {
+      state.modal[modal] = value;
+    },
+    updateAllModals(state, value) {
+      Object.keys(state.modal).forEach((modal) => {
+        state.modal[modal] = value;
+      });
     },
     addHistory(state, params) {
       params = JSON.parse(JSON.stringify(params));

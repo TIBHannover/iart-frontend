@@ -40,14 +40,18 @@
   border: none;
 }
 
-.introjs-tooltip.move-top7,
-.introjs-helperLayer.move-top7 {
+.introjs-tooltip.move-top8,
+.introjs-helperLayer.move-top8 {
   margin-top: -8px;
 }
 
 .introjs-tooltip.move-top12,
 .introjs-helperLayer.move-top12 {
   margin-top: -12px;
+}
+
+.introjs-tooltip.introjs-right.move-right {
+  margin-left: 50px;
 }
 
 .introjs-helperLayer:before {

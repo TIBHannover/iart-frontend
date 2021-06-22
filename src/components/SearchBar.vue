@@ -1,81 +1,77 @@
 <template>
-  <v-combobox 
-    v-model="query" class="mx-1 sbar" @click:clear="remove(-1)"
-    :placeholder="$t('home.search.placeholder')" allow-overflow
-    @keyup.enter="submit($event, random=false)" rounded solo
-    hide-details flat clearable multiple single-line outlined
-    v-intro="$t('help.search.general')" v-intro-step="1"
-    v-intro-highlight-class="moveClass(true)"
-    v-intro-tooltip-class="moveClass(true)"
-  >
-    <template v-slot:prepend-inner>
-      <v-icon :title="$t('button.search')" @click="submit">
-        mdi-magnify
-      </v-icon>
-      <v-icon 
-        v-intro="$t('help.search.random')" v-intro-step="3"
-        v-intro-highlight-class="moveClass(false)"
-        v-intro-tooltip-class="moveClass(false)"
-        class="ml-1" :title="$t('search.random')"
-        @click="submit($event, random=true)"
-      >
-        mdi-slot-machine-outline
-      </v-icon>
-    </template>
+  <div id="search-general">
+    <v-combobox 
+      v-model="query" class="mx-1 sbar" @click:clear="remove(-1)"
+      :placeholder="$t('home.search.placeholder')" allow-overflow
+      @keyup.enter="submit($event, random=false)" rounded solo
+      hide-details flat clearable multiple single-line outlined
+    >
+      <template v-slot:prepend-inner>
+        <v-icon :title="$t('button.search')" @click="submit">
+          mdi-magnify
+        </v-icon>
+        <v-icon 
+          id="search-random" :title="$t('search.random')"
+          class="ml-1" @click="submit($event, random=true)"
+        >
+          mdi-slot-machine-outline
+        </v-icon>
+      </template>
 
-    <template v-slot:append>
-      <ModalSearch @search="submit" />
-    </template>
+      <template v-slot:append>
+        <ModalSearch @search="submit" />
+      </template>
 
-    <template v-slot:selection="{ attrs, selected, item, index }">
-      <v-menu 
-        v-model="weightDialog[index]" :close-on-content-click="false" 
-        offset-y bottom right open-on-hover
-      >
-        <template v-slot:activator="{ on }">
-          <v-chip 
-            v-on="on" v-bind="attrs" :input-value="selected" 
-            @click:close="remove(index)" close
-          >
-            <v-btn 
-              v-if="item.positive" @click="toggle(index)" 
-              :title="$t('home.search.query.negative')" 
-              font-size="18" class="ml-n2" icon small
+      <template v-slot:selection="{ attrs, selected, item, index }">
+        <v-menu 
+          v-model="weightDialog[index]" :close-on-content-click="false" 
+          offset-y bottom right open-on-hover
+        >
+          <template v-slot:activator="{ on }">
+            <v-chip 
+              v-on="on" v-bind="attrs" :input-value="selected" 
+              @click:close="remove(index)" close
             >
-              <v-icon>mdi-plus</v-icon>
-            </v-btn>
-            <v-btn 
-              v-else @click="toggle(index)" 
-              :title="$t('home.search.query.positive')" 
-              font-size="18" class="ml-n2" icon small
-            >
-              <v-icon>mdi-minus</v-icon>
-            </v-btn>
+              <v-btn 
+                v-if="item.positive" @click="toggle(index)" 
+                :title="$t('home.search.query.negative')" 
+                font-size="18" class="ml-n2" icon small
+              >
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+              <v-btn 
+                v-else @click="toggle(index)" 
+                :title="$t('home.search.query.positive')" 
+                font-size="18" class="ml-n2" icon small
+              >
+                <v-icon>mdi-minus</v-icon>
+              </v-btn>
 
-            <v-icon v-if="item.type==='idx'" class="mr-1">
-              mdi-file-image-outline
-            </v-icon>
-            <v-icon v-else class="mr-1">
-              mdi-file-document-outline
-            </v-icon>
+              <v-icon v-if="item.type==='idx'" class="mr-1">
+                mdi-file-image-outline
+              </v-icon>
+              <v-icon v-else class="mr-1">
+                mdi-file-document-outline
+              </v-icon>
 
-            <span v-if="item.type==='idx'" :title="item.label">
-              {{ item.label }}
-            </span>
-            <span v-else :title="item.value">
-              {{ item.value }}
-            </span>
-          </v-chip>
-        </template>
+              <span v-if="item.type==='idx'" :title="item.label">
+                {{ item.label }}
+              </span>
+              <span v-else :title="item.value">
+                {{ item.value }}
+              </span>
+            </v-chip>
+          </template>
 
-        <Weights 
-          v-if="item.type==='idx'" :default="item.weights" 
-          :local="true" :key="item" :visible="weightDialog[index]"
-          @update="updateWeights(index, ...arguments)" 
-        />
-      </v-menu>
-    </template>
-  </v-combobox>
+          <Weights 
+            v-if="item.type==='idx'" :default="item.weights" 
+            :local="true" :key="item" :visible="weightDialog[index]"
+            @update="updateWeights(index, ...arguments)" 
+          />
+        </v-menu>
+      </template>
+    </v-combobox>
+  </div>
 </template>
 
 <script>
@@ -109,15 +105,6 @@ export default {
     },
     updateWeights(index, value) {
       this.query[index].weights = value;
-    },
-    moveClass(less = false) {
-      // to get correct position with introjs
-      const { path } = this.$router.currentRoute;
-
-      if (path === "/search") {
-        if (less) return "move-top7";
-        return "move-top12";
-      }
     },
   },
   computed: {
@@ -184,8 +171,10 @@ export default {
   transform: rotate(0deg);
 }
 
-header .v-autocomplete {
-  max-width: calc(100% - 335px);
+#search-general {
+  display: flex;
+  flex: 1 1 auto;
+  max-width: 100%;
 }
 
 .v-autocomplete:not(.v-input--is-focused).v-select--chips input {

@@ -16,7 +16,7 @@
 
     <Weights
       :default="values" :local="false" :visible="dialog"
-      @update="update" @close="dialog = false"
+      @update="update" @close="dialog=false"
     />
   </v-menu>
 </template>
@@ -35,6 +35,16 @@ export default {
     update(value) {
       this.$emit("update", value);
     },
+  },
+  computed: {
+    toggle() {
+      return this.$store.state.user.modal.weights;
+    },
+  },
+  watch: {
+    toggle(value) {
+      this.dialog = value;
+    }
   },
   components: {
     Weights,

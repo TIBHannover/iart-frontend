@@ -2,20 +2,33 @@
   <v-banner v-model="drawer" :style="getCss" class="settings" app>
     <v-row align="center">
       <v-col cols="3">
-        <ModalWeights :values="weights" @update="updateWeights" />
+        <div id="weights-col">
+          <ModalWeights :values="weights" @update="updateWeights" />
+        </div>
       </v-col>
 
       <v-col cols="3">
-        <ModalLayout :values="layout" @update="updateLayout" />
+        <div id="layout-col">
+          <ModalLayout :values="layout" @update="updateLayout" />
+        </div>
       </v-col>
 
       <v-col cols="3">
-        <ModalCluster :values="cluster" @update="updateCluster" />
+        <div id="cluster-col">
+          <ModalCluster :values="cluster" @update="updateCluster" />
+        </div>
       </v-col>
 
       <v-col cols="3">
         <v-layout justify-end>
-          <v-btn @click="close" icon>
+          <v-btn
+            :title="$t('drawer.settings.reset')"
+            @click="reset" icon
+          >
+            <v-icon>mdi-trash-can-outline</v-icon>
+          </v-btn>
+
+          <v-btn @click="close" class="ml-n2" icon>
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-layout>
@@ -52,6 +65,12 @@ export default {
       };
 
       this.$store.commit("api/updateSettings", settings);
+    },
+    reset() {
+      this.weights = {};
+      this.cluster = {};
+      this.layout = {};
+      this.commit();
     },
     updateWeights(value) {
       this.weights = value;

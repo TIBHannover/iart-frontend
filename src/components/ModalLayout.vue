@@ -1,7 +1,7 @@
 <template>
   <v-menu
-    v-model="dialog" :close-on-content-click="false" min-width="300" 
-    max-width="300" offset-y bottom right open-on-hover
+    v-model="dialog" id="modal-layout" :close-on-content-click="false"
+    min-width="300" max-width="300" offset-y bottom right open-on-hover
   >
     <template v-slot:activator="{ on }">
       <v-btn v-on="on" text block>
@@ -88,7 +88,7 @@
 </template>
 
 <script>
-import { keyInObj } from "@/plugins/helpers";
+import { keyInObj, isEqual } from "@/plugins/helpers";
 
 export default {
   data() {
@@ -127,6 +127,37 @@ export default {
 
       this.$emit("update", values);
     },
+    change() {
+      if (this.values && Object.keys(this.values).length) {
+        if (keyInObj("itemSize", this.values)) {
+          this.itemSize = this.values.itemSize;
+        }
+
+        if (keyInObj("viewGrid", this.values)) {
+          this.view.grid = this.values.viewGrid;
+        }
+
+        if (keyInObj("viewType", this.values)) {
+          this.view.default = this.values.viewType;
+        }
+
+        if (keyInObj("sortOrder", this.values)) {
+          this.sort.order = this.values.sortOrder;
+        }
+
+        if (keyInObj("sortType", this.values)) {
+          this.sort.default = this.values.sortType;
+        }
+      } else {
+        this.itemSize = 0;
+        this.sort.order = "asc";
+        this.sort.default = "relevance";
+        this.view.grid = false;
+        this.view.default = "flexible";
+      }
+
+      this.update();
+    },
     changeViewGrid(value) {
       this.view.grid = value;
       this.update();
@@ -136,28 +167,26 @@ export default {
       this.update();
     },
   },
+  computed: {
+    toggle() {
+      return this.$store.state.user.modal.layout;
+    },
+    reset() {
+      return this.$store.state.api.settings.layout;
+    },
+  },
+  watch: {
+    toggle(value) {
+      this.dialog = value;
+    },
+    reset(newValues, oldValues) {
+      if (!isEqual(newValues, oldValues)) {
+        this.change();
+      }
+    },
+  },
   created() {
-    if (this.values && Object.keys(this.values).length) {
-      if (keyInObj("itemSize", this.values)) {
-        this.itemSize = this.values.itemSize;
-      }
-
-      if (keyInObj("viewGrid", this.values)) {
-        this.view.grid = this.values.viewGrid;
-      }
-
-      if (keyInObj("viewType", this.values)) {
-        this.view.default = this.values.viewType;
-      }
-
-      if (keyInObj("sortOrder", this.values)) {
-        this.sort.order = this.values.sortOrder;
-      }
-
-      if (keyInObj("sortType", this.values)) {
-        this.sort.default = this.values.sortType;
-      }
-    }
+    this.change();
   },
 };
 </script>

@@ -68,6 +68,8 @@
 </template>
 
 <script>
+import { isEqual } from "@/plugins/helpers";
+
 export default {
   data() {
     return {
@@ -126,6 +128,37 @@ export default {
       this.$emit("update", weights);
       this.$emit("close");
     },
+    change() {
+      if (this.default && Object.keys(this.default).length) {
+        Object.keys(this.weights).forEach((group) => {
+          const keys = this.weights[group].items.map((x) => x.key);
+
+          Object.keys(this.default).every((key) => {
+            if (this.default[key] > 0 && keys.includes(key)) {
+              this.weights[group].default = key;
+              this.weights[group].value = this.default[key];
+
+              return false;
+            }
+
+            return true;
+          });
+        });
+      } else {
+        this.weights.color.default = "yuv_histogram_feature";
+        this.weights.color.value = 0.0;
+
+        this.weights.content.default = "clip_embedding_feature";
+        this.weights.content.value = 1.0;
+      }
+
+      this.update();
+    },
+  },
+  computed: {
+    reset() {
+      return this.$store.state.api.settings.weights;
+    },
   },
   watch: {
     visible(value) {
@@ -133,24 +166,14 @@ export default {
         this.update();
       }
     },
+    reset(newValues, oldValues) {
+      if (!this.local && !isEqual(newValues, oldValues)) {
+        this.change();
+      }
+    },
   },
   created() {
-    if (this.default && Object.keys(this.default).length) {
-      Object.keys(this.weights).forEach((group) => {
-        const keys = this.weights[group].items.map((x) => x.key);
-
-        Object.keys(this.default).every((key) => {
-          if (this.default[key] > 0 && keys.includes(key)) {
-            this.weights[group].default = key;
-            this.weights[group].value = this.default[key];
-
-            return false;
-          }
-
-          return true;
-        });
-      });
-    }
+    this.change();
 
     if (!this.local) {
       this.selectWeights = true;

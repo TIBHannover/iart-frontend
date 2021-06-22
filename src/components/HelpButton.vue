@@ -11,14 +11,100 @@
 export default {
   methods: {
     help() {
-      const filter = { drawer: "filter", value: true };
-      const settings = { drawer: "settings", value: true };
+      const { path } = this.$router.currentRoute;
+      this.$store.commit("user/updateAllDrawers", true);
 
-      this.$store.commit("user/updateDrawer", filter);
-      this.$store.commit("user/updateDrawer", settings);
-      
+      const steps = [
+        {
+          intro: this.$t("help.search.general"),
+          element: "#search-general",
+          tooltipClass: path === "/search" ? "move-top8" : "",
+          highlightClass: path === "/search" ? "move-top8" : "",
+          disableInteraction: true,
+        },
+        {
+          intro: this.$t("help.search.image"),
+          element: "#search-image",
+          tooltipClass: path === "/search" ? "move-top12" : "",
+          highlightClass: path === "/search" ? "move-top12" : "",
+          disableInteraction: true,
+        },
+        {
+          intro: this.$t("help.search.random"),
+          element: "#search-random",
+          tooltipClass: path === "/search" ? "move-top12" : "",
+          highlightClass: path === "/search" ? "move-top12" : "",
+          disableInteraction: true,
+        },
+      ];
+
+      if (path === "/search") {
+        steps.push(...[
+          {
+            intro: this.$t("help.filter.general"),
+            element: "#filter-general",
+            disableInteraction: true,
+          },
+          {
+            intro: this.$t("help.filter.period"),
+            element: ".v-navigation-drawer .date-range",
+            disableInteraction: true,
+          },
+          {
+            intro: this.$t("help.settings.general"),
+            element: "#settings-general",
+            disableInteraction: true,
+          },
+          {
+            intro: this.$t("help.settings.weights"),
+            element: "#weights-col",
+            disableInteraction: true,
+            tooltipClass: "move-right",
+            position: "right",
+          },
+          {
+            intro: this.$t("help.settings.layout"),
+            element: "#layout-col",
+            disableInteraction: true,
+            tooltipClass: "move-right",
+            position: "right",
+          },
+          {
+            intro: this.$t("help.settings.cluster"),
+            element: "#cluster-col",
+            disableInteraction: true,
+            position: "left",
+          },
+        ]);
+      }
+
       window.scrollTo(0, 0);
-      this.$intro().start();
+
+      this.$intro().addSteps(steps)
+      .onbeforechange((el) => {
+        let modal = { modal: null, value: false };
+        this.$store.commit("user/updateAllModals", false);
+
+        switch (el.id) {
+          case "weights-col":
+            modal = { modal: "weights", value: true };
+            this.$store.commit("user/updateModal", modal);
+
+            break;
+          case "layout-col":
+            modal = { modal: "layout", value: true };
+            this.$store.commit("user/updateModal", modal);
+
+            break;
+          case "cluster-col":
+            modal = { modal: "cluster", value: true };
+            this.$store.commit("user/updateModal", modal);
+        }
+      })
+      .onexit(() => {
+        this.$store.commit("user/updateAllModals", false);
+      })
+      .start()
     },
   },
 };

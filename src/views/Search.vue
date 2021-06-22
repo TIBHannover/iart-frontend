@@ -12,7 +12,7 @@
           :title="$t('drawer.filter.title')" class="ml-1"
           @click="toggleDrawer('filter')" icon
         >
-          <span v-intro="$t('help.filter.general')" v-intro-step="4">
+          <span id="filter-general">
             <v-badge v-if="nFilters" color="accent" :content="nFilters">
               <v-icon>mdi-tune</v-icon>
             </v-badge>
@@ -24,7 +24,7 @@
           @click="toggleDrawer('settings')" class="ml-n2"
           :title="$t('drawer.settings.title')" icon
         >
-          <span v-intro="$t('help.settings')" v-intro-step="6">
+          <span id="settings-general">
             <v-icon>mdi-cog-outline</v-icon>
           </span>
         </v-btn>

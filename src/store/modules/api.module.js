@@ -31,13 +31,15 @@ const api = {
     hits: [],
 
     settings: {
+      weights: {},
       layout: {
         itemSize: 0,
         sortOrder: "asc",
         sortType: "relevance",
         viewGrid: false,
         viewType: "flexible",
-      }
+      },
+      cluster: {},
     },
     
     prevParams: {},

@@ -67,7 +67,7 @@ export default {
 
         if (
           keyInObj("sortOrder", settings.layout) &&
-          settings.layout.sortOrder === 'desc'
+          settings.layout.sortOrder === "desc"
         ) {
           hits = [...hits].reverse();
         }
@@ -81,20 +81,20 @@ export default {
       if (Object.keys(settings).length) {
         if (
           keyInObj("viewType", settings.layout) &&
-          settings.layout.viewType === 'umap'
+          settings.layout.viewType === "umap"
         ) {
-          return 'umap';
+          return "umap";
         }
 
         if (
           keyInObj("n", settings.cluster) &&
           settings.cluster.n > 1
         ) {
-          return 'cluster';
+          return "cluster";
         }
       }
 
-      return 'ranked';
+      return "ranked";
     },
   },
   components: {

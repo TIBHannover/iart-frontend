@@ -82,10 +82,7 @@
         </v-autocomplete>
       </div>
 
-      <div 
-        v-intro="$t('help.filter.period')" 
-        v-intro-step="5" class="date-range mb-4"
-      >
+      <div class="date-range mb-4">
         <v-layout row class="mx-6 ma-1">
           <label class="v-input v-label v-label--active theme--light">
             {{ $t("drawer.filter.field['meta.period']") }}

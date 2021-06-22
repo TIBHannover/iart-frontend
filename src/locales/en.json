@@ -13,13 +13,18 @@
     "search": {
       "general": "iART supports image-oriented research processes in the humanities with the aid of machine learning. You can either search for similar objects with text ...",
       "image": "... or by uploading a reference image, e.g., from your computer.",
-      "random": "If you like suprises, you can also display results for a randomly selected reference image."
+      "random": "It is also possible to display results for a randomly selected reference image."
     },
     "filter": {
-      "general": "The results can be easily refined by filtering with metadata.",
-      "period": "E.g., objects can be selected based on their date of origin."
+      "general": "Using a faceted search, the list of results can be further narrowed down.",
+      "period": "E.g., objects can be filtered based on their date of origin."
     },
-    "settings": "Different result views are available: from ranked lists to cluster overviews and 2D visualizations."
+    "settings": {
+      "general": "iART is flexibly configurable and adapts to your research interests.",
+      "weights": "You can change weighting of plug-ins and thus adjust the order of results.",
+      "layout": "Different result views are available: from ranked lists to 2D visualizations.",
+      "cluster": "Results can be clustered and visualized, e.g., as image carousels."
+    }
   },
   "drawer": {
     "filter": {
@@ -44,7 +49,8 @@
       }
     },
     "settings": {
-      "title": "Settings"
+      "title": "Settings",
+      "reset": "Reset Settings"
     },
     "history": {
       "title": "Search History",
