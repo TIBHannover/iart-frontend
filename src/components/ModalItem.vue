@@ -63,7 +63,7 @@
       </div>
 
       <v-card-title class="mb-2">
-        <div class="text-h5 max-w mr-12">
+        <div class="text-h5 max-w mr-16">
           <span 
             v-for="(name, index) in title" :key="index" 
             @click="query(name, true, 'txt')"

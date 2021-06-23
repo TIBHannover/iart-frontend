@@ -7,16 +7,22 @@
       <div class="text-h6 mx-3 mb-2">
         {{ $t("field.cluster") }} {{ parseInt(index) + 1 }}
 
-        <span v-if="entries.length===1" class="v-label theme--light ml-1">
-          · {{ entries.length }} {{ $t("field.object") }}
-        </span>
-        <span v-else class="v-label theme--light ml-1">
-          · {{ entries.length }} {{ $t("field.objects") }}
+        <span class="v-label theme--light ml-1">
+          <span v-if="convertEntries[index].length===1">
+            · {{ convertEntries[index].length }} {{ $t("field.object") }}
+          </span>
+
+          <span v-else>
+            · {{ convertEntries[index].length }} {{ $t("field.objects") }}
+          </span>
         </span>
       </div>
 
-      <v-slide-group multiple show-arrows>
-        <v-slide-item v-for="entry in filter(entries)" :key="entry">
+      <v-slide-group
+        v-model="slide[index]" @click:next="next(index)"
+        @click:prev="prev(index)" value=0 show-arrows
+      >
+        <v-slide-item v-for="entry in entries" :key="entry">
           <GridItem :key="entry" :entry="entry" :entries="entries" />
         </v-slide-item>
 
@@ -27,21 +33,27 @@
 </template>
 
 <script>
+import Vue from 'vue';
+
 import GridItem from "@/components/GridItem.vue";
 
 export default {
   props: ["entries"],
+  data() {
+    return {
+      slide: {},
+    };
+  },
   methods: {
-    filter(entries) {
-      if (entries.length > 50) {
-        return entries.slice(0, 50);
-      }
-
-      return entries;
+    next(index) {
+      Vue.set(this.slide, index, this.slide[index] + 5);
+    },
+    prev(index) {
+      Vue.set(this.slide, index, this.slide[index] - 5);
     },
   },
   computed: {
-    clusterEntries() {
+    convertEntries() {
       const entries = {};
 
       this.entries.forEach((entry) => {
@@ -53,7 +65,24 @@ export default {
       });
 
       return entries;
-    }
+    },
+    clusterEntries() {
+      const entries = { ...this.convertEntries };
+
+      Object.keys(entries).forEach((cluster) => {
+        if (this.slide[cluster] === undefined) {
+          Vue.set(this.slide, cluster, 0);
+        }
+
+        const nEntries = 25 + this.slide[cluster];
+
+        if (entries[cluster].length > nEntries) {
+          entries[cluster] = entries[cluster].slice(0, nEntries);
+        }
+      });
+
+      return entries;
+    },
   },
   components: {
     GridItem,
