@@ -166,6 +166,9 @@ const user = {
         state.history.splice(index, 1);
       }
     },
+    removeAllHistory(state) {
+      state.history = [];
+    },
     addBookmark(state, bookmark) {
       const index = state.history[0].bookmarks.indexOf(bookmark);
 

@@ -13,6 +13,25 @@
     </template>
 
     <v-list class="pa-0 history" v-if="data.length">
+      <v-row class="ma-0" align-content="center" style="border-bottom: 1px solid #f5f5f5;">
+        <v-col cols="auto" class="v-menu__title mx-1">
+          {{ $t('drawer.history.title') }}
+        </v-col>
+
+        <v-spacer />
+
+        <v-col cols="2">
+          <v-layout justify-end>
+            <v-btn
+              :title="$t('drawer.history.remove')"
+              class="ml-n2" @click="removeAllItems" icon
+            >
+              <v-icon>mdi-trash-can-outline</v-icon>
+            </v-btn>
+          </v-layout>
+        </v-row>
+      </v-flex>
+
       <v-list-item-group>
         <v-list-item v-for="(item, index) in data">
           <v-list-item-content @click="submit(item, ...arguments)">
@@ -27,7 +46,7 @@
             </div>
 
             <v-btn 
-              @click="remove(item)" :title="$t('button.remove')" 
+              @click="removeItem(item)" :title="$t('button.remove')" 
               style="justify-content: center;" icon absolute right
             >
               <v-icon small>mdi-trash-can-outline</v-icon>
@@ -119,8 +138,11 @@ export default {
 
       return this.$t("drawer.history.filter.empty");
     },
-    remove(item) {
+    removeItem(item) {
       this.$store.commit("user/removeHistory", item);
+    },
+    removeAllItems() {
+      this.$store.commit("user/removeAllHistory");
     },
     submit(item, event) {
       if (event.target.nodeName !== "I") {
@@ -151,6 +173,12 @@ export default {
   max-width: 200px;
 }
 
+.v-menu__title {
+  display: flex;
+  align-items: center;
+  font-size: 1.25rem;
+}
+
 .history .v-list-item__content > button {
   opacity: 0;
 }
@@ -167,5 +195,9 @@ export default {
    display: inline-block;
    vertical-align: middle;
    max-width: 210px;
+}
+
+.v-menu__content .history .v-btn:not(.accent) {
+  justify-content: center;
 }
 </style>
