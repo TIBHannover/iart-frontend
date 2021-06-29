@@ -8,14 +8,14 @@
     </v-app-bar>
 
     <v-main>
-      <v-layout style="height: 100%;" justify-center align-center>
+      <v-layout style="height: 100%" justify-center align-center>
         <v-col cols="6">
           <v-row class="mb-10" justify="center">
             <div class="logo">
               <img title="iART" src="/assets/images/logo.png" />
             </div>
           </v-row>
-          
+
           <v-row class="mb-4">
             <SearchBar />
           </v-row>
@@ -34,9 +34,6 @@ import SearchBar from "@/components/SearchBar.vue";
 import HelpButton from "@/components/HelpButton.vue";
 
 export default {
-  created() {
-    this.$store.dispatch("user/getCSRFToken");
-  },
   components: {
     History,
     UserMenu,

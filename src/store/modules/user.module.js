@@ -55,7 +55,8 @@ const user = {
         });
     },
     getUserData({ commit, state }, params) {
-      axios.get(`${config.API_LOCATION}/user_get`, { params })
+      console.log('GET_USER');
+      axios.post(`${config.API_LOCATION}/get_user`, { params })
         .then((res) => {
           if (res.data.status === 'ok') {
             commit('updateUserData', { ...res.data.data, login: true });

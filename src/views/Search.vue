@@ -8,9 +8,11 @@
 
         <SearchBar />
 
-        <v-btn 
-          :title="$t('drawer.filter.title')" class="ml-1"
-          @click="toggleDrawer('filter')" icon
+        <v-btn
+          :title="$t('drawer.filter.title')"
+          class="ml-1"
+          @click="toggleDrawer('filter')"
+          icon
         >
           <span id="filter-general">
             <v-badge v-if="nFilters" color="accent" :content="nFilters">
@@ -20,9 +22,11 @@
           </span>
         </v-btn>
 
-        <v-btn 
-          @click="toggleDrawer('settings')" class="ml-n2"
-          :title="$t('drawer.settings.title')" icon
+        <v-btn
+          @click="toggleDrawer('settings')"
+          class="ml-n2"
+          :title="$t('drawer.settings.title')"
+          icon
         >
           <span id="settings-general">
             <v-icon>mdi-cog-outline</v-icon>
@@ -73,11 +77,12 @@ export default {
       const { filters, dateRange, fullText } = this.$store.state.api;
 
       let total = Object.values(filters).reduce(
-        (t, values) => t + values.length, 0
+        (t, values) => t + values.length,
+        0
       );
 
       if (dateRange.length) total += 1;
-      total += fullText.length
+      total += fullText.length;
 
       return total;
     },
@@ -99,7 +104,7 @@ export default {
       this.load();
     },
     fullText() {
-      this.load()
+      this.load();
     },
     settings: {
       handler(newValues, oldValues) {
@@ -116,11 +121,9 @@ export default {
 
         if (keyInObj("viewType", newValues.layout)) {
           if (
-            newValues.layout.viewType === "umap" && 
-            (
-              oldValues.layout.viewType !== "umap" ||
-              newValues.layout.viewGrid !== oldValues.layout.viewGrid
-            )
+            newValues.layout.viewType === "umap" &&
+            (oldValues.layout.viewType !== "umap" ||
+              newValues.layout.viewGrid !== oldValues.layout.viewGrid)
           ) {
             this.load();
             return;
@@ -129,11 +132,6 @@ export default {
       },
       deep: true,
     },
-  },
-  created() {
-    this.$store.dispatch("user/getCSRFToken").then(() => {
-      setTimeout(() => this.$store.dispatch("api/setState", this.$route.query), 500);
-    });
   },
   mounted() {
     window.onpopstate = () => {

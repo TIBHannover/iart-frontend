@@ -13,7 +13,19 @@ import './styles/introjs.css';
 
 Vue.use(VueIntro);
 
-new Vue({
+var app = Vue.extend({
+  created() {
+    this.$store.dispatch("user/getCSRFToken").then(() => {
+      this.$store.dispatch("user/getUserData");
+      setTimeout(
+        () => this.$store.dispatch("api/setState", this.$route.query),
+        500
+      );
+    });
+  },
+})
+
+new app({
   vuetify,
   router,
   store,
