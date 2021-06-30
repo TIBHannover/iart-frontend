@@ -39,6 +39,39 @@ const user = {
     csrfToken: getCookie('csrftoken'),
   },
   actions: {
+    addBookmark({ commit, state }, params) {
+      if (Object.keys(state.userData).length) {
+        console.log(JSON.stringify(state.history));
+        axios.post(`${config.API_LOCATION}/add_bookmark`, { id: params })
+          .then((res) => {
+            if (res.data.status === 'ok') {
+              commit("addBookmark", params);
+            }
+          })
+          .catch(() => {
+            // commit('updateUserData', { login: false });
+          });
+      }
+      else {
+        commit("addBookmark", params);
+      }
+    },
+    removeBookmark({ commit, state }, params) {
+      if (Object.keys(state.userData).length) {
+        axios.post(`${config.API_LOCATION}/remove_bookmark`, { params })
+          .then((res) => {
+            if (res.data.status === 'ok') {
+              commit("removeBookmark", params);
+            }
+          })
+          .catch(() => {
+            // commit('updateUserData', { login: false });
+          });
+      }
+      else {
+        commit("removeBookmark", params);
+      }
+    },
     getCSRFToken({ commit, state }, params) {
       axios.get(`${config.API_LOCATION}/get_csrf_token`, {
         params, withCredentials: true

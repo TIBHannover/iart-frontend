@@ -1,7 +1,10 @@
 <template>
-  <div 
-    class="grid-item" :disabled="disabled" :title="$t('griditem.view')" 
-    :style="getCss" @click="showDetails"
+  <div
+    class="grid-item"
+    :disabled="disabled"
+    :title="$t('griditem.view')"
+    :style="getCss"
+    @click="showDetails"
   >
     <ModalItem v-model="dialog" :entry="entry" :entries="entries" />
     <img :src="entry.preview" v-on:error="onError" />
@@ -38,20 +41,19 @@
     </div>
 
     <div class="bookmark">
-      <v-btn 
-        v-if="bookmarked" @click="bookmark"
-        class="ml-n1 clicked" icon
-      >
-        <v-icon 
-          color="accent" class="shadow"
+      <v-btn v-if="bookmarked" @click="bookmark" class="ml-n1 clicked" icon>
+        <v-icon
+          color="accent"
+          class="shadow"
           :title="$t('griditem.bookmark.remove')"
         >
           mdi-bookmark-remove-outline
         </v-icon>
       </v-btn>
       <v-btn v-else @click="bookmark" class="ml-n1" icon>
-        <v-icon 
-          color="white" class="shadow"
+        <v-icon
+          color="white"
+          class="shadow"
           :title="$t('griditem.bookmark.add')"
         >
           mdi-bookmark-outline
@@ -98,9 +100,9 @@ export default {
     bookmark(event) {
       if (event.target.nodeName === "I") {
         if (!this.bookmarked) {
-          this.$store.commit("user/addBookmark", this.entry.id);
+          this.$store.dispatch("user/addBookmark", this.entry.id);
         } else {
-          this.$store.commit("user/removeBookmark", this.entry.id);
+          this.$store.dispatch("user/removeBookmark", this.entry.id);
         }
 
         this.bookmarked = !this.bookmarked;
