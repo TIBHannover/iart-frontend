@@ -137,6 +137,7 @@
 
               <span :title="item.name">{{ item.name }}</span>
             </v-chip>
+            <v-spacer></v-spacer>
           </template>
           </v-autocomplete>
       </div>
@@ -220,8 +221,8 @@ import { keyInObj } from "@/plugins/helpers";
 export default {
   data() {
     return {
-      data: {},
-      fullText: [],
+      data: this.$store.state.api.filters,
+      fullText: this.$store.state.api.fullText,
       dateToggle: false,
       dateRange: [1400, 1900],
       drawer: this.$store.state.user.drawer.filter,
@@ -245,13 +246,10 @@ export default {
             typeof name === "object" &&
             !keyInObj("positive", name)
           ) {
-            name.positive = true;
+            name = { positive: true, ...name };
           }
           return name;
         });
-        if (this.data[field].length === 0) {
-          delete this.data[field];
-        }
       });
       this.$store.commit("api/updateFilters", this.data);
     },
@@ -265,7 +263,6 @@ export default {
     toggle(index, field) {
       const value = this.data[field][index].positive;
       this.data[field][index].positive = !value;
-      this.$store.commit("api/updateFilters", this.data);
     },
     removeAllFilters() {
       this.$store.commit("api/removeAllFilters");
@@ -307,7 +304,7 @@ export default {
   watch: {
     filters: {
       handler(values) {
-        this.data = values;
+        this.data = { ...values };
       },
       deep: true,
     },
@@ -339,13 +336,11 @@ export default {
     },
   },
   created() {
-    const { dateRange, fullText, filters } = this.$store.state.api;
+    const { dateRange } = this.$store.state.api;
     if (dateRange.length) {
       this.dateRange = dateRange;
       this.dateToggle = true;
     }
-    this.fullText = fullText;
-    this.data = filters;
   },
 };
 </script>
@@ -376,14 +371,13 @@ export default {
   margin: 4px 0;
 }
 
-.filters .v-select .v-chip {
-  break-after: always;
+.filters .spacer {
+  width: 100%;
 }
 
-.filters .v-select .v-chip:nth-last-child(2) {
-  break-after: auto;
+.filters .spacer:nth-last-child(2) {
+  display: none;
 }
-
 
 .v-menu__content {
   background-color: #fff;
