@@ -1,21 +1,33 @@
 <template>
   <v-navigation-drawer
-    v-model="drawer" width="350" app right hide-overlay
+    v-model="drawer"
+    class="filters"
+    width="350"
+    app
+    right
+    hide-overlay
     disable-resize-watcher
   >
-    <v-toolbar flat class="v-bar--underline">
+    <v-toolbar
+      flat
+      class="v-bar--underline"
+    >
       <v-toolbar-title>{{ $t("drawer.filter.title") }}</v-toolbar-title>
 
       <div class="v-btn--absolute v-btn--right">
         <v-btn
-          @click="removeAllFilters"
           :title="$t('drawer.filter.remove')"
+          @click="removeAllFilters"
           icon
         >
           <v-icon>mdi-trash-can-outline</v-icon>
         </v-btn>
 
-        <v-btn @click="close" class="ml-n2" icon>
+        <v-btn
+          @click="close"
+          class="ml-n2"
+          icon
+        >
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </div>
@@ -23,7 +35,7 @@
 
     <v-container class="ml-1 mt-n1">
       <div>
-        <label 
+        <label
           v-if="fullText.length"
           class="v-label v-label--active theme--light ml-6"
         >
@@ -31,13 +43,25 @@
         </label>
 
         <v-combobox
-          v-model="fullText" :label="$t('drawer.filter.field')['full.text']" 
-          background-color="grey lighten-4" class="mb-4" rounded hide-details 
-          flat clearable multiple solo chips deletable-chips
+          v-model="fullText"
+          :label="$t('drawer.filter.field')['full.text']"
+          background-color="grey lighten-4"
+          class="mb-4"
+          rounded
+          hide-details
+          flat
+          clearable
+          multiple
+          solo
+          chips
+          deletable-chips
         ></v-combobox>
       </div>
 
-      <div v-for="(count, index) in counts" :key="index">
+      <div
+        v-for="(count, index) in counts"
+        :key="index"
+      >
         <label
           v-if="notEmpty(count.field)"
           class="v-label v-label--active theme--light ml-6"
@@ -45,19 +69,29 @@
           {{ $t("drawer.filter.field")[count.field] }}
         </label>
 
-        <v-autocomplete
-          v-model="data[count.field]" item-value="name" :items="count.entries"
-          :disabled="!count.entries.length" background-color="grey lighten-4"
-          :filter="filterAutocomplete" @click:clear="remove(-1, count.field)"
-          :label="$t('drawer.filter.field')[count.field]" class="mb-4" solo
-          rounded hide-details hide-selected flat clearable multiple
+        <v-combobox
+          v-model="data[count.field]"
+          item-value="name"
+          :items="count.entries"
+          :disabled="!count.entries.length"
+          background-color="grey lighten-4"
+          :filter="filterAutocomplete"
+          @click:clear="remove(-1, count.field)"
+          :label="$t('drawer.filter.field')[count.field]"
+          class="mb-4"
+          solo
+          rounded
+          hide-details
+          hide-selected
+          flat
+          clearable
+          multiple
+          @change="change"
         >
           <template v-slot:item="{ on, item }">
             <v-list-item v-on="on">
               <v-list-item-content>
-                <v-list-item-title
-                  :class="'meta ' + count.field.replace('.', '-')"
-                >
+                <v-list-item-title :class="'meta ' + count.field.replace('.', '-')">
                   <div :title="item.name">{{ item.name }}</div>
                   <div
                     class="ml-3"
@@ -70,61 +104,109 @@
             </v-list-item>
           </template>
 
-          <template v-slot:selection="{ attrs, selected, item }">
+          <template v-slot:selection="{ attrs, selected, item, index }">
             <v-chip
-              v-bind="attrs" :input-value="selected"
-              @click:close="remove(item.name, count.field)"
-              close :class="count.field.replace('.', '-')"
+              v-bind="attrs"
+              :input-value="selected"
+              @click:close="remove(index, count.field)"
+              close
+              :class="count.field.replace('.', '-')"
             >
+              <v-btn
+                v-if="data[count.field][index].positive"
+                @click="toggle(index, count.field)"
+                :title="$t('drawer.filter.query.negative')"
+                font-size="18"
+                class="ml-n2"
+                icon
+                small
+              >
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+              <v-btn
+                v-else
+                @click="toggle(index, count.field)"
+                :title="$t('drawer.filter.query.positive')"
+                font-size="18"
+                class="ml-n2"
+                icon
+                small
+              >
+                <v-icon>mdi-minus</v-icon>
+              </v-btn>
+
               <span :title="item.name">{{ item.name }}</span>
             </v-chip>
           </template>
-        </v-autocomplete>
+          </v-autocomplete>
       </div>
 
       <div class="date-range mb-4">
-        <v-layout row class="mx-6 ma-1">
+        <v-layout
+          row
+          class="mx-6 ma-1"
+        >
           <label class="v-input v-label v-label--active theme--light">
             {{ $t("drawer.filter.field['meta.period']") }}
           </label>
 
           <v-btn
-            v-if="dateToggle" @click="dateToggle = false"
+            v-if="dateToggle"
+            @click="dateToggle = false"
             :title="$t('drawer.filter.period.hide')"
-            icon small
+            icon
+            small
           >
             <v-icon>mdi-eye-off-outline</v-icon>
           </v-btn>
           <v-btn
-            v-else @click="dateToggle = true"
+            v-else
+            @click="dateToggle = true"
             :title="$t('drawer.filter.period.show')"
-            icon small
+            icon
+            small
           >
             <v-icon>mdi-eye-outline</v-icon>
           </v-btn>
         </v-layout>
 
         <v-range-slider
-          v-if="dateToggle" v-model="dateRange"
-          min="1000" max="2000" color="secondary"
-          :disabled="!dateToggle" @end="commitDateRange"
+          v-if="dateToggle"
+          v-model="dateRange"
+          min="1000"
+          max="2000"
+          color="secondary"
+          :disabled="!dateToggle"
+          @end="commitDateRange"
           hide-details
         >
           <template v-slot:prepend>
             <v-text-field
-              :value="dateRange[0]" type="number" class="mt-0 pt-0"
-              background-color="grey lighten-4" style="width: 85px"
-              @change="$set(dateRange, 0, $event)" hide-details
-              single-line rounded flat
+              :value="dateRange[0]"
+              type="number"
+              class="mt-0 pt-0"
+              background-color="grey lighten-4"
+              style="width: 85px"
+              @change="$set(dateRange, 0, $event)"
+              hide-details
+              single-line
+              rounded
+              flat
             ></v-text-field>
           </template>
 
           <template v-slot:append>
             <v-text-field
-              :value="dateRange[1]" type="number" class="mt-0 pt-0"
-              background-color="grey lighten-4" style="width: 85px"
-              @change="$set(dateRange, 1, $event)" hide-details
-              single-line rounded flat
+              :value="dateRange[1]"
+              type="number"
+              class="mt-0 pt-0"
+              background-color="grey lighten-4"
+              style="width: 85px"
+              @change="$set(dateRange, 1, $event)"
+              hide-details
+              single-line
+              rounded
+              flat
             ></v-text-field>
           </template>
         </v-range-slider>
@@ -134,6 +216,7 @@
 </template>
 
 <script>
+import { keyInObj } from "@/plugins/helpers";
 export default {
   data() {
     return {
@@ -148,8 +231,41 @@ export default {
     close() {
       this.$store.commit("user/toggleDrawer", "filter");
     },
-    remove(value, field) {
-      this.$store.commit("api/removeFilter", { value, field });
+    change() {
+      Object.keys(this.data).forEach((field) => {
+        this.data[field] = this.data[field].map((name) => {
+          if (typeof name === "string") {
+            let positive = true;
+            if (name.charAt(0) === "-") {
+              name = name.slice(1);
+              positive = false;
+            }
+            name = { positive, name };
+          } else if (
+            typeof name === "object" &&
+            !keyInObj("positive", name)
+          ) {
+            name.positive = true;
+          }
+          return name;
+        });
+        if (this.data[field].length === 0) {
+          delete this.data[field];
+        }
+      });
+      this.$store.commit("api/updateFilters", this.data);
+    },
+    remove(index, field) {
+      if (index === -1) {
+        this.data[field] = [];
+      } else {
+        this.data[field].splice(index, 1);
+      }
+    },
+    toggle(index, field) {
+      const value = this.data[field][index].positive;
+      this.data[field][index].positive = !value;
+      this.$store.commit("api/updateFilters", this.data);
     },
     removeAllFilters() {
       this.$store.commit("api/removeAllFilters");
@@ -160,7 +276,6 @@ export default {
     filterAutocomplete(item, queryText) {
       const key = item.name.toLocaleLowerCase();
       const query = queryText.toLocaleLowerCase();
-
       return key.indexOf(query) > -1;
     },
     notEmpty(field) {
@@ -169,7 +284,6 @@ export default {
           return true;
         }
       }
-
       return false;
     },
   },
@@ -180,7 +294,7 @@ export default {
     filters() {
       return this.$store.state.api.filters;
     },
-    toggle() {
+    toggleDrawer() {
       return this.$store.state.user.drawer.filter;
     },
     updateDateToggle() {
@@ -192,28 +306,18 @@ export default {
   },
   watch: {
     filters: {
-      handler(filters) {
-        this.data = filters;
+      handler(values) {
+        this.data = values;
       },
       deep: true,
-    },
-    data: {
-      handler(data) {
-        Object.keys(data).forEach((field) => {
-          data[field].forEach((value) => {
-            this.$store.commit("api/addFilter", { value, field });
-          });
-        });
-      },
-      deep: true,
-    },
-    toggle(value) {
-      this.drawer = value;
     },
     drawer(value) {
       if (!value && this.$store.state.user.drawer.filter) {
         this.$store.commit("user/toggleDrawer", "filter");
       }
+    },
+    toggleDrawer(value) {
+      this.drawer = value;
     },
     dateToggle(value) {
       if (value) {
@@ -235,48 +339,51 @@ export default {
     },
   },
   created() {
-    const { dateRange, fullText } = this.$store.state.api;
-
+    const { dateRange, fullText, filters } = this.$store.state.api;
     if (dateRange.length) {
       this.dateRange = dateRange;
       this.dateToggle = true;
     }
-
     this.fullText = fullText;
-    this.data = this.filters;
+    this.data = filters;
   },
 };
 </script>
 
 <style>
 .v-navigation-drawer:not(.v-navigation-drawer--close) {
-  box-shadow: 0 8px 10px -5px rgb(0 0 0 / 20%), 0 16px 24px 2px rgb(0 0 0 / 14%),
+  box-shadow: 0 8px 10px -5px rgb(0 0 0 / 20%),
+    0 16px 24px 2px rgb(0 0 0 / 14%),
     0 6px 30px 5px rgb(0 0 0 / 12%);
 }
 
-.container > div > label {
+.container>div>label {
   font-size: 12px;
 }
 
-.date-range .row > label {
+.date-range .row>label {
   align-items: center;
   font-size: 12px;
 }
 
-.v-select__slot label,
-.container > div > label {
-  text-transform: capitalize;
-}
-
-.v-select__slot .v-chip__content > span {
+.v-select__slot .v-chip__content>span {
   text-overflow: ellipsis;
-  max-width: 160px;
+  max-width: 150px;
   overflow: hidden;
 }
 
 .v-select__selections {
   margin: 4px 0;
 }
+
+.filters .v-select .v-chip {
+  break-after: always;
+}
+
+.filters .v-select .v-chip:nth-last-child(2) {
+  break-after: auto;
+}
+
 
 .v-menu__content {
   background-color: #fff;
@@ -288,11 +395,11 @@ export default {
   white-space: inherit;
 }
 
-.v-menu__content .v-list-item__title.meta > div:first-child {
+.v-menu__content .v-list-item__title.meta>div:first-child {
   max-width: 200px;
 }
 
-.v-menu__content .v-list-item__title.meta > div:last-child {
+.v-menu__content .v-list-item__title.meta>div:last-child {
   text-align: right;
   flex-grow: 1;
   color: #bbb;
@@ -308,6 +415,8 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+.v-select__slot label,
+.container>div>label,
 .v-autocomplete__content .meta.origin-name,
 .v-autocomplete .v-chip.origin-name {
   text-transform: capitalize;

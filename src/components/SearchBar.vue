@@ -1,18 +1,33 @@
 <template>
   <div id="search-general">
-    <v-combobox 
-      v-model="query" class="mx-1 sbar" @click:clear="remove(-1)"
-      :placeholder="$t('home.search.placeholder')" allow-overflow
-      @keyup.enter="submit($event, random=false)" rounded solo
-      hide-details flat clearable multiple single-line outlined
+    <v-combobox
+      v-model="query"
+      class="mx-1 sbar"
+      @click:clear="remove(-1)"
+      :placeholder="$t('home.search.placeholder')"
+      allow-overflow
+      @keyup.enter="submit($event, random=false)"
+      rounded
+      solo
+      hide-details
+      flat
+      clearable
+      multiple
+      single-line
+      outlined
     >
       <template v-slot:prepend-inner>
-        <v-icon :title="$t('button.search')" @click="submit">
+        <v-icon
+          :title="$t('button.search')"
+          @click="submit"
+        >
           mdi-magnify
         </v-icon>
-        <v-icon 
-          id="search-random" :title="$t('search.random')"
-          class="ml-1" @click="submit($event, random=true)"
+        <v-icon
+          id="search-random"
+          :title="$t('search.random')"
+          class="ml-1"
+          @click="submit($event, random=true)"
         >
           mdi-slot-machine-outline
         </v-icon>
@@ -23,50 +38,86 @@
       </template>
 
       <template v-slot:selection="{ attrs, selected, item, index }">
-        <v-menu 
-          v-model="weightDialog[index]" :close-on-content-click="false" 
-          offset-y bottom right open-on-hover
+        <v-menu
+          v-model="weightDialog[index]"
+          :close-on-content-click="false"
+          offset-y
+          bottom
+          right
+          open-on-hover
         >
           <template v-slot:activator="{ on }">
-            <v-chip 
-              v-on="on" v-bind="attrs" :input-value="selected" 
-              @click:close="remove(index)" close
+            <v-chip
+              v-on="on"
+              v-bind="attrs"
+              :input-value="selected"
+              @click:close="remove(index)"
+              close
             >
-              <v-btn 
-                v-if="item.positive" @click="toggle(index)" 
-                :title="$t('home.search.query.negative')" 
-                font-size="18" class="ml-n2" icon small
+              <v-btn
+                v-if="item.positive"
+                @click="toggle(index)"
+                :title="$t('home.search.query.negative')"
+                class="ml-n2"
+                icon
+                small
               >
                 <v-icon>mdi-plus</v-icon>
               </v-btn>
-              <v-btn 
-                v-else @click="toggle(index)" 
-                :title="$t('home.search.query.positive')" 
-                font-size="18" class="ml-n2" icon small
+              <v-btn
+                v-else
+                @click="toggle(index)"
+                :title="$t('home.search.query.positive')"
+                class="ml-n2"
+                icon
+                small
               >
                 <v-icon>mdi-minus</v-icon>
               </v-btn>
 
-              <v-icon v-if="item.type==='idx'" class="mr-1">
+              <v-icon
+                v-if="item.type==='idx'"
+                class="mr-1"
+                style="font-size: 18px"
+              >
                 mdi-file-image-outline
               </v-icon>
-              <v-icon v-else class="mr-1">
+              <v-icon
+                v-else
+                class="mr-1"
+                style="font-size: 18px"
+              >
                 mdi-file-document-outline
               </v-icon>
 
-              <span v-if="item.type==='idx'" :title="item.label">
+              <span
+                v-if="item.type==='idx'"
+                :title="item.label"
+              >
                 {{ item.label }}
               </span>
-              <span v-else :title="item.value">
+              <span
+                v-else
+                :title="item.value"
+              >
                 {{ item.value }}
               </span>
             </v-chip>
           </template>
 
-          <Weights 
-            v-if="item.type==='idx'" :default="item.weights" 
-            :local="true" :key="item" :visible="weightDialog[index]"
-            @update="updateWeights(index, ...arguments)" 
+          <v-img
+            v-if="item.type==='idx'&&item.preview"
+            :src="item.preview"
+            max-height="200px"
+          ></v-img>
+
+          <Weights
+            v-if="item.type==='idx'"
+            :default="item.weights"
+            :local="true"
+            :key="item"
+            :visible="weightDialog[index]"
+            @update="updateWeights(index, ...arguments)"
           />
         </v-menu>
       </template>
@@ -76,10 +127,8 @@
 
 <script>
 import { isEqual } from "@/plugins/helpers";
-
 import Weights from "@/components/Weights.vue";
 import ModalSearch from "@/components/ModalSearch.vue";
-
 export default {
   data() {
     return {
@@ -104,7 +153,9 @@ export default {
       this.query[index].positive = !value;
     },
     updateWeights(index, value) {
-      this.query[index].weights = value;
+      if (!isEqual(value, this.query[index].weights)) {
+        this.query[index].weights = value;
+      }
     },
   },
   computed: {
@@ -115,22 +166,18 @@ export default {
   watch: {
     query: {
       handler(newValues, oldValues) {
-        if (!isEqual(newValues.length, oldValues.length)) {
+        if (!isEqual(newValues, oldValues)) {
           this.query = newValues.map((value) => {
             if (typeof value === "string") {
               let positive = true;
-
               if (value.charAt(0) === "-") {
                 value = value.slice(1);
                 positive = false;
               }
-
               value = { type: "txt", positive, value };
             }
-
             return value;
           });
-
           this.$store.commit("api/updateQuery", this.query);
         }
       },
@@ -139,7 +186,6 @@ export default {
     updateQuery: {
       handler(values) {
         this.query = values;
-
         if (!this.$store.state.api.random && values.length) {
           this.submit();
         }
@@ -177,6 +223,10 @@ export default {
   max-width: 100%;
 }
 
+header #search-general {
+  max-width: calc(100% - 327px);
+}
+
 .v-autocomplete:not(.v-input--is-focused).v-select--chips input {
   max-height: 25px !important;
 }
@@ -199,7 +249,7 @@ header .v-autocomplete .v-text-field.v-text-field--solo .v-input__control input 
   width: 0;
 }
 
-.sbar.v-autocomplete .v-select__selections > .v-chip {
+.sbar.v-autocomplete .v-select__selections>.v-chip {
   overflow: initial;
 }
 
@@ -224,29 +274,29 @@ header .v-autocomplete .v-text-field.v-text-field--solo .v-input__control input 
   color: rgba(0, 0, 0, 0.54);
 }
 
-.v-main .theme--light.v-text-field--outlined:not(.v-input--is-focused):not(.v-input--has-state) > .v-input__control > .v-input__slot fieldset {
+.v-main .theme--light.v-text-field--outlined:not(.v-input--is-focused):not(.v-input--has-state)>.v-input__control>.v-input__slot fieldset {
   border: 3px solid;
   color: #f5f5f5;
 }
 
-.v-main .v-text-field--outlined.v-input--has-state fieldset, 
+.v-main .v-text-field--outlined.v-input--has-state fieldset,
 .v-main .v-text-field--outlined.v-input--is-focused fieldset {
   border: 3px solid;
   color: #1d3557;
 }
 
-header .theme--light.v-text-field--outlined:not(.v-input--is-focused):not(.v-input--has-state) > .v-input__control > .v-input__slot fieldset {
+header .theme--light.v-text-field--outlined:not(.v-input--is-focused):not(.v-input--has-state)>.v-input__control>.v-input__slot fieldset {
   border: 0px solid;
 }
 
-header .v-text-field--outlined.v-input--has-state fieldset, 
+header .v-text-field--outlined.v-input--has-state fieldset,
 header .v-text-field--outlined.v-input--is-focused fieldset {
   border: 0px solid;
 }
 
-header .v-text-field--filled > .v-input__control > .v-input__slot, 
-header .v-text-field--full-width > .v-input__control > .v-input__slot, 
-header .v-text-field--outlined > .v-input__control > .v-input__slot {
+header .v-text-field--filled>.v-input__control>.v-input__slot,
+header .v-text-field--full-width>.v-input__control>.v-input__slot,
+header .v-text-field--outlined>.v-input__control>.v-input__slot {
   min-height: 48px;
 }
 </style>

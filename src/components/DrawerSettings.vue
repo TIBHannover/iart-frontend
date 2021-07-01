@@ -1,21 +1,35 @@
 <template>
-  <v-banner v-model="drawer" :style="getCss" class="settings" app>
+  <v-banner
+    v-model="drawer"
+    :style="getCss"
+    class="settings"
+    app
+  >
     <v-row align="center">
       <v-col cols="3">
         <div id="weights-col">
-          <ModalWeights :values="weights" @update="updateWeights" />
+          <ModalWeights
+            :values="weights"
+            @update="updateWeights"
+          />
         </div>
       </v-col>
 
       <v-col cols="3">
         <div id="layout-col">
-          <ModalLayout :values="layout" @update="updateLayout" />
+          <ModalLayout
+            :values="layout"
+            @update="updateLayout"
+          />
         </div>
       </v-col>
 
       <v-col cols="3">
         <div id="cluster-col">
-          <ModalCluster :values="cluster" @update="updateCluster" />
+          <ModalCluster
+            :values="cluster"
+            @update="updateCluster"
+          />
         </div>
       </v-col>
 
@@ -23,12 +37,17 @@
         <v-layout justify-end>
           <v-btn
             :title="$t('drawer.settings.reset')"
-            @click="reset" icon
+            @click="reset"
+            icon
           >
             <v-icon>mdi-trash-can-outline</v-icon>
           </v-btn>
 
-          <v-btn @click="close" class="ml-n2" icon>
+          <v-btn
+            @click="close"
+            class="ml-n2"
+            icon
+          >
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-layout>
@@ -38,12 +57,10 @@
 </template>
 
 <script>
-import { keyInObj } from "@/plugins/helpers";
-
+import { isEqual, keyInObj } from "@/plugins/helpers";
 import ModalLayout from "@/components/ModalLayout.vue";
 import ModalWeights from "@/components/ModalWeights.vue";
 import ModalCluster from "@/components/ModalCluster.vue";
-
 export default {
   data() {
     return {
@@ -63,7 +80,6 @@ export default {
         cluster: this.cluster,
         layout: this.layout,
       };
-
       this.$store.commit("api/updateSettings", settings);
     },
     reset() {
@@ -73,16 +89,22 @@ export default {
       this.commit();
     },
     updateWeights(value) {
-      this.weights = value;
-      this.commit();
+      if (!isEqual(value, this.weights)) {
+        this.weights = value;
+        this.commit();
+      }
     },
     updateLayout(value) {
-      this.layout = value;
-      this.commit();
+      if (!isEqual(value, this.layout)) {
+        this.layout = value;
+        this.commit();
+      }
     },
     updateCluster(value) {
-      this.cluster = value;
-      this.commit();
+      if (!isEqual(value, this.cluster)) {
+        this.cluster = value;
+        this.commit();
+      }
     },
   },
   computed: {
@@ -91,7 +113,6 @@ export default {
     },
     getCss() {
       const { filter } = this.$store.state.user.drawer;
-
       return {
         "margin-right": `${filter * 350}px`,
       };
@@ -104,16 +125,13 @@ export default {
   },
   created() {
     const { settings } = this.$store.state.api;
-
     if (Object.keys(settings).length) {
       if (keyInObj("weights", settings)) {
         this.weights = settings.weights;
       }
-
       if (keyInObj("cluster", settings)) {
         this.cluster = settings.cluster;
       }
-      
       if (keyInObj("layout", settings)) {
         this.layout = settings.layout;
       }
@@ -133,8 +151,7 @@ export default {
   border-bottom: 1px solid #f5f5f5;
 }
 
-.theme--light.v-banner.v-sheet:not(.v-sheet--outlined):not(.v-sheet--shaped)
-  .v-banner__wrapper {
+.theme--light.v-banner.v-sheet:not(.v-sheet--outlined):not(.v-sheet--shaped) .v-banner__wrapper {
   border-bottom: none;
 }
 

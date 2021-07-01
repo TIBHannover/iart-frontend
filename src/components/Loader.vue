@@ -1,14 +1,39 @@
 <template>
-  <div v-if="loading" class="loading">
-    <v-progress-circular indeterminate color="accent"></v-progress-circular>
+  <div
+    v-show="loading"
+    class="loading"
+  >
+    <v-progress-circular
+      indeterminate
+      color="accent"
+    ></v-progress-circular>
   </div>
 </template>
 
 <script>
 export default {
+  data() {
+    return {
+      loading: false,
+    };
+  },
+  props: ["updating"],
   computed: {
-    loading() {
+    status() {
       return this.$store.state.loading.status;
+    },
+  },
+  watch: {
+    status(value) {
+      this.loading = value;
+    },
+    updating: {
+      handler (value) {
+        if (value && !this.status) {
+          this.loading = value.updating;
+        }
+      },
+      deep: true,
     },
   },
 };
@@ -26,7 +51,7 @@ export default {
   right: 0;
 }
 
-.loading > div {
+.loading>div {
   height: 100% !important;
 }
 </style>

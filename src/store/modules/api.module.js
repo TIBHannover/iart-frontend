@@ -1,5 +1,4 @@
 import Vue from 'vue';
-
 import router from '../../router';
 import axios from '../../plugins/axios';
 import config from '../../../app.config';
@@ -13,23 +12,18 @@ function generateRandomStr(length) {
     result.push(characters.charAt(Math.floor(Math.random() *
       charactersLength)));
   }
-
   return result.join('');
 }
-
-
 const api = {
   namespaced: true,
   state: {
     random: null,
     query: [],
-
     dateRange: [],
     fullText: [],
     filters: {},
     counts: [],
     hits: [],
-
     settings: {
       weights: {},
       layout: {
@@ -41,7 +35,6 @@ const api = {
       },
       cluster: {},
     },
-    
     prevParams: {},
     backBtn: false,
     jobID: null,
@@ -57,19 +50,15 @@ const api = {
         date_range: state.dateRange,
         aggregate: config.DEFAULT_AGGREGATION_FIELDS,
       };
-
       if (!isEqual(params, state.prevParams)) {
         commit('updateParams', params);
-
         commit('loading/update', true, { root: true });
         commit('user/addHistory', params, { root: true });
-
         if (!state.backBtn) {
           dispatch('getState');
         } else {
           commit('toggleBackBtn');
         }
-
         axios.post(`${config.API_LOCATION}/search`, { params })
           .then((res) => {
             if (res.data.job_id !== undefined) {
@@ -77,7 +66,6 @@ const api = {
               setTimeout(() => dispatch('checkLoad'), 500);
             } else {
               // TODO: add cache here
-
               if (keyInObj('entries', res.data)) {
                 commit('updateHits', res.data.entries);
                 commit('updateCounts', res.data.aggregations);
@@ -85,7 +73,6 @@ const api = {
                 const info = { date: Date(), text: '' };
                 commit('error/update', info, { root: true });
               }
-
               commit('loading/update', false, { root: true });
               window.scrollTo(0, 0);
             }
@@ -99,7 +86,6 @@ const api = {
     },
     checkLoad({ commit, dispatch, state }) {
       const params = { job_id: state.jobID };
-
       axios.post(`${config.API_LOCATION}/search`, { params })
         .then((res) => {
           if (res.data.job_id !== undefined) {
@@ -113,7 +99,6 @@ const api = {
               const info = { date: Date(), text: '' };
               commit('error/update', info, { root: true });
             }
-
             commit('loading/update', false, { root: true });
             window.scrollTo(0, 0);
           }
@@ -126,18 +111,15 @@ const api = {
     },
     upload({ commit, state }, params) {
       let formData = new FormData();
-
       if (params.type === 'file') {
         formData.append('file', params.value);
       } else if (params.type === 'url') {
         formData.append('url', params.value);
       }
-
       commit('loading/update', true, { root: true });
-
       axios.post(`${config.API_LOCATION}/upload`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
         .then((res) => {
           if (res.data.status === 'ok') {
             if (params.append) {
@@ -149,12 +131,10 @@ const api = {
                   weights: {},
                   label: meta.title,
                 };
-
                 commit("addQuery", query);
               });
             } else {
               const queries = [];
-
               res.data.entries.forEach(({ id, meta }) => {
                 queries.push({
                   type: 'idx',
@@ -164,7 +144,6 @@ const api = {
                   label: meta.title,
                 });
               });
-
               commit('updateQuery', queries);
               commit('removeAllFilters');
             }
@@ -180,57 +159,45 @@ const api = {
       if (!keyInObj('period', params)) {
         commit('updateDateRange', []);
       }
-
       commit('removeAllQueries');
       commit('removeAllFilters');
-
       Object.keys(params).forEach((field) => {
         if (field === 'query') {
           try {
             const values = params[field].split(',');
-
             values.forEach((value) => {
               let positive = true;
               let type = 'txt';
-
               if (value.includes(':')) {
                 [type, value] = lsplit(value, ':', 1);
-
                 if (['+', '-'].includes(type.charAt(0))) {
                   if (type.charAt(0) === '-') {
                     positive = false;
                   }
-
                   type = type.slice(1);
                 }
-
                 if (type === 'idx') {
                   // TODO: retrieve metadata
                 }
               }
-
               commit('addQuery', { type, positive, value, weights: {} });
             });
           } catch (e) {
             console.log('query', e);
           }
         }
-
         if (field === 'random') {
           commit('updateRandom', params[field]);
         }
-
         if (field === 'period') {
           try {
             let period = params[field].split('-');
             period = period.map((x) => parseInt(x, 10));
-
             if (period.length === 1) {
               period.push(period[0]);
             } else if (period.length > 2) {
               period.splice(-1, 9e9);
             }
-
             if (period[0] >= 1000 && period[1] <= 2000) {
               commit('updateDateRange', period);
             }
@@ -238,63 +205,69 @@ const api = {
             console.log('period', e);
           }
         }
-
         if (field === 'full.text') {
           const fullText = params[field].split(',');
           commit('updateFullText', fullText);
         }
-
         if (config.DEFAULT_AGGREGATION_FIELDS.includes(field)) {
-          const values = params[field].split(',');
-
-          values.forEach((value) => {
-            commit('addFilter', { field, value });
-          });
+          try {
+            const names = params[field].split(',');
+            names.forEach((name) => {
+              let positive = true;
+              if (['+', '-'].includes(name.charAt(0))) {
+                if (name.charAt(0) === '-') {
+                  positive = false;
+                }
+                name = name.slice(1);
+              }
+              const filter = { positive, name }
+              commit('addFilter', { field, filter });
+            });
+          } catch (e) {
+            console.log('filters', e);
+          }
         }
       });
     },
     getState({ state }) {
       const params = new URLSearchParams();
-
       if (state.query.length) {
         const query = state.query.map((v) => {
-          // TODO: add weights
           let prefix = '+';
           if (!v.positive) prefix = '-';
-
           return `${prefix}${v.type}:${v.value}`;
         });
-
-        params.append('query', query);
+        params.append('query', query.join(','));
       }
-
       if (state.random) {
         params.append('random', state.random);
       }
-
       if (state.dateRange.length) {
         const period = state.dateRange.join('-');
         params.append('period', period);
       }
-
       if (state.fullText.length) {
         const fullText = state.fullText.join(',');
         params.append('full.text', fullText);
       }
-
       if (Object.keys(state.filters).length) {
         Object.keys(state.filters).forEach((field) => {
-          const values = state.filters[field].join(',');
-          params.append(field, values);
+          if (state.filters[field].length) {
+            const names = state.filters[field].map((n) => {
+              let prefix = '+';
+              if (!n.positive) prefix = '-';
+              return `${prefix}${n.name}`;
+            });
+            params.append(field, names.join(','));
+          }
         });
       }
-
       if (router.currentRoute.path === '/search') {
         const href = `?${params.toString()}`;
         window.history.pushState({}, null, href);
       } else {
         const query = Object.fromEntries(params);
-        router.push({ path: 'search', query, });
+        router.push({ path: 'search', query });
       }
     },
   },
@@ -338,14 +311,12 @@ const api = {
     },
     addQuery(state, query) {
       const index = state.query.indexOf(query);
-
       if (index === -1) {
         state.query.push(query);
       }
     },
     removeQuery(state, query) {
       const index = state.query.indexOf(query);
-
       if (index !== -1) {
         state.query.splice(index, 1);
       }
@@ -360,27 +331,25 @@ const api = {
         state.query = query;
       }
     },
-    addFilter(state, { field, value }) {
+    addFilter(state, { field, filter }) {
       if (keyInObj(field, state.filters)) {
-        if (!state.filters[field].includes(value)) {
-          state.filters[field].push(value);
+        if (!state.filters[field].includes(filter)) {
+          state.filters[field].push(filter);
         }
       } else {
-        Vue.set(state.filters, field, [value]);
+        Vue.set(state.filters, field, [filter]);
       }
     },
-    removeFilter(state, { field, value }) {
+    removeFilter(state, { field, filter }) {
       if (keyInObj(field, state.filters)) {
         if (value === -1) {
           Vue.delete(state.filters, field);
         } else {
           const values = state.filters[field];
-          const index = values.indexOf(value);
-
+          const index = values.indexOf(filter);
           if (index !== -1) {
             state.filters[field].splice(index, 1);
           }
-
           if (state.filters[field].length === 0) {
             Vue.delete(state.filters, field);
           }
@@ -391,37 +360,35 @@ const api = {
       if (Object.keys(state.filters).length) {
         state.filters = {};
       }
-
       if (state.dateRange.length) {
         state.dateRange = [];
       }
-
       if (state.fullText.length) {
         state.fullText = [];
+      }
+    },
+    updateFilters(state, filters) {
+      if (!isEqual(state.filters, filters)) {
+        state.filters = filters;
       }
     },
     updateAll(state, params) {
       if (keyInObj('query', params)) {
         state.query = params.query;
       }
-
       if (keyInObj('random', params)) {
         state.random = params.random;
       }
-
       if (keyInObj('filters', params)) {
         state.filters = params.filters;
       }
-
       if (keyInObj('full_text', params)) {
         state.fullText = params.full_text;
       }
-
       if (keyInObj('date_range', params)) {
         state.dateRange = params.date_range;
       }
     },
   },
 };
-
 export default api;

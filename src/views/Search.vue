@@ -1,21 +1,34 @@
 <template>
   <v-app id="search">
-    <v-app-bar app flat>
+    <v-app-bar
+      app
+      flat
+    >
       <v-layout row>
-        <div class="logo ml-3 mr-5" @click="reset">
-          <img title="iART" src="/assets/images/logo.png" />
+        <div
+          class="logo ml-3 mr-5"
+          @click="reset"
+        >
+          <img
+            title="iART"
+            src="/assets/images/logo.png"
+          />
         </div>
 
         <SearchBar />
 
         <v-btn
           :title="$t('drawer.filter.title')"
-          class="ml-1"
           @click="toggleDrawer('filter')"
+          class="ml-1"
           icon
         >
           <span id="filter-general">
-            <v-badge v-if="nFilters" color="accent" :content="nFilters">
+            <v-badge
+              v-if="nFilters"
+              color="accent"
+              :content="nFilters"
+            >
               <v-icon>mdi-tune</v-icon>
             </v-badge>
             <v-icon v-else>mdi-tune</v-icon>
@@ -23,9 +36,9 @@
         </v-btn>
 
         <v-btn
+          :title="$t('drawer.settings.title')"
           @click="toggleDrawer('settings')"
           class="ml-n2"
-          :title="$t('drawer.settings.title')"
           icon
         >
           <span id="settings-general">
@@ -40,7 +53,6 @@
 
     <DrawerSettings />
     <Main />
-    <Loader />
     <DrawerFilter />
     <HelpButton />
   </v-app>
@@ -48,16 +60,13 @@
 
 <script>
 import { keyInObj } from "@/plugins/helpers";
-
 import Main from "@/components/Main.vue";
-import Loader from "@/components/Loader.vue";
 import History from "@/components/History.vue";
 import UserMenu from "@/components/UserMenu.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import HelpButton from "@/components/HelpButton.vue";
 import DrawerFilter from "@/components/DrawerFilter.vue";
 import DrawerSettings from "@/components/DrawerSettings.vue";
-
 export default {
   methods: {
     load() {
@@ -73,17 +82,17 @@ export default {
     },
   },
   computed: {
+    filters() {
+      return this.$store.state.api.filters;
+    },
     nFilters() {
       const { filters, dateRange, fullText } = this.$store.state.api;
-
       let total = Object.values(filters).reduce(
         (t, values) => t + values.length,
         0
       );
-
       if (dateRange.length) total += 1;
       total += fullText.length;
-
       return total;
     },
     dateRange() {
@@ -97,6 +106,12 @@ export default {
     },
   },
   watch: {
+    filters: {
+      handler() {
+        this.load();
+      },
+      deep: true,
+    },
     nFilters() {
       this.load();
     },
@@ -118,7 +133,6 @@ export default {
             return;
           }
         }
-
         if (keyInObj("viewType", newValues.layout)) {
           if (
             newValues.layout.viewType === "umap" &&
@@ -141,7 +155,6 @@ export default {
   },
   components: {
     Main,
-    Loader,
     History,
     UserMenu,
     SearchBar,
@@ -159,7 +172,7 @@ export default {
   display: flex;
 }
 
-#search .logo > img {
+#search .logo>img {
   max-height: 28px;
 }
 </style>

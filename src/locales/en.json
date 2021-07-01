@@ -35,6 +35,10 @@
         "show": "Show Period Filter",
         "hide": "Hide Period Filter"
       },
+      "query": {
+        "positive": "Set as Positive Filter",
+        "negative": "Set as Negative Filter"
+      },
       "field": {
         "meta.depicts": "Depicts",
         "meta.object_type": "Object Type",
