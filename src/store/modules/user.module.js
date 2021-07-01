@@ -36,42 +36,10 @@ const user = {
     },
     history: [],
     userData: {},
+    loggedIn: false,
     csrfToken: getCookie('csrftoken'),
   },
   actions: {
-    addBookmark({ commit, state }, params) {
-      if (Object.keys(state.userData).length) {
-        console.log(JSON.stringify(state.history));
-        axios.post(`${config.API_LOCATION}/add_bookmark`, { id: params })
-          .then((res) => {
-            if (res.data.status === 'ok') {
-              commit("addBookmark", params);
-            }
-          })
-          .catch(() => {
-            // commit('updateUserData', { login: false });
-          });
-      }
-      else {
-        commit("addBookmark", params);
-      }
-    },
-    removeBookmark({ commit, state }, params) {
-      if (Object.keys(state.userData).length) {
-        axios.post(`${config.API_LOCATION}/remove_bookmark`, { params })
-          .then((res) => {
-            if (res.data.status === 'ok') {
-              commit("removeBookmark", params);
-            }
-          })
-          .catch(() => {
-            // commit('updateUserData', { login: false });
-          });
-      }
-      else {
-        commit("removeBookmark", params);
-      }
-    },
     getCSRFToken({ commit, state }, params) {
       axios.get(`${config.API_LOCATION}/get_csrf_token`, {
         params, withCredentials: true
@@ -88,11 +56,11 @@ const user = {
         });
     },
     getUserData({ commit, state }, params) {
-      console.log('GET_USER');
       axios.post(`${config.API_LOCATION}/get_user`, { params })
         .then((res) => {
           if (res.data.status === 'ok') {
-            commit('updateUserData', { ...res.data.data, login: true });
+            commit('updateUserData', res.data.data);
+            commit('updateLoggedIn', true)
           }
         })
         .catch(() => {
@@ -105,7 +73,8 @@ const user = {
       axios.post(`${config.API_LOCATION}/login`, { params })
         .then((res) => {
           if (res.data.status === 'ok') {
-            commit('updateUserData', { ...res.data.data, login: true });
+            commit('updateUserData', res.data.data);
+            commit('updateLoggedIn', true)
           }
         })
         .catch(() => {
@@ -122,7 +91,8 @@ const user = {
       axios.post(`${config.API_LOCATION}/logout`, { params })
         .then((res) => {
           if (res.data.status === 'ok') {
-            commit('updateUserData', { login: false });
+            commit('updateUserData', {});
+            commit('updateLoggedIn', false)
           }
         })
         .catch((error) => {
@@ -148,6 +118,9 @@ const user = {
     },
   },
   mutations: {
+    updateLoggedIn(state, loggedIn) {
+      state.loggedIn = loggedIn;
+    },
     updateUserData(state, userData) {
       state.userData = userData;
     },
@@ -216,6 +189,7 @@ const user = {
       if (index !== -1) {
         state.history[0].bookmarks.splice(index, 1);
       }
+      console.log(state.history[0].bookmarks);
     },
   },
 };

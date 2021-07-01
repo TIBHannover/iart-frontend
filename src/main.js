@@ -20,6 +20,12 @@ var app = Vue.extend({
       );
     });
   },
+  watch: {
+    "$store.state.user.loggedIn": function () {
+      this.$store.dispatch("collection/list");
+      this.$store.dispatch("bookmark/list");
+    }
+  }
 })
 new app({
   vuetify,

@@ -76,7 +76,7 @@
   "modal": {
     "cookies": {
       "title": "Cookies",
-      "text": "We are using cookies to help with the basic functionality of our website. The website cannot function properly without these cookies." 
+      "text": "We are using cookies to help with the basic functionality of our website. The website cannot function properly without these cookies."
     },
     "item": {
       "information": "Basic Information",
@@ -175,7 +175,8 @@
     "password": "Password",
     "email": "E-Mail",
     "menu": {
-      "title": "Account"
+      "title": "Account",
+      "bookmark": "Bookmarks"
     },
     "login": {
       "title": "Login",
