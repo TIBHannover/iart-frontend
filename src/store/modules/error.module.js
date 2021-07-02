@@ -3,15 +3,15 @@ const error = {
   state: {
     date: null,
     text: null,
+    origin: null,
   },
   mutations: {
-    update(state, { date, text }) {
-    	console.log('error', date, text);
-
+    update(state, { date, error, origin }) {
+      console.log('error', date, origin);
       state.date = date;
-      state.text = text;
+      state.text = error;
+      state.origin = origin;
     },
   },
 };
-
 export default error;

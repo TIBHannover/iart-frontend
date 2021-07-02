@@ -4,13 +4,10 @@ import { keyInObj, getHash } from '../../plugins/helpers';
 
 function getCookie(name) {
   let cookieValue = null;
-
   if (document.cookie && document.cookie !== '') {
     const cookies = document.cookie.split(';');
-
     for (let i = 0; i < cookies.length; i++) {
       const cookie = cookies[i].trim();
-
       // Does this cookie string begin with the name we want?
       if (cookie.substring(0, name.length + 1) === (name + '=')) {
         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
@@ -18,10 +15,8 @@ function getCookie(name) {
       }
     }
   }
-
   return cookieValue;
 }
-
 const user = {
   namespaced: true,
   state: {
@@ -42,11 +37,11 @@ const user = {
   actions: {
     getCSRFToken({ commit, state }, params) {
       axios.get(`${config.API_LOCATION}/get_csrf_token`, {
-        params, withCredentials: true
-      })
+          params,
+          withCredentials: true
+        })
         .then((res) => {
           const csrftoken = getCookie('csrftoken');
-
           if (state.csrfToken !== csrftoken) {
             commit('updateCSRFToken', csrftoken);
           }
@@ -60,7 +55,7 @@ const user = {
         .then((res) => {
           if (res.data.status === 'ok') {
             commit('updateUserData', res.data.data);
-            commit('updateLoggedIn', true)
+            commit('updateLoggedIn', true);
           }
         })
         .catch(() => {
@@ -69,7 +64,6 @@ const user = {
     },
     login({ commit }, params) {
       commit('loading/update', true, { root: true });
-
       axios.post(`${config.API_LOCATION}/login`, { params })
         .then((res) => {
           if (res.data.status === 'ok') {
@@ -77,7 +71,9 @@ const user = {
             commit('updateLoggedIn', true)
           }
         })
-        .catch(() => {
+        .catch((error) => {
+          const info = { date: Date(), error, origin: 'login' };
+          commit('error/update', info, { root: true });
           commit('updateUserData', { login: false });
         })
         .finally(() => {
@@ -87,7 +83,6 @@ const user = {
     logout({ commit, state }) {
       commit('loading/update', true, { root: true });
       const params = state.userData;
-
       axios.post(`${config.API_LOCATION}/logout`, { params })
         .then((res) => {
           if (res.data.status === 'ok') {
@@ -96,7 +91,8 @@ const user = {
           }
         })
         .catch((error) => {
-          console.log(error);
+          const info = { date: Date(), error, origin: 'logout' };
+          commit('error/update', info, { root: true });
         })
         .finally(() => {
           commit('loading/update', false, { root: true });
@@ -104,13 +100,13 @@ const user = {
     },
     register({ commit }, params) {
       commit('loading/update', true, { root: true });
-
       axios.post(`${config.API_LOCATION}/register`, { params })
         .then((res) => {
           commit('updateUserData', res.data);
         })
         .catch((error) => {
-          console.error(error);
+          const info = { date: Date(), error, origin: 'register' };
+          commit('error/update', info, { root: true });
         })
         .finally(() => {
           commit('loading/update', false, { root: true });
@@ -152,23 +148,19 @@ const user = {
     addHistory(state, params) {
       params = JSON.parse(JSON.stringify(params));
       delete params['settings'];
-
       const hash = getHash(params);
       const hashes = state.history.map((x) => x.hash);
       const index = hashes.indexOf(hash);
-
       if (index !== -1) {
         params.bookmarks = state.history[index].bookmarks;
         state.history.splice(index, 1);
       } else {
         params.bookmarks = [];
       }
-
       state.history.unshift({ date: Date(), ...params, hash });
     },
     removeHistory(state, params) {
       const index = state.history.indexOf(params);
-
       if (index !== -1) {
         state.history.splice(index, 1);
       }
@@ -178,14 +170,12 @@ const user = {
     },
     addBookmark(state, bookmark) {
       const index = state.history[0].bookmarks.indexOf(bookmark);
-
       if (index === -1) {
         state.history[0].bookmarks.push(bookmark);
       }
     },
     removeBookmark(state, bookmark) {
       const index = state.history[0].bookmarks.indexOf(bookmark);
-
       if (index !== -1) {
         state.history[0].bookmarks.splice(index, 1);
       }
@@ -193,5 +183,4 @@ const user = {
     },
   },
 };
-
 export default user;

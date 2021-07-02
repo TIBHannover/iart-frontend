@@ -70,7 +70,7 @@ const api = {
                 commit('updateHits', res.data.entries);
                 commit('updateCounts', res.data.aggregations);
               } else {
-                const info = { date: Date(), text: '' };
+                const info = { date: Date(), text: '', origin: 'search' };
                 commit('error/update', info, { root: true });
               }
               commit('loading/update', false, { root: true });
@@ -78,7 +78,7 @@ const api = {
             }
           })
           .catch((error) => {
-            const info = { date: Date(), text: error };
+            const info = { date: Date(), error, origin: 'search' };
             commit('error/update', info, { root: true });
             commit('loading/update', false, { root: true });
           });;
@@ -96,7 +96,7 @@ const api = {
               commit('updateHits', res.data.entries);
               commit('updateCounts', res.data.aggregations);
             } else {
-              const info = { date: Date(), text: '' };
+              const info = { date: Date(), error: '', origin: 'search' };
               commit('error/update', info, { root: true });
             }
             commit('loading/update', false, { root: true });
@@ -104,8 +104,8 @@ const api = {
           }
         })
         .catch((error) => {
-          const info = { date: Date(), text: error };
-          commit('error/update', error, { root: true });
+          const info = { date: Date(), error, origin: 'search' };
+          commit('error/update', info, { root: true });
           commit('loading/update', false, { root: true });
         });
     },
@@ -131,7 +131,7 @@ const api = {
                   weights: {},
                   label: meta.title,
                 };
-                commit("addQuery", query);
+                commit('addQuery', query);
               });
             } else {
               const queries = [];
@@ -150,7 +150,7 @@ const api = {
           }
         })
         .catch((error) => {
-          const info = { date: Date(), text: error };
+          const info = { date: Date(), error, origin: 'upload' };
           commit('error/update', info, { root: true });
           commit('loading/update', false, { root: true });
         });
