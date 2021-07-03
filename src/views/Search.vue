@@ -1,18 +1,9 @@
 <template>
   <v-app id="search">
-    <v-app-bar
-      app
-      flat
-    >
+    <v-app-bar app flat>
       <v-layout row>
-        <div
-          class="logo ml-3 mr-5"
-          @click="reset"
-        >
-          <img
-            title="iART"
-            src="/assets/images/logo.png"
-          />
+        <div class="logo ml-3 mr-5" @click="reset">
+          <img title="iART" src="/assets/images/logo.png" />
         </div>
 
         <SearchBar />
@@ -24,11 +15,7 @@
           icon
         >
           <span id="filter-general">
-            <v-badge
-              v-if="nFilters"
-              color="accent"
-              :content="nFilters"
-            >
+            <v-badge v-if="nFilters" color="accent" :content="nFilters">
               <v-icon>mdi-tune</v-icon>
             </v-badge>
             <v-icon v-else>mdi-tune</v-icon>
@@ -104,6 +91,9 @@ export default {
     settings() {
       return this.$store.state.api.settings;
     },
+    bookmarks() {
+      return this.$store.state.api.bookmarks;
+    },
   },
   watch: {
     filters: {
@@ -119,6 +109,9 @@ export default {
       this.load();
     },
     fullText() {
+      this.load();
+    },
+    bookmarks() {
       this.load();
     },
     settings: {
@@ -172,7 +165,7 @@ export default {
   display: flex;
 }
 
-#search .logo>img {
+#search .logo > img {
   max-height: 28px;
 }
 </style>

@@ -22,6 +22,7 @@ const api = {
     dateRange: [],
     fullText: [],
     filters: {},
+    bookmarks: false,
     counts: [],
     hits: [],
     settings: {
@@ -49,6 +50,7 @@ const api = {
         full_text: state.fullText,
         date_range: state.dateRange,
         aggregate: config.DEFAULT_AGGREGATION_FIELDS,
+        bookmarks: state.bookmarks,
       };
       if (!isEqual(params, state.prevParams)) {
         commit('updateParams', params);
@@ -118,8 +120,8 @@ const api = {
       }
       commit('loading/update', true, { root: true });
       axios.post(`${config.API_LOCATION}/upload`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        })
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
         .then((res) => {
           if (res.data.status === 'ok') {
             if (params.append) {
@@ -366,6 +368,7 @@ const api = {
       if (state.fullText.length) {
         state.fullText = [];
       }
+      state.bookmarks = false;
     },
     updateFilters(state, filters) {
       if (!isEqual(state.filters, filters)) {
@@ -389,6 +392,20 @@ const api = {
         state.dateRange = params.date_range;
       }
     },
+    showBookmarks(state) {
+      state.random = null;
+      state.query = [];
+      state.dateRange = [];
+      state.fullText = [];
+      state.filters = {};
+      state.bookmarks = true;
+    },
+    addBookmarks(state) {
+      state.bookmarks = true;
+    },
+    removeBookmarks(state) {
+      state.bookmarks = false;
+    }
   },
 };
 export default api;

@@ -126,7 +126,12 @@ export default {
     },
     isBookmarked() {
       const history = this.$store.state.user.history[0];
-      return history.bookmarks.includes(this.entry.id);
+      var history_bookmarks = history.bookmarks.includes(this.entry.id);
+      if ("user" in this.entry) {
+        history_bookmarks |= this.entry.user.bookmarked;
+      }
+
+      return history_bookmarks;
     },
   },
   computed: {

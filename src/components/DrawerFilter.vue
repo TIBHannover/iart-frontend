@@ -142,6 +142,16 @@
           </v-autocomplete>
       </div>
 
+
+      <div v-if="loggedIn">
+        <v-checkbox
+          v-model="bookmarks"
+          label="Bookmarks"
+          @change="changeBookmark"
+        ></v-checkbox>
+      </div>
+
+
       <div class="date-range mb-4">
         <v-layout
           row
@@ -226,6 +236,7 @@ export default {
       dateToggle: false,
       dateRange: [1400, 1900],
       drawer: this.$store.state.user.drawer.filter,
+      bookmarks: this.$store.state.api.bookmarks,
     };
   },
   methods: {
@@ -242,16 +253,20 @@ export default {
               positive = false;
             }
             name = { positive, name };
-          } else if (
-            typeof name === "object" &&
-            !keyInObj("positive", name)
-          ) {
+          } else if (typeof name === "object" && !keyInObj("positive", name)) {
             name = { positive: true, ...name };
           }
           return name;
         });
       });
       this.$store.commit("api/updateFilters", this.data);
+    },
+    changeBookmark() {
+      if (this.bookmarks) {
+        this.$store.commit("api/addBookmarks");
+      } else {
+        this.$store.commit("api/removeBookmarks");
+      }
     },
     remove(index, field) {
       if (index === -1) {
@@ -300,6 +315,12 @@ export default {
     updateFullText() {
       return this.$store.state.api.fullText;
     },
+    updateBookmarks() {
+      return this.$store.state.api.bookmarks;
+    },
+    loggedIn() {
+      return this.$store.state.user.loggedIn;
+    },
   },
   watch: {
     filters: {
@@ -334,6 +355,9 @@ export default {
     updateFullText(value) {
       this.fullText = value;
     },
+    updateBookmarks(value) {
+      this.bookmarks = value;
+    },
   },
   created() {
     const { dateRange } = this.$store.state.api;
@@ -347,21 +371,20 @@ export default {
 
 <style>
 .v-navigation-drawer:not(.v-navigation-drawer--close) {
-  box-shadow: 0 8px 10px -5px rgb(0 0 0 / 20%),
-    0 16px 24px 2px rgb(0 0 0 / 14%),
+  box-shadow: 0 8px 10px -5px rgb(0 0 0 / 20%), 0 16px 24px 2px rgb(0 0 0 / 14%),
     0 6px 30px 5px rgb(0 0 0 / 12%);
 }
 
-.container>div>label {
+.container > div > label {
   font-size: 12px;
 }
 
-.date-range .row>label {
+.date-range .row > label {
   align-items: center;
   font-size: 12px;
 }
 
-.v-select__slot .v-chip__content>span {
+.v-select__slot .v-chip__content > span {
   text-overflow: ellipsis;
   max-width: 150px;
   overflow: hidden;
@@ -389,11 +412,11 @@ export default {
   white-space: inherit;
 }
 
-.v-menu__content .v-list-item__title.meta>div:first-child {
+.v-menu__content .v-list-item__title.meta > div:first-child {
   max-width: 200px;
 }
 
-.v-menu__content .v-list-item__title.meta>div:last-child {
+.v-menu__content .v-list-item__title.meta > div:last-child {
   text-align: right;
   flex-grow: 1;
   color: #bbb;
@@ -410,7 +433,7 @@ input[type="number"] {
 }
 
 .v-select__slot label,
-.container>div>label,
+.container > div > label,
 .v-autocomplete__content .meta.origin-name,
 .v-autocomplete .v-chip.origin-name {
   text-transform: capitalize;

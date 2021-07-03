@@ -74,7 +74,7 @@ export default {
       this.$store.dispatch("user/logout");
     },
     show_bookmarks() {
-      console.log("AAA");
+      this.$store.commit("api/showBookmarks");
     },
   },
   computed: {
