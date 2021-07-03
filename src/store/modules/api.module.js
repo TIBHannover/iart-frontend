@@ -41,6 +41,33 @@ const api = {
     jobID: null,
   },
   actions: {
+
+    //   commit('addQuery', { type, positive, value, weights: {} });
+    // }
+    // if (type === 'idx') {
+    //   dispatch('fetchIDXQuery', { type, positive, value, weights: {} });
+    fetchIDXQuery({ commit, state }, params) {
+      axios.post(`${config.API_LOCATION}/get`, { id: params.value })
+        .then((res) => {
+          if (res.data.status == "ok") {
+            var title = '';
+            res.data.entry.meta.forEach((element) => {
+              if (element.name == "title") {
+                title = element.value_str;
+              }
+            })
+            const query = {
+              ...params,
+              label: title,
+            };
+            commit('addQuery', query);
+
+            // commit('addEntriesLUT', res.data.entry);
+          }
+        })
+        .catch((error) => {
+        });;
+    },
     load({ commit, dispatch, state }) {
       const params = {
         query: state.query,
@@ -157,7 +184,7 @@ const api = {
           commit('loading/update', false, { root: true });
         });
     },
-    setState({ commit, state }, params) {
+    setState({ commit, dispatch, state }, params) {
       if (!keyInObj('period', params)) {
         commit('updateDateRange', []);
       }
@@ -179,10 +206,14 @@ const api = {
                   type = type.slice(1);
                 }
                 if (type === 'idx') {
+                  dispatch('fetchIDXQuery', { type, positive, value, weights: {} });
                   // TODO: retrieve metadata
                 }
+                else {
+
+                  commit('addQuery', { type, positive, value, weights: {} });
+                }
               }
-              commit('addQuery', { type, positive, value, weights: {} });
             });
           } catch (e) {
             console.log('query', e);
@@ -405,7 +436,7 @@ const api = {
     },
     removeBookmarks(state) {
       state.bookmarks = false;
-    }
+    },
   },
 };
 export default api;
