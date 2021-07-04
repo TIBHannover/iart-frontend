@@ -24,7 +24,7 @@ const api = {
     filters: {},
     bookmarks: false,
     counts: [],
-    hits: [],
+    hits: undefined,
     settings: {
       weights: {},
       layout: {
@@ -111,7 +111,7 @@ const api = {
           commit('loading/update', false, { root: true });
         });
     },
-    upload({ commit, state }, params) {
+    upload({ commit }, params) {
       let formData = new FormData();
       if (params.type === 'file') {
         formData.append('file', params.value);
@@ -159,100 +159,125 @@ const api = {
           commit('loading/update', false, { root: true });
         });
     },
-    fetchIDXQuery({ commit, state }, params) {
-      axios.post(`${config.API_LOCATION}/get`, { id: params.value })
-        .then((res) => {
-          if (res.data.status == 'ok') {
-            let title = '';
-            const { preview } = res.data.entry;
-            res.data.entry.meta.forEach((element) => {
-              if (element.name == 'title') {
-                title = element.value_str;
-              }
-            })
-            const query = { ...params, label: title, preview };
-            commit('addQuery', query);
+    async fetchIDXQuery({ state }, params) {
+      let res;
+      try {
+        res = await axios.post(
+          `${config.API_LOCATION}/get`, { id: params.value }
+        );
+      } catch (error) {
+        return params;
+      }
+      if (res.data.status === 'ok') {
+        let title = '';
+        const { preview } = res.data.entry;
+        res.data.entry.meta.forEach((element) => {
+          if (element.name === 'title') {
+            title = element.value_str;
           }
         })
-        .catch((error) => {
-          console.log('fetch', error);
-        });
-    },
-    setState({ commit, dispatch, state }, params) {
-      if (!keyInObj('period', params)) {
-        commit('updateDateRange', []);
+        return { ...params, label: title, preview };
       }
-      commit('removeAllQueries');
-      commit('removeAllFilters');
-      Object.keys(params).forEach((field) => {
-        if (field === 'query') {
-          try {
-            const values = params[field].split(',');
-            values.forEach((value) => {
-              let positive = true;
-              let type = 'txt';
-              if (value.includes(':')) {
-                [type, value] = lsplit(value, ':', 1);
-                if (['+', '-'].includes(type.charAt(0))) {
-                  if (type.charAt(0) === '-') {
-                    positive = false;
+      return params;
+    },
+    async setState({ commit, dispatch }, params) {
+      const queries = [];
+      const filters = {};
+      let fullText = [];
+      let random = null;
+      let dateRange = [];
+      let count = 0;
+      let maxCount = Object.keys(params).length;
+      await new Promise((resolve) => {
+        if (maxCount) {
+          Object.keys(params).forEach((field) => {
+            const values = params[field];
+            if (field !== 'query') count += 1;
+            try {
+              switch (field) {
+                case 'query':
+                  maxCount += values.split(',').length - 1;
+                  values.split(',').forEach(async (value) => {
+                    let positive = true;
+                    let type = 'txt';
+                    if (value.includes(':')) {
+                      [type, value] = lsplit(value, ':', 1);
+                      if (['+', '-'].includes(type.charAt(0))) {
+                        if (type.charAt(0) === '-') {
+                          positive = false;
+                        }
+                        type = type.slice(1);
+                      }
+                    }
+                    let query = { type, positive, value, weights: {} };
+                    if (type === 'idx') {
+                      await dispatch('fetchIDXQuery', query).then((query) => {
+                        queries.push(query);
+                        count += 1;
+                        if (count === maxCount) {
+                          resolve();
+                        }
+                      });
+                    } else {
+                      queries.push(query);
+                      count += 1;
+                    }
+                  });
+                  break;
+                case 'random':
+                  random = values;
+                  break;
+                case 'period':
+                  let period = values.split('-').map(
+                    (x) => parseInt(x, 10)
+                  );
+                  if (period.length === 1) {
+                    period.push(period[0]);
+                  } else if (period.length > 2) {
+                    period.splice(-1, 9e9);
                   }
-                  type = type.slice(1);
-                }
+                  if (period[0] >= 1000 && period[1] <= 2000) {
+                    dateRange = period;
+                  }
+                  break;
+                case 'full.text':
+                  fullText = values.split(',');
+                  break;
+                default:
+                  if (config.DEFAULT_AGGREGATION_FIELDS.includes(field)) {
+                    values.split(',').forEach((name) => {
+                      let positive = true;
+                      if (['+', '-'].includes(name.charAt(0))) {
+                        if (name.charAt(0) === '-') {
+                          positive = false;
+                        }
+                        name = name.slice(1);
+                      }
+                      if (keyInObj(field, filters)) {
+                        filter[field].push({ positive, name });
+                      } else {
+                        filters[field] = [{ positive, name }];
+                      }
+                    });
+                  }
               }
-              const query = { type, positive, value, weights: {} };
-              if (type === 'idx') {
-                dispatch('fetchIDXQuery', query);
-              } else {
-                commit('addQuery', query);
+            } catch (error) {
+              console.log(field, error);
+            } finally {
+              if (count === maxCount) {
+                resolve();
               }
-            });
-          } catch (e) {
-            console.log('query', e);
-          }
-        }
-        if (field === 'random') {
-          commit('updateRandom', params[field]);
-        }
-        if (field === 'period') {
-          try {
-            let period = params[field].split('-');
-            period = period.map((x) => parseInt(x, 10));
-            if (period.length === 1) {
-              period.push(period[0]);
-            } else if (period.length > 2) {
-              period.splice(-1, 9e9);
             }
-            if (period[0] >= 1000 && period[1] <= 2000) {
-              commit('updateDateRange', period);
-            }
-          } catch (e) {
-            console.log('period', e);
-          }
-        }
-        if (field === 'full.text') {
-          const fullText = params[field].split(',');
-          commit('updateFullText', fullText);
-        }
-        if (config.DEFAULT_AGGREGATION_FIELDS.includes(field)) {
-          try {
-            const names = params[field].split(',');
-            names.forEach((name) => {
-              let positive = true;
-              if (['+', '-'].includes(name.charAt(0))) {
-                if (name.charAt(0) === '-') {
-                  positive = false;
-                }
-                name = name.slice(1);
-              }
-              const filter = { positive, name }
-              commit('addFilter', { field, filter });
-            });
-          } catch (e) {
-            console.log('filters', e);
-          }
+          });
+        } else {
+          resolve();
         }
       });
+      commit('updateQuery', queries);
+      commit('updateRandom', random);
+      commit('updateFilters', filters);
+      commit('updateFullText', fullText);
+      commit('updateDateRange', dateRange);
     },
     getState({ state }) {
       const params = new URLSearchParams();
@@ -335,9 +360,11 @@ const api = {
       state.backBtn = !state.backBtn;
     },
     addQuery(state, query) {
-      const index = state.query.indexOf(query);
-      if (index === -1) {
-        state.query.push(query);
+      if (query) {
+        const index = state.query.indexOf(query);
+        if (index === -1) {
+          state.query.push(query);
+        }
       }
     },
     removeQuery(state, query) {

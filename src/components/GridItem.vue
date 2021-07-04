@@ -81,10 +81,10 @@ export default {
       const query = {
         type: "idx",
         positive: true,
-        label: this.title,
         value: this.entry.id,
-        preview: this.entry.preview,
         weights: {},
+        label: this.title,
+        preview: this.entry.preview,
       };
       if (append) {
         this.$store.commit("api/addQuery", query);

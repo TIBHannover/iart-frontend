@@ -147,7 +147,15 @@ const user = {
     },
     addHistory(state, params) {
       params = JSON.parse(JSON.stringify(params));
-      delete params['settings'];
+      const validKeys = [
+        'query', 'random', 'filters',
+        'full_text', 'date_range',
+      ];
+      Object.keys(params).forEach((key) => {
+        if (!validKeys.includes(key)) {
+          delete params[key];
+        }
+      });
       const hash = getHash(params);
       const hashes = state.history.map((x) => x.hash);
       const index = hashes.indexOf(hash);

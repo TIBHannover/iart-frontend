@@ -39,10 +39,12 @@ export default {
   },
   watch: {
     entries(value) {
-      if (value.length === 0) {
-        this.dialog = true;
-      } else {
-        this.dialog = false;
+      if (typeof value !== "undefined") {
+        if (value.length === 0) {
+          this.dialog = true;
+        } else {
+          this.dialog = false;
+        }
       }
     },
   },
