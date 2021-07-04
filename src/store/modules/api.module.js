@@ -41,33 +41,6 @@ const api = {
     jobID: null,
   },
   actions: {
-
-    //   commit('addQuery', { type, positive, value, weights: {} });
-    // }
-    // if (type === 'idx') {
-    //   dispatch('fetchIDXQuery', { type, positive, value, weights: {} });
-    fetchIDXQuery({ commit, state }, params) {
-      axios.post(`${config.API_LOCATION}/get`, { id: params.value })
-        .then((res) => {
-          if (res.data.status == "ok") {
-            var title = '';
-            res.data.entry.meta.forEach((element) => {
-              if (element.name == "title") {
-                title = element.value_str;
-              }
-            })
-            const query = {
-              ...params,
-              label: title,
-            };
-            commit('addQuery', query);
-
-            // commit('addEntriesLUT', res.data.entry);
-          }
-        })
-        .catch((error) => {
-        });;
-    },
     load({ commit, dispatch, state }) {
       const params = {
         query: state.query,
@@ -152,25 +125,27 @@ const api = {
         .then((res) => {
           if (res.data.status === 'ok') {
             if (params.append) {
-              res.data.entries.forEach(({ id, meta }) => {
+              res.data.entries.forEach(({ id, meta, preview }) => {
                 const query = {
                   type: 'idx',
                   positive: true,
                   value: id,
                   weights: {},
                   label: meta.title,
+                  preview,
                 };
                 commit('addQuery', query);
               });
             } else {
               const queries = [];
-              res.data.entries.forEach(({ id, meta }) => {
+              res.data.entries.forEach(({ id, meta, preview }) => {
                 queries.push({
                   type: 'idx',
                   positive: true,
                   value: id,
                   weights: {},
                   label: meta.title,
+                  preview,
                 });
               });
               commit('updateQuery', queries);
@@ -182,6 +157,25 @@ const api = {
           const info = { date: Date(), error, origin: 'upload' };
           commit('error/update', info, { root: true });
           commit('loading/update', false, { root: true });
+        });
+    },
+    fetchIDXQuery({ commit, state }, params) {
+      axios.post(`${config.API_LOCATION}/get`, { id: params.value })
+        .then((res) => {
+          if (res.data.status == 'ok') {
+            let title = '';
+            const { preview } = res.data.entry;
+            res.data.entry.meta.forEach((element) => {
+              if (element.name == 'title') {
+                title = element.value_str;
+              }
+            })
+            const query = { ...params, label: title, preview };
+            commit('addQuery', query);
+          }
+        })
+        .catch((error) => {
+          console.log('fetch', error);
         });
     },
     setState({ commit, dispatch, state }, params) {
@@ -205,14 +199,12 @@ const api = {
                   }
                   type = type.slice(1);
                 }
-                if (type === 'idx') {
-                  dispatch('fetchIDXQuery', { type, positive, value, weights: {} });
-                  // TODO: retrieve metadata
-                }
-                else {
-
-                  commit('addQuery', { type, positive, value, weights: {} });
-                }
+              }
+              const query = { type, positive, value, weights: {} };
+              if (type === 'idx') {
+                dispatch('fetchIDXQuery', query);
+              } else {
+                commit('addQuery', query);
               }
             });
           } catch (e) {
