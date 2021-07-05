@@ -169,14 +169,15 @@ const api = {
         return params;
       }
       if (res.data.status === 'ok') {
-        let title = '';
+        let title = [];
         const { preview } = res.data.entry;
-        res.data.entry.meta.forEach((element) => {
-          if (element.name === 'title') {
-            title = element.value_str;
+        res.data.entry.meta.forEach(({ name, value_str }) => {
+          if (name === 'title' && value_str) {
+            title.push(value_str);
           }
         })
-        return { ...params, label: title, preview };
+        if (!title) title = [this.$t("griditem.notitle")];
+        return { ...params, label: title[0], preview };
       }
       return params;
     },
@@ -192,7 +193,6 @@ const api = {
         if (maxCount) {
           Object.keys(params).forEach((field) => {
             const values = params[field];
-            if (field !== 'query') count += 1;
             try {
               switch (field) {
                 case 'query':
@@ -254,7 +254,7 @@ const api = {
                         name = name.slice(1);
                       }
                       if (keyInObj(field, filters)) {
-                        filter[field].push({ positive, name });
+                        filters[field].push({ positive, name });
                       } else {
                         filters[field] = [{ positive, name }];
                       }
@@ -264,6 +264,9 @@ const api = {
             } catch (error) {
               console.log(field, error);
             } finally {
+              if (field !== 'query') {
+                count += 1;
+              }
               if (count === maxCount) {
                 resolve();
               }
@@ -278,6 +281,10 @@ const api = {
       commit('updateFilters', filters);
       commit('updateFullText', fullText);
       commit('updateDateRange', dateRange);
+      if (Object.keys(filters).length) {
+        const update = { drawer: 'filter', value: true };
+        commit('user/updateDrawer', update, { root: true });
+      }
     },
     getState({ state }) {
       const params = new URLSearchParams();
