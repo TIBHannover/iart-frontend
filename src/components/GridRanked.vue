@@ -1,22 +1,28 @@
 <template>
   <div class="flex-view">
-    <GridItem 
-      v-for="entry in pageEntries" :key="entry" 
-      :entry="entry" :entries="pageEntries"
+    <GridItem
+      v-for="entry in pageEntries"
+      :key="entry.id"
+      :entry="entry"
+      :entries="pageEntries"
     />
-    
+
     <div class="grid-item-fill"></div>
 
-    <v-pagination 
-      v-if="nPages > 1" v-model="page" :length="nPages"
-      :total-visible="6" class="mt-4" color="accent" circle
+    <v-pagination
+      v-if="nPages > 1"
+      v-model="page"
+      :length="nPages"
+      :total-visible="6"
+      class="mt-4"
+      color="accent"
+      circle
     ></v-pagination>
   </div>
 </template>
 
 <script>
 import GridItem from "@/components/GridItem.vue";
-
 export default {
   props: ["entries"],
   data() {
@@ -32,7 +38,6 @@ export default {
     pageEntries() {
       const firstEntry = (this.page - 1) * this.perPage;
       const lastEntry = firstEntry + this.perPage;
-
       return this.entries.slice(firstEntry, lastEntry);
     },
   },

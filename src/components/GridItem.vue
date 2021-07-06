@@ -6,27 +6,56 @@
     :style="getCss"
     @click="showDetails"
   >
-    <ModalItem v-model="dialog" :entry="entry" :entries="entries" />
-    <img :src="entry.preview" v-on:error="onError" />
+    <ModalItem
+      v-model="dialog"
+      :entry="entry"
+      :entries="entries"
+    />
+    <img
+      :src="entry.preview"
+      v-on:error="onError"
+    />
 
     <div class="overlay">
       <div class="view">
-        <v-menu offset-y bottom right>
+        <v-menu
+          offset-y
+          bottom
+          right
+        >
           <template v-slot:activator="{ attrs, on: menu }">
-            <v-btn icon v-bind="attrs" v-on="menu" :title="$t('search.object')">
-              <v-icon color="white" class="shadow">mdi-magnify</v-icon>
+            <v-btn
+              icon
+              v-bind="attrs"
+              v-on="menu"
+              :title="$t('search.object')"
+            >
+              <v-icon
+                color="white"
+                class="shadow"
+              >mdi-magnify</v-icon>
             </v-btn>
           </template>
 
           <v-list class="pa-0">
             <v-list-item class="px-0 h44">
-              <v-btn @click="query(false)" text block large>
+              <v-btn
+                @click="query(false)"
+                text
+                block
+                large
+              >
                 {{ $t("search.new") }}
               </v-btn>
             </v-list-item>
 
             <v-list-item class="px-0 h44">
-              <v-btn @click="query(true)" text block large>
+              <v-btn
+                @click="query(true)"
+                text
+                block
+                large
+              >
                 {{ $t("search.append") }}
               </v-btn>
             </v-list-item>
@@ -35,13 +64,24 @@
       </div>
 
       <div class="meta">
-        <div class="text-subtitle-1" :title="title">{{ title }}</div>
-        <div class="text-caption" :title="artist">{{ artist }}</div>
+        <div
+          class="text-subtitle-1"
+          :title="title"
+        >{{ title }}</div>
+        <div
+          class="text-caption"
+          :title="artist"
+        >{{ artist }}</div>
       </div>
     </div>
 
     <div class="bookmark">
-      <v-btn v-if="bookmarked" @click="bookmark" class="ml-n1 clicked" icon>
+      <v-btn
+        v-if="bookmarked"
+        @click="bookmark"
+        class="ml-n1 clicked"
+        icon
+      >
         <v-icon
           color="accent"
           class="shadow"
@@ -50,7 +90,12 @@
           mdi-bookmark-remove-outline
         </v-icon>
       </v-btn>
-      <v-btn v-else @click="bookmark" class="ml-n1" icon>
+      <v-btn
+        v-else
+        @click="bookmark"
+        class="ml-n1"
+        icon
+      >
         <v-icon
           color="white"
           class="shadow"
@@ -64,6 +109,7 @@
 </template>
 
 <script>
+import { keyInObj } from "@/plugins/helpers";
 import ModalItem from "@/components/ModalItem.vue";
 export default {
   data() {
@@ -125,13 +171,15 @@ export default {
       }
     },
     isBookmarked() {
-      const history = this.$store.state.user.history[0];
-      var history_bookmarks = history.bookmarks.includes(this.entry.id);
-      if ("user" in this.entry) {
-        history_bookmarks |= this.entry.user.bookmarked;
+      const { history } = this.$store.state.bookmark;
+      if (history.length) {
+        let check = history[0].bookmarks.includes(this.entry.id);
+        if (keyInObj("user", this.entry)) {
+          check |= this.entry.user.bookmarked;
+        }
+        return check;      
       }
-
-      return history_bookmarks;
+      return false;
     },
   },
   computed: {
@@ -209,7 +257,7 @@ export default {
   text-shadow: 0 0 5px black;
 }
 
-.grid-item > .bookmark {
+.grid-item>.bookmark {
   transition: opacity 0.25s ease;
   position: absolute;
   padding: 5px;
@@ -217,16 +265,16 @@ export default {
   top: 0;
 }
 
-.grid-item > .bookmark button {
+.grid-item>.bookmark button {
   opacity: 0;
 }
 
-.grid-item > .bookmark button.clicked,
-.grid-item:hover > .bookmark button {
+.grid-item>.bookmark button.clicked,
+.grid-item:hover>.bookmark button {
   opacity: 1;
 }
 
-.grid-item > img {
+.grid-item>img {
   transition: transform 0.5s ease;
   transform: scale(1.05);
   object-fit: cover;
@@ -236,15 +284,15 @@ export default {
   opacity: 1;
 }
 
-.grid-item:hover > img {
+.grid-item:hover>img {
   transform: scale(1.4);
 }
 
-.grid-item:hover > .overlay {
+.grid-item:hover>.overlay {
   opacity: 1;
 }
 
-.grid-item > .overlay {
+.grid-item>.overlay {
   background: linear-gradient(to top, black, #00000000 50%);
   transform: translate(-50%, -50%);
   transition: opacity 0.25s ease;
@@ -259,12 +307,12 @@ export default {
   top: 50%;
 }
 
-.grid-item > .overlay .view {
+.grid-item>.overlay .view {
   padding: 5px 35px 0 0;
   text-align: right;
 }
 
-.grid-item > .overlay .meta {
+.grid-item>.overlay .meta {
   position: absolute;
   padding: 5px 10px;
   width: 100%;
@@ -272,7 +320,7 @@ export default {
   left: 0;
 }
 
-.grid-item > .overlay .meta * {
+.grid-item>.overlay .meta * {
   text-transform: capitalize;
   text-overflow: ellipsis;
   line-height: 1.35rem;
