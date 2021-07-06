@@ -47,7 +47,11 @@
     <v-list class="pa-0">
       <v-list-item-group>
         <v-list-item v-if="loggedIn" class="px-0">
-          <ModalCollectionList @close="menu = false" />
+          <ModalCollectionList
+            @close="menu = false"
+            show-badges
+            :collections="collections"
+          />
         </v-list-item>
         <v-list-item v-if="loggedIn" class="px-0">
           <ModalCollectionUpload @close="menu = false" />
@@ -83,6 +87,9 @@ export default {
     },
     bookmarks() {
       return this.$store.state.bookmark.bookmarks;
+    },
+    collections() {
+      return this.$store.state.collection.collections;
     },
   },
   components: {

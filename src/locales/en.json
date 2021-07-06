@@ -166,7 +166,8 @@
       }
     },
     "collection": {
-      "title": "Collection",
+      "title": "Collection upload",
+      "name": "Collegtion name",
       "imagefile": {
         "label": "Image Files"
       },
@@ -174,6 +175,9 @@
         "label": "Meta Files",
         "unknown_fields": "Some fields cannot be assigned ({field_names})"
       }
+    },
+    "collections": {
+      "title": "Collections"
     }
   },
   "user": {
@@ -182,7 +186,8 @@
     "email": "E-Mail",
     "menu": {
       "title": "Account",
-      "bookmark": "Bookmarks"
+      "bookmark": "Bookmarks",
+      "collections": "Collections"
     },
     "login": {
       "title": "Login",
@@ -223,7 +228,8 @@
     "reload": "Reload",
     "accept": "Accept",
     "decline": "Decline",
-    "search": "Search"
+    "search": "Search",
+    "upload": "Upload"
   },
   "field": {
     "required": "This is a required field.",
