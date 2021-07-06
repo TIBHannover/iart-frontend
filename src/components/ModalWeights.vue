@@ -21,7 +21,19 @@
         >
           mdi-compass-outline
         </v-icon>
-        <span style="font-size: 14px">
+        <v-badge
+          v-if="changed"
+          color="accent"
+          dot
+        >
+          <span style="font-size: 14px">
+            {{ $t("modal.weights.title") }}
+          </span>
+        </v-badge>
+        <span
+          v-else
+          style="font-size: 14px"
+        >
           {{ $t("modal.weights.title") }}
         </span>
       </v-btn>
@@ -38,6 +50,7 @@
 </template>
 
 <script>
+import { isEqual } from "@/plugins/helpers";
 import Weights from "@/components/Weights.vue";
 export default {
   data() {
@@ -54,6 +67,15 @@ export default {
   computed: {
     toggle() {
       return this.$store.state.user.modal.weights;
+    },
+    changed() {
+      if (this.values && Object.keys(this.values).length) {
+        const defaultValue = { clip_embedding_feature: 1 };
+        if (!isEqual(this.values, defaultValue)) {
+          return true;
+        }
+      }
+      return false;
     },
   },
   watch: {
