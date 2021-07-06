@@ -128,7 +128,8 @@ export default {
         if (value.size < 200000000) {
           return true;
         }
-        return this.$t("modal.search.file.rule");
+        const text = this.$t("modal.search.file.rule");
+        return repPlace({ file_size: 200 }, text);
       }
       return this.$t("field.required");
     },

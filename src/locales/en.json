@@ -148,7 +148,7 @@
       "toggle": "Upload Image from Computer",
       "file": {
         "label": "Select Image File",
-        "rule": "Image size should be less than 2 MB."
+        "rule": "Image size should be less than {file_size} MB."
       },
       "url": {
         "label": "Paste URL to Image",
