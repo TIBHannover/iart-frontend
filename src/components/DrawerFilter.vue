@@ -15,9 +15,29 @@
       <v-toolbar-title>{{ $t("drawer.filter.title") }}</v-toolbar-title>
 
       <div class="v-btn--absolute v-btn--right">
+        <span v-if="loggedIn">
+          <v-btn
+            v-if="toggleBookmarks"
+            @click="toggleBookmarks = false"
+            :title="$t('drawer.filter.bookmarks.hide')"
+            icon
+          >
+            <v-icon>mdi-bookmark-off-outline</v-icon>
+          </v-btn>
+          <v-btn
+            v-else
+            @click="toggleBookmarks = true"
+            :title="$t('drawer.filter.bookmarks.show')"
+            icon
+          >
+            <v-icon>mdi-bookmark-outline</v-icon>
+          </v-btn>
+        </span>
+
         <v-btn
           :title="$t('drawer.filter.remove')"
           @click="removeAllFilters"
+          class="ml-n4"
           icon
         >
           <v-icon>mdi-trash-can-outline</v-icon>
@@ -142,16 +162,6 @@
           </v-autocomplete>
       </div>
 
-
-      <div v-if="loggedIn">
-        <v-checkbox
-          v-model="bookmarks"
-          label="Bookmarks"
-          @change="changeBookmark"
-        ></v-checkbox>
-      </div>
-
-
       <div class="date-range mb-4">
         <v-layout
           row
@@ -236,7 +246,7 @@ export default {
       dateToggle: false,
       dateRange: [1400, 1900],
       drawer: this.$store.state.user.drawer.filter,
-      bookmarks: this.$store.state.api.bookmarks,
+      toggleBookmarks: this.$store.state.bookmark.toggle,
     };
   },
   methods: {
@@ -260,13 +270,6 @@ export default {
         });
       });
       this.$store.commit("api/updateFilters", this.data);
-    },
-    changeBookmark() {
-      if (this.bookmarks) {
-        this.$store.commit("api/addBookmarks");
-      } else {
-        this.$store.commit("api/removeBookmarks");
-      }
     },
     remove(index, field) {
       if (index === -1) {
@@ -315,9 +318,6 @@ export default {
     updateFullText() {
       return this.$store.state.api.fullText;
     },
-    updateBookmarks() {
-      return this.$store.state.api.bookmarks;
-    },
     loggedIn() {
       return this.$store.state.user.loggedIn;
     },
@@ -337,6 +337,9 @@ export default {
     toggleDrawer(value) {
       this.drawer = value;
     },
+    toggleBookmarks(value) {
+      this.$store.commit("bookmark/update", value);
+    },
     dateToggle(value) {
       if (value) {
         this.$store.commit("api/updateDateRange", this.dateRange);
@@ -354,9 +357,6 @@ export default {
     },
     updateFullText(value) {
       this.fullText = value;
-    },
-    updateBookmarks(value) {
-      this.bookmarks = value;
     },
   },
   created() {

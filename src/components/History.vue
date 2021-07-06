@@ -182,7 +182,7 @@ export default {
   },
   computed: {
     data() {
-      return this.$store.state.user.history.slice(1);
+      return this.$store.state.bookmark.history.slice(1);
     },
   },
 };

@@ -31,6 +31,10 @@
       "title": "Refine",
       "remove": "Remove Filters",
       "objects": "Objects",
+      "bookmarks": {
+        "show": "Filter Bookmarks",
+        "hide": "Show All Objects"
+      },
       "period": {
         "show": "Show Period Filter",
         "hide": "Hide Period Filter"
@@ -166,18 +170,20 @@
       }
     },
     "collection": {
-      "title": "Collection upload",
-      "name": "Collegtion name",
-      "imagefile": {
-        "label": "Image Files"
+      "upload": {
+        "title": "New Collection",
+        "name": "Collection Name",
+        "imagefile": {
+          "label": "Image Files"
+        },
+        "metafile": {
+          "label": "Metadata Files",
+          "unknown": "Some fields cannot be assigned ({field_names})"
+        }
       },
-      "metafile": {
-        "label": "Meta Files",
-        "unknown_fields": "Some fields cannot be assigned ({field_names})"
+      "list": {
+        "title": "Show Collections"
       }
-    },
-    "collections": {
-      "title": "Collections"
     }
   },
   "user": {
@@ -185,9 +191,7 @@
     "password": "Password",
     "email": "E-Mail",
     "menu": {
-      "title": "Account",
-      "bookmark": "Bookmarks",
-      "collections": "Collections"
+      "title": "Account"
     },
     "login": {
       "title": "Login",
@@ -196,6 +200,9 @@
         "min": "Min. 5 characters.",
         "max": "Max. 25 characters."
       }
+    },
+    "logout": {
+      "title": "Logout"
     },
     "register": {
       "title": "Register",

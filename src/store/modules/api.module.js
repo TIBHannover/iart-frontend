@@ -22,7 +22,6 @@ const api = {
     dateRange: [],
     fullText: [],
     filters: {},
-    bookmarks: false,
     counts: [],
     hits: undefined,
     settings: {
@@ -41,7 +40,7 @@ const api = {
     jobID: null,
   },
   actions: {
-    load({ commit, dispatch, state }) {
+    load({ commit, dispatch, state, rootState }) {
       const params = {
         query: state.query,
         random: state.random,
@@ -49,13 +48,13 @@ const api = {
         settings: state.settings,
         full_text: state.fullText,
         date_range: state.dateRange,
+        bookmarks: rootState.bookmark.toggle,
         aggregate: config.DEFAULT_AGGREGATION_FIELDS,
-        bookmarks: state.bookmarks,
       };
       if (!isEqual(params, state.prevParams)) {
         commit('updateParams', params);
         commit('loading/update', true, { root: true });
-        commit('user/addHistory', params, { root: true });
+        commit('bookmark/addHistory', params, { root: true });
         if (!state.backBtn) {
           dispatch('getState');
         } else {
@@ -448,20 +447,6 @@ const api = {
       if (keyInObj('date_range', params)) {
         state.dateRange = params.date_range;
       }
-    },
-    showBookmarks(state) {
-      state.random = null;
-      state.query = [];
-      state.dateRange = [];
-      state.fullText = [];
-      state.filters = {};
-      state.bookmarks = true;
-    },
-    addBookmarks(state) {
-      state.bookmarks = true;
-    },
-    removeBookmarks(state) {
-      state.bookmarks = false;
     },
   },
 };

@@ -1,6 +1,6 @@
 import axios from '../../plugins/axios';
 import config from '../../../app.config';
-import { keyInObj, getHash } from '../../plugins/helpers';
+import { keyInObj } from '../../plugins/helpers';
 
 function getCookie(name) {
   let cookieValue = null;
@@ -29,7 +29,6 @@ const user = {
       layout: false,
       cluster: false,
     },
-    history: [],
     userData: {},
     loggedIn: false,
     csrfToken: getCookie('csrftoken'),
@@ -37,8 +36,7 @@ const user = {
   actions: {
     getCSRFToken({ commit, state }, params) {
       axios.get(`${config.API_LOCATION}/get_csrf_token`, {
-          params,
-          withCredentials: true
+          params, withCredentials: true
         })
         .then((res) => {
           const csrftoken = getCookie('csrftoken');
@@ -46,8 +44,8 @@ const user = {
             commit('updateCSRFToken', csrftoken);
           }
         })
-        .catch(() => {
-          commit('updateUserData', { login: false });
+        .catch((error) => {
+          console.log(error);
         });
     },
     getUserData({ commit, state }, params) {
@@ -58,8 +56,8 @@ const user = {
             commit('updateLoggedIn', true);
           }
         })
-        .catch(() => {
-          commit('updateUserData', { login: false });
+        .catch((error) => {
+          console.log(error);
         });
     },
     login({ commit }, params) {
@@ -68,13 +66,12 @@ const user = {
         .then((res) => {
           if (res.data.status === 'ok') {
             commit('updateUserData', res.data.data);
-            commit('updateLoggedIn', true)
+            commit('updateLoggedIn', true);
           }
         })
         .catch((error) => {
           const info = { date: Date(), error, origin: 'login' };
           commit('error/update', info, { root: true });
-          commit('updateUserData', { login: false });
         })
         .finally(() => {
           commit('loading/update', false, { root: true });
@@ -87,7 +84,7 @@ const user = {
         .then((res) => {
           if (res.data.status === 'ok') {
             commit('updateUserData', {});
-            commit('updateLoggedIn', false)
+            commit('updateLoggedIn', false);
           }
         })
         .catch((error) => {
@@ -98,18 +95,16 @@ const user = {
           commit('loading/update', false, { root: true });
         });
     },
-    register({ commit }, params) {
+    register({ commit, dispatch }, params) {
       commit('loading/update', true, { root: true });
       axios.post(`${config.API_LOCATION}/register`, { params })
         .then((res) => {
           commit('updateUserData', res.data);
+          dispatch('login', params);
         })
         .catch((error) => {
           const info = { date: Date(), error, origin: 'register' };
           commit('error/update', info, { root: true });
-        })
-        .finally(() => {
-          commit('loading/update', false, { root: true });
         });
     },
   },
@@ -144,50 +139,6 @@ const user = {
       Object.keys(state.modal).forEach((modal) => {
         state.modal[modal] = value;
       });
-    },
-    addHistory(state, params) {
-      params = JSON.parse(JSON.stringify(params));
-      const validKeys = [
-        'query', 'random', 'filters',
-        'full_text', 'date_range',
-      ];
-      Object.keys(params).forEach((key) => {
-        if (!validKeys.includes(key)) {
-          delete params[key];
-        }
-      });
-      const hash = getHash(params);
-      const hashes = state.history.map((x) => x.hash);
-      const index = hashes.indexOf(hash);
-      if (index !== -1) {
-        params.bookmarks = state.history[index].bookmarks;
-        state.history.splice(index, 1);
-      } else {
-        params.bookmarks = [];
-      }
-      state.history.unshift({ date: Date(), ...params, hash });
-    },
-    removeHistory(state, params) {
-      const index = state.history.indexOf(params);
-      if (index !== -1) {
-        state.history.splice(index, 1);
-      }
-    },
-    removeAllHistory(state) {
-      state.history = [];
-    },
-    addBookmark(state, bookmark) {
-      const index = state.history[0].bookmarks.indexOf(bookmark);
-      if (index === -1) {
-        state.history[0].bookmarks.push(bookmark);
-      }
-    },
-    removeBookmark(state, bookmark) {
-      const index = state.history[0].bookmarks.indexOf(bookmark);
-      if (index !== -1) {
-        state.history[0].bookmarks.splice(index, 1);
-      }
-      console.log(state.history[0].bookmarks);
     },
   },
 };

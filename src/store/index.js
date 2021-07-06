@@ -12,7 +12,7 @@ export default new Vuex.Store({
         'api.settings',
         'user.data',
         'user.drawer',
-        'user.history',
+        'bookmark.history',
       ],
       getState(key, storage) {
         let value = storage.getItem(key);
@@ -22,7 +22,7 @@ export default new Vuex.Store({
           return undefined;
         }
         try {
-          const { history } = value.user;
+          const { history } = value.bookmark;
           const lastDate = new Date(history[0].date);
           const updateDate = new Date(2021, 6, 4);
           if (lastDate.valueOf() < updateDate.valueOf()) {
