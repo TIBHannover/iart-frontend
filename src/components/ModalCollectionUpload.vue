@@ -42,7 +42,7 @@
 
         <v-file-input
           v-model="collection.image"
-          accept=".png, .jpeg, .gif, .zip, .x-tar, .x-bzip2, .gzip, .x-xz, .x-gtar"
+          accept=".zip, .tar, .tar.gz, .tar.bz2, .tar.xz"
           :placeholder="$t('modal.collection.upload.imagefile.label')"
           prepend-icon="mdi-image-outline"
           :rules="[checkImageFile]"
@@ -100,7 +100,7 @@ export default {
       return true;
     },
     errorMessage() {
-      if (this.upload.status === "error") {
+      if (keyInObj('status', this.upload) && this.upload.status === "error") {
         const errorTypes = this.$t('modal.collection.upload.error');
         if (keyInObj(this.upload.error.type, errorTypes)) {
           if (this.upload.error.type === "unknown_fields") {
@@ -166,6 +166,8 @@ export default {
       if (status === 'ok') {
         this.dialog = false;
         this.collection = {};
+        const update = { modal: "list", value: true };
+        this.$store.commit("collection/updateModal", update);
       }
     },
   },

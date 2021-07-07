@@ -12,8 +12,8 @@
         large
       >
         <v-badge
-          :content="collections.length"
-          :value="collections.length > 0"
+          :content="data.length"
+          :value="data.length > 0"
           color="accent"
           inline
         >
@@ -85,14 +85,20 @@ export default {
     data() {
       return this.$store.state.collection.collections;
     },
+    toggleModal() {
+      return this.$store.state.collection.modal.list;
+    },
   },
-  methods: {},
   watch: {
     dialog(value) {
       if (value) {
+        this.$store.dispatch("collection/list");
         this.$emit("close");
       }
     },
+    toggleModal(value) {
+      this.dialog = value;
+    }
   },
 };
 </script>

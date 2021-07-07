@@ -8,6 +8,9 @@ const collection = {
       status: null,
       error: {},
     },
+    modal: {
+      list: false,
+    }
   },
   actions: {
     upload({ commit, state }, params) {
@@ -20,7 +23,7 @@ const collection = {
           headers: { 'Content-Type': 'multipart/form-data' },
           onUploadProgress: progressEvent => {
             console.log(progressEvent.loaded);
-            console.log(progressEvent.total)
+            console.log(progressEvent.total);
           }
         })
         .then((res) => {
@@ -34,7 +37,7 @@ const collection = {
           commit('loading/update', false, { root: true });
         });
     },
-    list({ commit, state }, params) {
+    list({ commit, state }) {
       axios.get(`${config.API_LOCATION}/collection_list`)
         .then((res) => {
           if (res.data.status === 'ok') {
@@ -43,6 +46,7 @@ const collection = {
         })
         .catch((error) => {
           const info = { date: Date(), error, origin: 'collection' };
+          commit('error/update', info, { root: true });
         });
     },
     delete({ commit, state }, params) {
@@ -54,6 +58,7 @@ const collection = {
         })
         .catch((error) => {
           const info = { date: Date(), error, origin: 'collection' };
+          commit('error/update', info, { root: true });
         });
     },
   },
@@ -62,7 +67,10 @@ const collection = {
       state.collections = collections;
     },
     updateUpload(state, upload) {
-      state.upload = { ...upload };
+      state.upload = upload;
+    },
+    updateModal(state, { modal, value }) {
+      state.modal[modal] = value;
     },
   },
 };
