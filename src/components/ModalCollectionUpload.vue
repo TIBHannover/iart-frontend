@@ -6,7 +6,6 @@
     <template v-slot:activator="{ on }">
       <v-btn
         v-on="on"
-        class="register"
         text
         block
         large
@@ -30,8 +29,6 @@
       </v-card-title>
 
       <v-card-text>
-        <!-- <div class="mb-4">{{ $t("modal.error.text") }}</div> -->
-
         <v-text-field
           v-model="collection.name"
           :placeholder="$t('modal.collection.upload.name')"

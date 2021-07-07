@@ -187,7 +187,13 @@
         }
       },
       "list": {
-        "title": "Show Collections"
+        "title": "Show Collections",
+        "table": {
+          "name": "Name",
+          "count": "Objects",
+          "date": "Date Created",
+          "actions": "Actions"
+        }
       }
     }
   },
@@ -237,11 +243,13 @@
     "cancel": "Cancel",
     "submit": "Submit",
     "remove": "Remove",
+    "delete": "Delete",
     "reload": "Reload",
     "accept": "Accept",
     "decline": "Decline",
     "search": "Search",
-    "upload": "Upload"
+    "upload": "Upload",
+    "show": "Show"
   },
   "field": {
     "required": "This is a required field.",

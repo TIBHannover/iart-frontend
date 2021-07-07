@@ -1,12 +1,11 @@
 <template>
   <v-dialog
     v-model="dialog"
-    max-width="900px"
+    max-width="750px"
   >
     <template v-slot:activator="{ on }">
       <v-btn
         v-on="on"
-        class="register"
         text
         block
         large
@@ -37,49 +36,92 @@
       </v-card-title>
 
       <v-card-text>
-        <v-card
-          v-for="collection in data"
-          :key="collection.id"
+        <v-data-table
+          :headers="headers"
+          :footer-props="footerProps"
+          :items="data"
+          multi-sort
         >
-          <v-card-title>{{ collection.name }}</v-card-title>
-          <v-card-text>
-            <p>{{ $t("modal.collections.count") }}: {{ collection.count }}</p>
-            <p>
-              {{ $t("modal.collections.time_added") }}:
-              {{ new Date(collection.date).toLocaleDateString() }}
-            </p>
-          </v-card-text>
-          <v-card-actions>
-            <v-btn
-              color="grey"
-              width="50%"
-              plain
-              @click="dialog = false"
+          <template v-slot:item.status="{ item }">
+            <v-progress-circular
+              v-if="item.status==='U'"
+              :title="item.progress + '%'"
+              indeterminate
+              color="primary"
+              width="1.25"
+              size="15"
+            ></v-progress-circular>
+            <v-icon
+              v-if="item.status==='R'"
+              style="font-size: 20px;"
             >
-              {{ $t("button.show") }}
-            </v-btn>
-            <v-btn
-              color="grey"
-              width="50%"
-              plain
-              @click="dialog = false"
+              mdi-check-circle-outline
+            </v-icon>
+            <v-icon
+              v-if="item.status==='E'"
+              style="font-size: 20px;"
+              color="accent"
             >
-              {{ $t("button.delete") }}
-            </v-btn>
-          </v-card-actions>
-        </v-card>
+              mdi-alert-circle-outline
+            </v-icon>
+          </template>
+          <template v-slot:item.date="{ item }">
+            {{ toDate(item.date) }}
+          </template>
+          <template v-slot:item.actions="{ item }">
+            <v-icon
+              @click="showCollection(item)"
+              :title="$t('button.show')"
+              class="mr-2"
+              small
+            >
+              mdi-eye-outline
+            </v-icon>
+            <v-icon
+              @click="deleteCollection(item)"
+              :title="$t('button.delete')"
+              small
+            >
+              mdi-trash-can-outline
+            </v-icon>
+          </template>
+        </v-data-table>
       </v-card-text>
     </v-card>
   </v-dialog>
 </template>
 
 <script>
-import { keyInObj } from "../plugins/helpers";
+import { keyInObj, isEqual } from "../plugins/helpers";
 export default {
   data() {
     return {
       dialog: false,
+      checkInterval: null,
+      headers: [
+        { text: "", value: "status", width: 10, sortable: false },
+        { text: this.$t('modal.collection.list.table.name'), value: "name" },
+        { text: this.$t('modal.collection.list.table.count'), value: "count",
+          align: "end", width: 100 },
+        { text: this.$t('modal.collection.list.table.date'), value: "date",
+          align: "end", width: 130 },
+        { text: this.$t('modal.collection.list.table.actions'), value: "actions", align: "end", width: 100, sortable: false },
+      ],
+      footerProps: {
+        "items-per-page-text": "",
+      },
     };
+  },
+  methods: {
+    toDate(item) {
+      return new Date(item).toLocaleDateString();
+    },
+    showCollection(item) {
+      // TODO
+    },
+    deleteCollection(item) {
+      this.$store.dispatch("collection/delete", item);
+    },
   },
   computed: {
     data() {
@@ -90,6 +132,14 @@ export default {
     },
   },
   watch: {
+    data() {
+      clearInterval(this.checkInterval);
+      if (this.dialog) {
+        this.checkInterval = setInterval(() => {
+          this.$store.dispatch("collection/list");
+        }, 5000);
+      }
+    },
     dialog(value) {
       if (value) {
         this.$store.dispatch("collection/list");
@@ -102,3 +152,8 @@ export default {
   },
 };
 </script>
+<style>
+.v-data-footer__select>div {
+  display: none;
+}
+</style>

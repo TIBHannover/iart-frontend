@@ -15,7 +15,17 @@
         class="ml-n2"
         :title="$t('user.menu.title')"
       >
-        <v-icon color="primary">mdi-account-circle</v-icon>
+        <v-badge
+          v-if="loggedIn"
+          color="accent"
+          dot
+        >
+          <v-icon color="primary">mdi-account-circle</v-icon>
+        </v-badge>
+        <v-icon
+          v-else
+          color="primary"
+        >mdi-account-circle</v-icon>
       </v-btn>
     </template>
 
@@ -62,6 +72,9 @@
             block
             large
           >
+            <v-icon class="mr-2">
+              mdi-logout-variant
+            </v-icon>
             {{ $t("user.logout.title") }}
           </v-btn>
         </v-list-item>

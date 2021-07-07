@@ -49,11 +49,11 @@ const collection = {
           commit('error/update', info, { root: true });
         });
     },
-    delete({ commit, state }, params) {
+    delete({ commit, state, dispatch }, params) {
       axios.post(`${config.API_LOCATION}/collection_delete`, { params })
         .then((res) => {
           if (res.data.status === 'ok') {
-            console.log('Done');
+            dispatch('list');
           }
         })
         .catch((error) => {
