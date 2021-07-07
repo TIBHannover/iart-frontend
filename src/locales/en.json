@@ -171,14 +171,19 @@
     },
     "collection": {
       "upload": {
-        "title": "New Collection",
+        "title": "Upload Collection",
         "name": "Collection Name",
         "imagefile": {
           "label": "Image Files"
         },
         "metafile": {
-          "label": "Metadata Files",
-          "unknown": "Some fields cannot be assigned ({field_names})"
+          "label": "Metadata Files"
+        },
+        "error": {
+          "default": "Unknown error.",
+          "file_too_large": "File is too large.",
+          "wrong_file_extension": "Wrong file extension.",
+          "unknown_fields": "Some fields cannot be assigned ({field_names})."
         }
       },
       "list": {

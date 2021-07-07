@@ -133,6 +133,7 @@ export default {
       }
       this.$store.dispatch("api/upload", query);
       this.dialog = false;
+      this.user = {};
     },
     checkFile() {
       const value = this.user.file;

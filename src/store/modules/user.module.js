@@ -1,6 +1,5 @@
 import axios from '../../plugins/axios';
 import config from '../../../app.config';
-import { keyInObj } from '../../plugins/helpers';
 
 function getCookie(name) {
   let cookieValue = null;

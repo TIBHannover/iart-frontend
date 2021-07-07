@@ -1,6 +1,6 @@
 import axios from '../../plugins/axios';
 import config from '../../../app.config';
-import { keyInObj, getHash } from '../../plugins/helpers';
+import { getHash } from '../../plugins/helpers';
 const bookmark = {
   namespaced: true,
   state: {

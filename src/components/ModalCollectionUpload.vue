@@ -1,7 +1,7 @@
 <template>
   <v-dialog
     v-model="dialog"
-    max-width="450px"
+    max-width="350px"
   >
     <template v-slot:activator="{ on }">
       <v-btn
@@ -42,7 +42,7 @@
 
         <v-file-input
           v-model="collection.image"
-          accept="image/png, image/jpeg, image/gif, application/zip,application/x-tar, application/x-bzip2, application/gzip, application/x-xz, application/x-gtar"
+          accept=".png, .jpeg, .gif, .zip, .x-tar, .x-bzip2, .gzip, .x-xz, .x-gtar"
           :placeholder="$t('modal.collection.upload.imagefile.label')"
           prepend-icon="mdi-image-outline"
           :rules="[checkImageFile]"
@@ -51,20 +51,20 @@
 
         <v-file-input
           v-model="collection.meta"
-          accept="text/csv, application/json, application/jsonl"
+          accept=".csv, .json, .jsonl"
           :placeholder="$t('modal.collection.upload.metafile.label')"
           prepend-icon="mdi-text-box-outline"
           :rules="[checkMetaFile]"
+          :error="errorMessage"
+          :error-messages="errorMessage"
           show-size
-          :error="metaErrorMessage"
-          :error-messages="metaErrorMessage"
         >
         </v-file-input>
       </v-card-text>
       <v-card-actions class="px-6 pb-6">
         <v-btn
           :disabled="disabled"
-          @click="upload"
+          @click="send"
           color="accent"
           block
           rounded
@@ -78,7 +78,7 @@
 </template>
 
 <script>
-import { keyInObj } from "../plugins/helpers";
+import { keyInObj, repPlace } from "../plugins/helpers";
 export default {
   data() {
     return {
@@ -99,28 +99,27 @@ export default {
       }
       return true;
     },
-    metaErrorMessage() {
-      const uploadError = this.$store.state.collection.uploadError;
-      if (!uploadError) {
-        return null;
+    errorMessage() {
+      if (this.upload.status === "error") {
+        const errorTypes = this.$t('modal.collection.upload.error');
+        if (keyInObj(this.upload.error.type, errorTypes)) {
+          if (this.upload.error.type === "unknown_fields") {
+            return this.$t("modal.collection.upload.metafile.unknown", {
+              field_names: this.upload.unknown_fields.join(", "),
+            });
+          }
+          return errorTypes[this.upload.error.type];
+        }
+        return this.$t('modal.collection.upload.error.default');
       }
-      if (!keyInObj("type", uploadError)) {
-        return null;
-      }
-      if (uploadError.type === "unknown_fields") {
-        console.log("Match");
-        return this.$t("modal.collection.upload.metafile.unknown", {
-          field_names: this.$store.state.collection.uploadError.unknown_fields
-            .join(", "),
-        });
-      }
-      return null;
+    },
+    upload() {
+      return this.$store.state.collection.upload;
     },
   },
   methods: {
-    upload() {
+    send() {
       this.$store.dispatch("collection/upload", this.collection);
-      this.dialog = false;
     },
     checkImageFile() {
       const value = this.collection.image;
@@ -139,7 +138,8 @@ export default {
         if (value.size < 20000000) {
           return true;
         }
-        return this.$t("modal.search.file.rule");
+        const text = this.$t("modal.search.file.rule");
+        return repPlace({ file_size: 200 }, text);
       }
       return this.$t("field.required");
     },
@@ -160,6 +160,12 @@ export default {
     dialog(value) {
       if (value) {
         this.$emit("close");
+      }
+    },
+    upload({ status }) {
+      if (status === 'ok') {
+        this.dialog = false;
+        this.collection = {};
       }
     },
   },
