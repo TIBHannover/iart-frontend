@@ -29,54 +29,28 @@
       </v-btn>
     </template>
 
-    <v-list class="pa-0">
+    <UserAccount v-if="loggedIn" />
+
+    <v-list v-if="loggedIn" class="pa-0">
       <v-list-item-group>
-        <v-list-item
-          v-if="loggedIn"
-          class="px-0"
-        >
+        <v-list-item class="px-0" >
           <ModalCollectionUpload @close="menu = false" />
         </v-list-item>
         <v-list-item
-          v-if="loggedIn&&collections.length"
+          v-if="collections.length"
           class="px-0"
         >
           <ModalCollectionList @close="menu = false" />
         </v-list-item>
       </v-list-item-group>
     </v-list>
-
-    <v-divider></v-divider>
-
-    <v-list class="pa-0">
+    <v-list v-else class="pa-0">
       <v-list-item-group>
-        <v-list-item
-          v-if="!loggedIn"
-          class="px-0"
-        >
+        <v-list-item class="px-0">
           <UserLogin @close="menu = false" />
         </v-list-item>
-        <v-list-item
-          v-if="!loggedIn"
-          class="px-0"
-        >
+        <v-list-item class="px-0">
           <UserRegister @close="menu = false" />
-        </v-list-item>
-        <v-list-item
-          v-if="loggedIn"
-          class="px-0"
-        >
-          <v-btn
-            @click="logout"
-            text
-            block
-            large
-          >
-            <v-icon class="mr-2">
-              mdi-logout-variant
-            </v-icon>
-            {{ $t("user.logout.title") }}
-          </v-btn>
         </v-list-item>
       </v-list-item-group>
     </v-list>
@@ -85,6 +59,7 @@
 
 <script>
 import UserLogin from "@/components/UserLogin.vue";
+import UserAccount from "@/components/UserAccount.vue";
 import UserRegister from "@/components/UserRegister.vue";
 import ModalCollectionList from "@/components/ModalCollectionList.vue";
 import ModalCollectionUpload from "@/components/ModalCollectionUpload.vue";
@@ -93,11 +68,6 @@ export default {
     return {
       menu: false,
     };
-  },
-  methods: {
-    logout() {
-      this.$store.dispatch("user/logout");
-    },
   },
   computed: {
     loggedIn() {
@@ -109,6 +79,7 @@ export default {
   },
   components: {
     UserLogin,
+    UserAccount,
     UserRegister,
     ModalCollectionList,
     ModalCollectionUpload,
@@ -124,9 +95,5 @@ export default {
 
 .v-btn:not(.v-btn--round).v-size--large {
   height: 48px;
-}
-
-.theme--light.v-divider {
-  border-color: #f5f5f5;
 }
 </style>

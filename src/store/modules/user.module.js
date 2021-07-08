@@ -61,24 +61,26 @@ const user = {
     },
     login({ commit }, params) {
       commit('loading/update', true, { root: true });
+      let info = { date: Date(), origin: 'login' };
       axios.post(`${config.API_LOCATION}/login`, { params })
         .then((res) => {
           if (res.data.status === 'ok') {
             commit('updateUserData', res.data.data);
             commit('updateLoggedIn', true);
+          } else {
+            commit('error/update', info, { root: true });
           }
         })
         .catch((error) => {
-          const info = { date: Date(), error, origin: 'login' };
-          commit('error/update', info, { root: true });
+          commit('error/update', { ...info, error }, { root: true });
         })
         .finally(() => {
           commit('loading/update', false, { root: true });
         });
     },
     logout({ commit, state }) {
-      commit('loading/update', true, { root: true });
       const params = state.userData;
+      commit('loading/update', true, { root: true });
       axios.post(`${config.API_LOCATION}/logout`, { params })
         .then((res) => {
           if (res.data.status === 'ok') {
@@ -94,16 +96,23 @@ const user = {
           commit('loading/update', false, { root: true });
         });
     },
-    register({ commit, dispatch }, params) {
+    register({ commit }, params) {
       commit('loading/update', true, { root: true });
+      let info = { date: Date(), origin: 'register' };
       axios.post(`${config.API_LOCATION}/register`, { params })
         .then((res) => {
-          commit('updateUserData', res.data);
-          dispatch('login', params);
+          if (res.data.status === 'ok') {
+            commit('updateUserData', res.data);
+            commit('updateLoggedIn', true);
+          } else {
+            commit('error/update', info, { root: true });
+          }
         })
         .catch((error) => {
-          const info = { date: Date(), error, origin: 'register' };
-          commit('error/update', info, { root: true });
+          commit('error/update', { ...info, error }, { root: true });
+        })
+        .finally(() => {
+          commit('loading/update', false, { root: true });
         });
     },
   },

@@ -202,7 +202,8 @@
     "password": "Password",
     "email": "E-Mail",
     "menu": {
-      "title": "Account"
+      "title": "Account",
+      "joined": "Joined {nDays} days ago"
     },
     "login": {
       "title": "Login",
