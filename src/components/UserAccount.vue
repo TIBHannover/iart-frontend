@@ -6,7 +6,12 @@
       </v-avatar>
 
       <h3 class="mt-5">{{ data.username }}</h3>
-      <p class="text-caption mt-2 mb-0">{{ data.email }}</p>
+      <p
+        class="text-caption clip mt-2 mb-0"
+        style="max-width: 170px;"
+      >
+        {{ data.email }}
+      </p>
       <p class="text-caption mb-0"><i>{{ joined }}</i></p>
     </div>
 
@@ -42,7 +47,7 @@ export default {
     },
     joined() {
      let text = this.$t("user.menu.joined");
-     return repPlace({ nDays: this.nDays }, text);
+     return repPlace({ n_days: this.nDays }, text);
     },
     initials() {
      return this.data.username.slice(0, 2);

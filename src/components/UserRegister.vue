@@ -20,7 +20,7 @@
           v-model="user.name"
           :placeholder="$t('user.name')"
           prepend-icon="mdi-account"
-          counter="25"
+          counter="50"
           :rules="[checkLength]"
           clearable
         ></v-text-field>
@@ -29,7 +29,7 @@
           v-model="user.email"
           :placeholder="$t('user.email')"
           prepend-icon="mdi-email"
-          counter="25"
+          counter="50"
           :rules="[checkLength]"
           clearable
         ></v-text-field>
@@ -43,7 +43,7 @@
           prepend-icon="mdi-lock"
           @click:append="showPassword = !showPassword"
           :type="showPassword ? 'text' : 'password'"
-          counter="25"
+          counter="50"
           :rules="[checkLength]"
           clearable
         ></v-text-field>
@@ -85,7 +85,7 @@ export default {
           return this.$t("user.register.rules.min");
         }
 
-        if (value.length > 25) {
+        if (value.length > 50) {
           return this.$t("user.register.rules.max");
         }
 
