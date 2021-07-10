@@ -169,10 +169,10 @@ export default {
       return this.$t("drawer.history.filter.empty");
     },
     removeItem(item) {
-      this.$store.commit("user/removeHistory", item);
+      this.$store.commit("bookmark/removeHistory", item);
     },
     removeAllItems() {
-      this.$store.commit("user/removeAllHistory");
+      this.$store.commit("bookmark/removeAllHistory");
     },
     submit(item, event) {
       if (event.target.nodeName !== "I") {

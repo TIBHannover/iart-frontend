@@ -1,7 +1,7 @@
 <template>
   <div class="cluster-view mb-n2">
     <div
-      v-for="(entries, index) in clusterEntries"
+      v-for="(entries, index) in convertedEntries"
       :key="entries"
       class="mt-2 mb-4"
     >
@@ -9,12 +9,13 @@
         {{ $t("field.cluster") }} {{ parseInt(index) + 1 }}
 
         <span class="v-label theme--light ml-1">
-          <span v-if="convertEntries[index].length===1">
-            · {{ convertEntries[index].length }} {{ $t("field.object") }}
-          </span>
+           · {{ entries.length }}
 
+          <span v-if="entries.length===1">
+            {{ $t("field.object") }}
+          </span>
           <span v-else>
-            · {{ convertEntries[index].length }} {{ $t("field.objects") }}
+            {{ $t("field.objects") }}
           </span>
         </span>
       </div>
@@ -23,21 +24,20 @@
         v-model="slide[index]"
         @click:next="next(index)"
         @click:prev="prev(index)"
-        value=0
         show-arrows
       >
         <v-slide-item
-          v-for="entry in entries"
+          v-for="entry in reducedEntries[index]"
           :key="entry.id"
         >
           <GridItem
             :entry="entry"
-            :entries="entries"
+            :entries="reducedEntries[index]"
           />
         </v-slide-item>
 
         <div
-          v-if="entries.length<4"
+          v-if="reducedEntries[index].length<4"
           class="grid-item-fill"
         ></div>
       </v-slide-group>
@@ -53,18 +53,29 @@ export default {
   data() {
     return {
       slide: {},
+      reducedEntries: {},
     };
   },
   methods: {
     next(index) {
-      Vue.set(this.slide, index, this.slide[index] + 5);
+      this.slide[index] += 5;
+      this.reduceEntries(index);
     },
     prev(index) {
-      Vue.set(this.slide, index, this.slide[index] - 5);
+      this.slide[index] -= 5;
+      this.reduceEntries(index);
+    },
+    reduceEntries(cluster) {
+      const nEntries = 25 + this.slide[cluster];
+      let values = this.convertedEntries[cluster];
+      if (values.length > nEntries) {
+        values = values.slice(0, nEntries);
+        this.reducedEntries[cluster] = values;
+      }
     },
   },
   computed: {
-    convertEntries() {
+    convertedEntries() {
       const entries = {};
       this.entries.forEach((entry) => {
         if (entries[entry.cluster] instanceof Array) {
@@ -75,18 +86,19 @@ export default {
       });
       return entries;
     },
-    clusterEntries() {
-      const entries = { ...this.convertEntries };
-      Object.keys(entries).forEach((cluster) => {
-        if (this.slide[cluster] === undefined) {
+  },
+  watch: {
+    convertedEntries: {
+      handler(entries) {
+        this.slide = {};
+        this.reducedEntries = {};
+        Object.keys(entries).forEach((cluster) => {
+          const values = entries[cluster].slice(0, 25);
           Vue.set(this.slide, cluster, 0);
-        }
-        const nEntries = 25 + this.slide[cluster];
-        if (entries[cluster].length > nEntries) {
-          entries[cluster] = entries[cluster].slice(0, nEntries);
-        }
-      });
-      return entries;
+          Vue.set(this.reducedEntries, cluster, values);
+        });
+      },
+      immediate: true,
     },
   },
   components: {

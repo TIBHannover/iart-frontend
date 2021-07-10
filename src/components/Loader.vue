@@ -1,6 +1,6 @@
 <template>
   <div
-    v-show="loading"
+    v-if="loading"
     class="loading"
   >
     <v-progress-circular
