@@ -151,6 +151,11 @@ const api = {
               commit('removeAllFilters');
             }
           }
+          else {
+            const info = { date: Date(), error, origin: 'upload' };
+            commit('error/update', info, { root: true });
+            commit('loading/update', false, { root: true });
+          }
         })
         .catch((error) => {
           const info = { date: Date(), error, origin: 'upload' };
