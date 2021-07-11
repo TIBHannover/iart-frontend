@@ -9,9 +9,7 @@ export function isEqual(x, y) {
 export function lsplit(x, sep, maxsplit) {
   x = x.split(sep);
   const result = x.splice(0, maxsplit);
-  if (x.length) {
-    result.push(x.join(sep));
-  }
+  if (x.length) result.push(x.join(sep));
   return result;
 };
 export function getHash(x) {
@@ -22,8 +20,19 @@ export function repPlace(x, y) {
   const string = y.replace(
     /{(\w+)}/g,
     (withDelimiters, withoutDelimiters) =>
-    x.hasOwnProperty(withoutDelimiters) ?
+    keyInObj(withoutDelimiters, x) ?
       x[withoutDelimiters] : withDelimiters
   );
   return string;
-}
+};
+export function isMobile() {
+  const devices = [
+    'Android', 'webOS', 'iPhone', 'iPod',
+    'BlackBerry', 'IEMobile', 'Opera Mini',
+  ];
+  const filter = new RegExp(devices.join('|'), 'i');
+  if (filter.test(navigator.userAgent)) {
+    return true;
+  }
+  return false;
+};

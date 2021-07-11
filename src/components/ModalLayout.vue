@@ -1,11 +1,25 @@
 <template>
   <v-menu
-    v-model="dialog" id="modal-layout" :close-on-content-click="false"
-    min-width="300" max-width="300" offset-y bottom right open-on-hover
+    v-model="dialog"
+    id="modal-layout"
+    :close-on-content-click="false"
+    min-width="300"
+    max-width="300"
+    offset-y
+    bottom
+    right
+    open-on-hover
   >
     <template v-slot:activator="{ on }">
-      <v-btn v-on="on" text block>
-        <v-icon color="grey darken-1" class="mr-2 ml-n1">
+      <v-btn
+        v-on="on"
+        text
+        block
+      >
+        <v-icon
+          color="grey darken-1"
+          class="mr-2 ml-n1"
+        >
           mdi-view-dashboard-outline
         </v-icon>
         <span style="font-size: 14px">
@@ -14,12 +28,23 @@
       </v-btn>
     </template>
 
-    <v-card id="layout" width="300">
+    <v-card
+      id="layout"
+      width="300"
+    >
       <v-card-text class="px-6 pt-4 pb-5">
         <v-select
-          v-model="view.default" :items="view.items" class="mb-0"
-          item-value="key" item-text="name" attach="#layout"
-          solo flat dense hide-details @change="update"
+          v-model="view.default"
+          :items="view.items"
+          class="mb-0"
+          item-value="key"
+          item-text="name"
+          attach="#layout"
+          solo
+          flat
+          dense
+          hide-details
+          @change="update"
         >
           <template v-slot:prepend>
             {{ $t("field.use") }}
@@ -27,14 +52,22 @@
 
           <template v-slot:append-outer>
             <v-btn
-              v-if="view.grid" class="ml-2" @click="changeViewGrid(false)"
-              :title="$t('modal.layout.view.grid.hide')" icon small
+              v-if="view.grid"
+              class="ml-2"
+              @click="changeViewGrid(false)"
+              :title="$t('modal.layout.view.grid.hide')"
+              icon
+              small
             >
               <v-icon>mdi-grid-off</v-icon>
             </v-btn>
             <v-btn
-              v-else class="ml-2" @click="changeViewGrid(true)" 
-              :title="$t('modal.layout.view.grid.show')" icon small
+              v-else
+              class="ml-2"
+              @click="changeViewGrid(true)"
+              :title="$t('modal.layout.view.grid.show')"
+              icon
+              small
             >
               <v-icon>mdi-grid</v-icon>
             </v-btn>
@@ -42,9 +75,17 @@
         </v-select>
 
         <v-select
-          v-model="sort.default" :items="sort.items" class="mb-2"
-          item-value="key" item-text="name" attach="#layout" 
-          solo flat dense hide-details @change="update"
+          v-model="sort.default"
+          :items="sort.items"
+          class="mb-2"
+          item-value="key"
+          item-text="name"
+          attach="#layout"
+          solo
+          flat
+          dense
+          hide-details
+          @change="update"
         >
           <template v-slot:prepend>
             {{ $t("modal.layout.sort.title") }}
@@ -52,14 +93,22 @@
 
           <template v-slot:append-outer>
             <v-btn
-              v-if="sort.order==='desc'" class="ml-2" @click="changeSortOrder('asc')"
-              :title="$t('modal.layout.sort.order.asc')" icon small
+              v-if="sort.order==='desc'"
+              class="ml-2"
+              @click="changeSortOrder('asc')"
+              :title="$t('modal.layout.sort.order.asc')"
+              icon
+              small
             >
               <v-icon>mdi-sort-ascending</v-icon>
             </v-btn>
             <v-btn
-              v-else class="ml-2" @click="changeSortOrder('desc')"
-              :title="$t('modal.layout.sort.order.desc')" icon small
+              v-else
+              class="ml-2"
+              @click="changeSortOrder('desc')"
+              :title="$t('modal.layout.sort.order.desc')"
+              icon
+              small
             >
               <v-icon>mdi-sort-descending</v-icon>
             </v-btn>
@@ -68,16 +117,26 @@
 
         <div :title="$t('modal.layout.itemSize')">
           <v-slider
-            v-model="itemSize" min="-7" max="7" color="secondary"
+            v-model="itemSize"
+            min="-7"
+            max="7"
+            color="secondary"
             :disabled="view.default==='umap' && view.grid"
-            prepend-icon="mdi-magnify-scan" hide-details
+            prepend-icon="mdi-magnify-scan"
+            hide-details
             @end="update"
           >
             <template v-slot:append>
               <v-text-field
-                v-model="itemSize" type="number" class="mt-0 pt-0"
-                background-color="grey lighten-4" style="width: 80px"
-                hide-details single-line rounded flat
+                v-model="itemSize"
+                type="number"
+                class="mt-0 pt-0"
+                background-color="grey lighten-4"
+                style="width: 80px"
+                hide-details
+                single-line
+                rounded
+                flat
               ></v-text-field>
             </template>
           </v-slider>
@@ -88,8 +147,7 @@
 </template>
 
 <script>
-import { keyInObj, isEqual } from "@/plugins/helpers";
-
+import { keyInObj, isEqual, isMobile } from "@/plugins/helpers";
 export default {
   data() {
     return {
@@ -99,15 +157,16 @@ export default {
         default: "flexible",
         grid: false,
         items: [
-          { key: "flexible", name: this.$t("modal.layout.view.type.flexible") },
-          { key: "umap", name: this.$t("modal.layout.view.type.umap") },
+          { key: "flexible", name: this.$t("modal.layout.view.type.flexible"), disabled: false },
+          { key: "umap", name: this.$t("modal.layout.view.type.umap"), disabled: false },
         ],
       },
       sort: {
         default: "relevance",
         order: "asc",
         items: [
-          { key: "relevance", name: this.$t("modal.layout.sort.type.relevance") },
+          { key: "relevance", name: this.$t(
+              "modal.layout.sort.type.relevance") },
           { key: "title", name: this.$t("modal.layout.sort.type.title") },
           { key: "date", name: this.$t("modal.layout.sort.type.date") },
         ],
@@ -124,7 +183,6 @@ export default {
         viewGrid: this.view.grid,
         viewType: this.view.default,
       }
-
       this.$emit("update", values);
     },
     change() {
@@ -132,19 +190,15 @@ export default {
         if (keyInObj("itemSize", this.values)) {
           this.itemSize = this.values.itemSize;
         }
-
         if (keyInObj("viewGrid", this.values)) {
           this.view.grid = this.values.viewGrid;
         }
-
         if (keyInObj("viewType", this.values)) {
           this.view.default = this.values.viewType;
         }
-
         if (keyInObj("sortOrder", this.values)) {
           this.sort.order = this.values.sortOrder;
         }
-
         if (keyInObj("sortType", this.values)) {
           this.sort.default = this.values.sortType;
         }
@@ -155,7 +209,6 @@ export default {
         this.view.grid = false;
         this.view.default = "flexible";
       }
-
       this.update();
     },
     changeViewGrid(value) {
@@ -187,6 +240,11 @@ export default {
   },
   created() {
     this.change();
+    this.view.items.forEach((item, index) => {
+      if (item.key === "umap" && isMobile()) {
+        this.view.items[index].disabled = true;
+      }
+    });
   },
 };
 </script>
