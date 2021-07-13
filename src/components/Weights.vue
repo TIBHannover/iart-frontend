@@ -1,39 +1,72 @@
 <template>
-  <v-card :id="id" class="weights" width="300">
+  <v-card
+    :id="id"
+    class="weights"
+    width="300"
+  >
     <v-card-text class="mb-n4">
       <v-switch
-        v-if="local" v-model="selectWeights" class="mt-0 mx-2"
-        :label="$t('modal.weights.toggle')" color="secondary"
-        inset hide-details
+        v-if="local"
+        v-model="selectWeights"
+        class="mt-0 mx-2"
+        :label="$t('modal.weights.toggle')"
+        color="secondary"
+        inset
+        hide-details
       ></v-switch>
 
-      <div v-if="selectWeights" :class="local ? 'mt-6' : ''">
+      <div
+        v-if="selectWeights"
+        :class="local ? 'mt-6' : ''"
+      >
         <div
-          v-for="(values, key, index) in weights" :key="index"
-          :title="weights[key].name" class="weight mb-4"
+          v-for="(values, key, index) in weights"
+          :key="index"
+          :title="weights[key].name"
+          class="weight mb-4"
         >
           <v-slider
-            v-model="weights[key].value" min="0.0" max="1.0" step="0.01" 
-            color="secondary" :prepend-icon="weights[key].icon"
-            @end="check(key)" hide-details
+            v-model="weights[key].value"
+            min="0.0"
+            max="1.0"
+            step="0.01"
+            color="secondary"
+            :prepend-icon="weights[key].icon"
+            @end="check(key)"
+            hide-details
           >
             <template v-slot:append>
               <v-text-field
-                v-model="weights[key].value" type="number" class="mt-0 pt-0"
-                background-color="grey lighten-4" style="width: 80px"
-                @change="check(key)" hide-details single-line rounded flat
+                v-model="weights[key].value"
+                type="number"
+                class="mt-0 pt-0"
+                background-color="grey lighten-4"
+                style="width: 80px"
+                @change="check(key)"
+                hide-details
+                single-line
+                rounded
+                flat
               ></v-text-field>
 
               <v-btn
-                v-if="weights[key].advanced" @click="weights[key].advanced = false"
-                :title="$t('modal.weights.advanced.hide')" class="ml-2" icon small
+                v-if="weights[key].advanced"
+                @click="weights[key].advanced = false"
+                :title="$t('modal.weights.advanced.hide')"
+                class="ml-2"
+                icon
+                small
               >
                 <v-icon>mdi-cog-off-outline</v-icon>
               </v-btn>
               <v-btn
-                v-else :title="$t('modal.weights.advanced.show')"
-                @click="weights[key].advanced = true" class="ml-2" 
-                :disabled="weights[key].items.length < 2" icon small
+                v-else
+                :title="$t('modal.weights.advanced.show')"
+                @click="weights[key].advanced = true"
+                class="ml-2"
+                :disabled="weights[key].items.length < 2"
+                icon
+                small
               >
                 <v-icon>mdi-cog-outline</v-icon>
               </v-btn>
@@ -42,9 +75,17 @@
 
           <v-select
             v-if="weights[key].items.length > 1 && weights[key].advanced"
-            v-model="weights[key].default" :items="weights[key].items"
-            item-value="key" item-text="name" style="font-size: 14px" 
-            class="ml-10" :attach="'#' + id" solo hide-details flat dense
+            v-model="weights[key].default"
+            :items="weights[key].items"
+            item-value="key"
+            item-text="name"
+            style="font-size: 14px"
+            class="ml-10"
+            :attach="'#' + id"
+            solo
+            hide-details
+            flat
+            dense
           >
             <template v-slot:prepend>
               <span>{{ $t("field.use") }}</span>
@@ -54,12 +95,14 @@
       </div>
     </v-card-text>
 
-    <v-card-actions
-      :class="local && !selectWeights ? 'pb-3' : 'px-6 pb-6 pt-n2'"
-    >
+    <v-card-actions :class="local && !selectWeights ? 'pb-3' : 'px-6 pb-6 pt-n2'">
       <v-btn
-        v-if="selectWeights" @click="update" color="accent" block
-        rounded depressed
+        v-if="selectWeights"
+        @click="update"
+        color="accent"
+        block
+        rounded
+        depressed
       >
         {{ $t("button.update") }}
       </v-btn>
@@ -69,7 +112,6 @@
 
 <script>
 import { isEqual } from "@/plugins/helpers";
-
 export default {
   data() {
     return {
@@ -107,14 +149,12 @@ export default {
       const total = Object.values(this.weights).reduce(
         (t, weight) => t + weight.value, 0
       );
-
       if (total === 0) {
         this.weights[key].value = 0.5;
       }
     },
     update() {
       const weights = {};
-
       if (this.selectWeights) {
         Object.values(this.weights).forEach((weight) => {
           weight.items.forEach((item) => {
@@ -124,34 +164,30 @@ export default {
           });
         });
       }
-
-      this.$emit("update", weights);
-      this.$emit("close");
+      if (Object.keys(weights).length) {
+        this.$emit("update", weights);
+        this.$emit("close");
+      }
     },
     change() {
       if (this.default && Object.keys(this.default).length) {
         Object.keys(this.weights).forEach((group) => {
           const keys = this.weights[group].items.map((x) => x.key);
-
           Object.keys(this.default).every((key) => {
             if (this.default[key] > 0 && keys.includes(key)) {
               this.weights[group].default = key;
               this.weights[group].value = this.default[key];
-
               return false;
             }
-
             return true;
           });
         });
       } else {
         this.weights.color.default = "yuv_histogram_feature";
         this.weights.color.value = 0.0;
-
         this.weights.content.default = "clip_embedding_feature";
         this.weights.content.value = 1.0;
       }
-
       this.update();
     },
   },
@@ -174,7 +210,6 @@ export default {
   },
   created() {
     this.change();
-
     if (!this.local) {
       this.selectWeights = true;
     }
@@ -183,7 +218,7 @@ export default {
 </script>
 
 <style>
-.weight .row > label {
+.weight .row>label {
   align-items: center;
 }
 

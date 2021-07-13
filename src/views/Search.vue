@@ -46,7 +46,7 @@
 </template>
 
 <script>
-import { keyInObj } from "@/plugins/helpers";
+import { keyInObj, isEqual } from "@/plugins/helpers";
 import Main from "@/components/Main.vue";
 import History from "@/components/History.vue";
 import UserMenu from "@/components/UserMenu.vue";
@@ -129,12 +129,24 @@ export default {
         if (keyInObj("viewType", newValues.layout)) {
           if (
             newValues.layout.viewType === "umap" &&
-            (oldValues.layout.viewType !== "umap" ||
-              newValues.layout.viewGrid !== oldValues.layout.viewGrid)
+            (
+              oldValues.layout.viewType !== "umap" ||
+              newValues.layout.viewGrid !== oldValues.layout.viewGrid
+            )
           ) {
             this.load();
             return;
           }
+        }
+        if (
+          !isEqual(newValues.weights, oldValues.weights) &&
+          (
+            !isEqual(newValues.weights, { clip_embedding_feature: 1 }) ||
+            !isEqual(oldValues.weights, {})
+          )
+        ) {
+          this.load();
+          return;
         }
       },
       deep: true,

@@ -102,9 +102,9 @@ export default {
         { text: "", value: "status", width: 10, sortable: false },
         { text: this.$t('modal.collection.list.table.name'), value: "name" },
         { text: this.$t('modal.collection.list.table.count'), value: "count",
-          align: "end", width: 100 },
+          align: "end", width: 150 },
         { text: this.$t('modal.collection.list.table.date'), value: "date",
-          align: "end", width: 130 },
+          align: "end", width: 150 },
         { text: this.$t('modal.collection.list.table.actions'), value: "actions", align: "end", width: 100, sortable: false },
       ],
       footerProps: {
