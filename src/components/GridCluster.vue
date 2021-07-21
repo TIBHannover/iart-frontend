@@ -1,14 +1,14 @@
 <template>
-  <div class="cluster-view mb-n2">
+  <div class="cluster-view mb-n6">
     <div
       v-for="(entries, index) in convertedEntries"
       :key="entries"
-      class="mt-2 mb-4"
+      class="mt-4 mb-6"
     >
-      <div class="text-h6 mx-3 mb-2">
+      <div class="text-h6 mx-3 mb-4">
         {{ $t("field.cluster") }} {{ parseInt(index) + 1 }}
 
-        <span class="v-label theme--light ml-1">
+        <span class="v-label theme--light ml-1 mr-4">
            · {{ entries.length }}
 
           <span v-if="entries.length===1">
@@ -18,6 +18,25 @@
             {{ $t("field.objects") }}
           </span>
         </span>
+
+        <v-chip
+          v-for="(tag, index) in clusterTags[index]"
+          :key="index"
+          class="ml-1"
+          outlined
+        >
+          <span
+            class="tag clip"
+            :title="tag.name"
+          >{{ tag.name }}</span>
+          <v-icon
+            class="ml-1"
+            size="18"
+            :title="$t('plugin')[tag.plugin]"
+          >
+            {{ pluginIcons[tag.plugin] }}
+          </v-icon>
+        </v-chip>
       </div>
 
       <v-slide-group
@@ -47,13 +66,17 @@
 
 <script>
 import Vue from 'vue';
+import { EXCLUDE_ANNOTATION_NAMES, PLUGIN_ICONS } from '../../app.config';
+import { keyInObj } from "@/plugins/helpers";
 import GridItem from "@/components/GridItem.vue";
 export default {
   props: ["entries"],
   data() {
     return {
       slide: {},
+      clusterTags: {},
       reducedEntries: {},
+      pluginIcons: PLUGIN_ICONS,
     };
   },
   methods: {
@@ -91,10 +114,40 @@ export default {
     convertedEntries: {
       handler(entries) {
         this.slide = {};
+        this.clusterTags = {};
         this.reducedEntries = {};
         Object.keys(entries).forEach((cluster) => {
+          let tags = [];
+          const pluginTags = {};
           const values = entries[cluster].slice(0, 25);
+          values.forEach(({ classifier }) => {
+            classifier.forEach(({ plugin, annotations }) => {
+              if (!keyInObj(plugin, pluginTags)) {
+                pluginTags[plugin] = {};
+              }
+              annotations.forEach(({ name, value }) => {
+                if (!EXCLUDE_ANNOTATION_NAMES.includes(name) && value >= 0.1) {
+                  if (keyInObj(name, pluginTags[plugin])) {
+                    pluginTags[plugin][name] += 1;
+                  } else {
+                    pluginTags[plugin][name] = 1;
+                  }
+                }
+              });
+            });
+          });
+          Object.keys(pluginTags).forEach((plugin) => {
+            Object.keys(pluginTags[plugin]).forEach((name) => {
+              const count = pluginTags[plugin][name];
+              if (count > 9) {
+                tags.push({ plugin, name, count });
+              }
+            });
+          });
+          tags.sort((a, b) => b.count - a.count);
+          tags = tags.slice(0, 4);
           Vue.set(this.slide, cluster, 0);
+          Vue.set(this.clusterTags, cluster, tags);
           Vue.set(this.reducedEntries, cluster, values);
         });
       },
@@ -133,5 +186,11 @@ export default {
 .cluster-view .v-slide-group__next--disabled>.theme--light.v-icon.v-icon.v-icon--disabled,
 .cluster-view .v-slide-group__prev--disabled>.theme--light.v-icon.v-icon.v-icon--disabled {
   color: rgba(69, 123, 157, .2) !important;
+}
+
+.cluster-view span.clip {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 155px;
 }
 </style>

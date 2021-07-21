@@ -7,6 +7,7 @@ import App from './App.vue';
 import store from './store';
 import router from './router';
 import 'intro.js/introjs.css';
+import './styles/custom.css';
 import './styles/introjs.css';
 Vue.use(VueIntro);
 Vue.use(AsyncComputed);

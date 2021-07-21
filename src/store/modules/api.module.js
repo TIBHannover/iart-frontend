@@ -18,6 +18,7 @@ const api = {
   namespaced: true,
   state: {
     random: null,
+    lang: "en",
     query: [],
     dateRange: [],
     fullText: [],
@@ -42,6 +43,7 @@ const api = {
   actions: {
     load({ commit, dispatch, state, rootState }) {
       const params = {
+        lang: state.lang,
         query: state.query,
         random: state.random,
         filters: state.filters,
@@ -188,6 +190,7 @@ const api = {
     async setState({ commit, dispatch }, params) {
       const queries = [];
       const filters = {};
+      let lang = 'en';
       let fullText = [];
       let random = null;
       let dateRange = [];
@@ -199,6 +202,11 @@ const api = {
             const values = params[field];
             try {
               switch (field) {
+                case 'lang':
+                  if (['en', 'EN'].includes(values)) {
+                    lang = values.toLowerCase();
+                  }
+                  break;
                 case 'query':
                   maxCount += values.split(',').length - 1;
                   values.split(',').forEach(async (value) => {
@@ -280,6 +288,7 @@ const api = {
           resolve();
         }
       });
+      commit('updateLang', lang);
       commit('updateQuery', queries);
       commit('updateRandom', random);
       commit('updateFilters', filters);
@@ -292,6 +301,9 @@ const api = {
     },
     getState({ state }) {
       const params = new URLSearchParams();
+      if (state.lang) {
+        params.append('lang', state.lang);
+      }
       if (state.query.length) {
         const query = state.query.map((v) => {
           let prefix = '+';
@@ -393,6 +405,9 @@ const api = {
       if (!isEqual(state.query, query)) {
         state.query = query;
       }
+    },
+    updateLang(state, lang) {
+      state.lang = lang;
     },
     addFilter(state, { field, filter }) {
       if (keyInObj(field, state.filters)) {

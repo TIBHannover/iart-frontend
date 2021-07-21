@@ -1,11 +1,14 @@
 <template>
   <div id="network">
-    <ModalItem 
-      v-model="itemDialog" v-if="entries.length"
-      :entry="entries[0]" :entries="data"
+    <ModalItem
+      v-model="itemDialog"
+      v-if="entries.length"
+      :entry="entries[0]"
+      :entries="data"
     />
     <ModalGrid
-      v-model="gridDialog" v-if="entries.length"
+      v-model="gridDialog"
+      v-if="entries.length"
       :entries="entries"
     />
 
@@ -16,17 +19,14 @@
 <script>
 import { DataSet } from "vis-data/peer";
 import { Network } from "vis-network/peer";
-
 import ModalItem from "@/components/ModalItem.vue";
 import ModalGrid from "@/components/ModalGrid.vue";
-
 const Colors = [
   "#F44336", "#2196F3", "#8BC34A", "#FF5722", "#E91E63",
   "#03A9F4", "#CDDC39", "#795548", "#9C27B0", "#00BCD4",
   "#FFEB3B", "#607D8B", "#673AB7", "#009688", "#FFC107",
   "#9E9E9E", "#3F51B5", "#4CAF50", "#FF9800", "#000000",
 ];
-
 export default {
   props: ["data"],
   data() {
@@ -68,67 +68,51 @@ export default {
   methods: {
     init() {
       this.container = document.querySelector("#network .canvas");
-      this.container.oncontextmenu = function () { return false; };
-
+      this.container.oncontextmenu = function() { return false; };
       this.container.addEventListener("mousemove", this.onMouseMove);
       this.container.addEventListener("mousedown", this.onMouseDown);
       this.container.addEventListener("mouseup", this.onMouseUp);
-
       this.network = new Network(this.container);
       this.network.setOptions(this.options);
-
       this.canvas = this.network.canvas.frame.canvas;
       this.ctx = this.canvas.getContext("2d");
-
-      this.network.on("hoverNode", function () {
+      this.network.on("hoverNode", function() {
         this.canvas.body.container.style.cursor = "pointer";
       });
-
-      this.network.on("blurNode", function () {
+      this.network.on("blurNode", function() {
         this.canvas.body.container.style.cursor = "default";
       });
-
       this.network.on("afterDrawing", () => {
         if (this.state.drag) {
           const start = this.toCanvas(this.rect.startX, this.rect.startY);
           const end = this.toCanvas(this.rect.endX, this.rect.endY);
-
           const w = end.x - start.x;
           const h = end.y - start.y;
-
           this.ctx.setLineDash([]);
           this.ctx.fillStyle = "rgba(29, 53, 87, 0.25)";
           this.ctx.fillRect(start.x, start.y, w, h);
         }
       });
-
       this.network.on("click", this.onClick);
       this.network.on("doubleClick", this.onDoubleClick);
-
       window.addEventListener("resize", this.onResize);
-
       const rObs = new ResizeObserver(this.drawNodes);
       rObs.observe(this.container);
     },
     getSize() {
       const network = document.querySelector("#network");
-
       if (network) {
         const { bottom } = network.getBoundingClientRect();
         let { clientWidth, clientHeight } = network;
-
         if (bottom >= window.innerHeight) {
           clientHeight -= (bottom - window.innerHeight + 6);
         }
-
         return [clientWidth, clientHeight - 1];
       }
-
       return [0, 0];
     },
     onClick({ nodes }) {
       const t0 = new Date();
-
       if (t0 - this.clickTime > 250) {
         setTimeout(() => {
           if (t0 - this.clickTime > 250) {
@@ -136,7 +120,6 @@ export default {
               const item = this.nodes.find(
                 ({ id }) => nodes.includes(id)
               );
-
               this.entries = [item.entry];
               this.itemDialog = true;
             }
@@ -146,7 +129,6 @@ export default {
     },
     onDoubleClick({ nodes }) {
       this.clickTime = new Date();
-
       if (nodes && nodes.length === 1) {
         this.network.focus(nodes[0], this.focusOptions);
       }
@@ -161,14 +143,12 @@ export default {
     onMouseDown({ button, pageX, pageY }) {
       if (this.network && button === 2) {
         const offset = this.container.getBoundingClientRect();
-
         this.rect = {
           startX: pageX - offset.left,
           startY: pageY - offset.top,
           endX: pageX - offset.left,
           endY: pageY - offset.top,
         };
-
         this.container.style.cursor = "crosshair";
         this.state.drag = true;
       }
@@ -184,7 +164,6 @@ export default {
     onMouseMove({ pageX, pageY }) {
       if (this.network && this.state.drag) {
         const offset = this.container.getBoundingClientRect();
-
         this.rect.endX = pageX - offset.left;
         this.rect.endY = pageY - offset.top;
         this.network.redraw();
@@ -193,26 +172,21 @@ export default {
     drawNodes() {
       const minSize = Math.min(...this.getSize());
       let [boxSize, { grid }] = [0, this.state];
-
       if (grid) {
         const x = this.data.map(
           ({ coordinates }) => coordinates[0]
         );
         const nX = [...new Set(x)].length;
-
         const y = this.data.map(
           ({ coordinates }) => coordinates[1]
         );
         const nY = [...new Set(y)].length;
-
         boxSize = minSize / Math.max(nX, nY);
       } else {
         let { settings } = this.$store.state.api;
         if (!settings) settings.layout = { itemSize: 0 };
-
         boxSize = (settings.layout.itemSize + 8) * 2;
       }
-
       this.nodes = this.data.map((entry) => {
         return {
           id: entry.id,
@@ -225,15 +199,12 @@ export default {
           ctxRenderer: ({ ctx, x, y }) => {
             const img = new Image();
             img.src = entry.preview;
-
             let minImgSize = img.width;
             let maxImgSize = img.height;
-
             if (img.width > img.height) {
               minImgSize = img.height;
               maxImgSize = img.width;
             }
-
             return {
               drawNode() {
                 if (grid) {
@@ -248,11 +219,9 @@ export default {
                     boxSize,
                     boxSize,
                   );
-
                   if (entry.cluster > 0 || entry.distance > 0) {
                     ctx.fillStyle = Colors[entry.cluster];
                     ctx.beginPath();
-
                     ctx.arc(
                       x + boxSize / 2 - boxSize / 5,
                       y - boxSize / 2 + boxSize / 5,
@@ -260,13 +229,11 @@ export default {
                       0,
                       2 * Math.PI,
                     );
-
                     ctx.fill();
                   }
                 } else {
                   const width = img.width / maxImgSize;
                   const height = img.height / maxImgSize;
-
                   ctx.drawImage(
                     img,
                     x - (width * boxSize) / 2,
@@ -274,11 +241,9 @@ export default {
                     width * boxSize,
                     height * boxSize,
                   );
-
                   if (entry.cluster > 0 || entry.distance > 0) {
                     ctx.fillStyle = Colors[entry.cluster];
                     ctx.beginPath();
-
                     ctx.arc(
                       x + (width * boxSize) / 2 - boxSize / 5,
                       y - (height * boxSize) / 2 + boxSize / 5,
@@ -286,7 +251,6 @@ export default {
                       0,
                       2 * Math.PI,
                     );
-
                     ctx.fill();
                   }
                 }
@@ -299,27 +263,22 @@ export default {
           },
         };
       });
-
       this.network.setData({ nodes: this.nodes });
       this.onResize();
     },
     selectNodes() {
       const start = this.toCanvas(this.rect.startX, this.rect.startY);
       const end = this.toCanvas(this.rect.endX, this.rect.endY);
-
-      const [ startX, endX ] = this.correctRange(start.x, end.x);
-      const [ startY, endY ] = this.correctRange(start.y, end.y);
-
+      const [startX, endX] = this.correctRange(start.x, end.x);
+      const [startY, endY] = this.correctRange(start.y, end.y);
       const selected = this.nodes.filter(({ x, y }) => {
         return x >= startX && x <= endX && y >= startY && y <= endY;
       });
-
       this.entries = selected.map(({ entry }) => { return entry });
       this.gridDialog = true;
     },
     toCanvas(domX, domY) {
       const values = { x: domX, y: domY };
-
       return this.network.DOMtoCanvas(values);
     },
     correctRange(x, y) {
@@ -331,8 +290,8 @@ export default {
       this.drawNodes();
     },
     settings: {
-      handler(values) {
-        this.state.grid = values.layout.viewGrid;
+      handler({ layout }) {
+        this.state.grid = layout.viewGrid;
         this.drawNodes();
       },
       deep: true,
@@ -345,7 +304,6 @@ export default {
   },
   created() {
     const { settings } = this.$store.state.api;
-
     if (Object.keys(settings).length) {
       this.state.grid = settings.layout.viewGrid;
     }
@@ -377,15 +335,15 @@ export default {
 .vis-network .vis-navigation {
   position: absolute;
   bottom: 10px;
-  right: 10px;
+  left: 10px;
 }
 
-.vis-network .vis-navigation .vis-button.vis-up, 
-.vis-network .vis-navigation .vis-button.vis-down, 
-.vis-network .vis-navigation .vis-button.vis-left, 
-.vis-network .vis-navigation .vis-button.vis-right, 
-.vis-network .vis-navigation .vis-button.vis-zoomIn, 
-.vis-network .vis-navigation .vis-button.vis-zoomOut, 
+.vis-network .vis-navigation .vis-button.vis-up,
+.vis-network .vis-navigation .vis-button.vis-down,
+.vis-network .vis-navigation .vis-button.vis-left,
+.vis-network .vis-navigation .vis-button.vis-right,
+.vis-network .vis-navigation .vis-button.vis-zoomIn,
+.vis-network .vis-navigation .vis-button.vis-zoomOut,
 .vis-network .vis-navigation .vis-button.vis-zoomExtends {
   background-image: none !important;
 }

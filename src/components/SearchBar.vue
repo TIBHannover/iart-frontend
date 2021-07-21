@@ -4,9 +4,10 @@
       v-model="query"
       class="mx-1 sbar"
       @click:clear="remove(-1)"
+      @keyup.enter="submit($event, random=false)"
+      :items="queryExamples"
       :placeholder="$t('home.search.placeholder')"
       allow-overflow
-      @keyup.enter="submit($event, random=false)"
       rounded
       solo
       hide-details
@@ -34,7 +35,72 @@
       </template>
 
       <template v-slot:append>
+        <v-select
+          v-model="lang"
+          :items="langItems"
+          :title="$t('home.search.lang')"
+          @change="updateLang"
+          class="lang"
+          single-line
+          hide-details
+          solo
+          flat
+        ></v-select>
         <ModalSearch @search="submit" />
+      </template>
+
+      <template v-slot:item="{ attrs, item }">
+        <v-chip
+          v-for="entry in item.entries"
+          :key="entry"
+          v-bind="attrs"
+          class="mr-2"
+        >
+          <v-btn
+            v-if="entry.positive"
+            class="ml-n2"
+            icon
+            small
+          >
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
+          <v-btn
+            v-else
+            class="ml-n2"
+            icon
+            small
+          >
+            <v-icon>mdi-minus</v-icon>
+          </v-btn>
+
+          <v-icon
+            v-if="entry.type==='idx'"
+            class="mr-1"
+            style="font-size: 18px"
+          >
+            mdi-file-image-outline
+          </v-icon>
+          <v-icon
+            v-else
+            class="mr-1"
+            style="font-size: 18px"
+          >
+            mdi-file-document-outline
+          </v-icon>
+
+          <span
+            v-if="entry.type==='idx'"
+            :title="entry.label"
+          >
+            {{ entry.label }}
+          </span>
+          <span
+            v-else
+            :title="entry.value"
+          >
+            {{ entry.value }}
+          </span>
+        </v-chip>
       </template>
 
       <template v-slot:selection="{ attrs, selected, item, index }">
@@ -132,7 +198,38 @@ import ModalSearch from "@/components/ModalSearch.vue";
 export default {
   data() {
     return {
+      lang: this.$store.state.api.lang.toUpperCase(),
+      langItems: ["EN"],
       weightDialog: {},
+      queryExamples: [
+        { header: this.$t('home.search.examples'), },
+        {
+          example: true,
+          entries: [
+            { type: "idx", positive: true, value: "3A3fa6b53c7e163ebd9663a01ab3efd24a", label: "Salvator Mundi" }
+          ],
+        },
+        {
+          example: true,
+          entries: [
+            { type: "txt", positive: true, value: "adam and eve" },
+            { type: "txt", positive: false, value: "hercules" },
+          ]
+        },
+        {
+          example: true,
+          entries: [
+            { type: "txt", positive: true, value: "too much alcohol" },
+          ]
+        },
+        {
+          example: true,
+          entries: [
+            { type: "txt", positive: true, value: "ceiling painting" },
+            { type: "txt", positive: true, value: "cabinet" },
+          ]
+        },
+      ],
       query: this.$store.state.api.query,
     };
   },
@@ -152,6 +249,9 @@ export default {
       const value = this.query[index].positive;
       this.query[index].positive = !value;
     },
+    updateLang(value) {
+      this.$store.commit("api/updateLang", value.toLowerCase());
+    },
     updateWeights(index, value) {
       if (!isEqual(value, this.query[index].weights)) {
         this.query[index].weights = value;
@@ -167,18 +267,26 @@ export default {
     query: {
       handler(newValues, oldValues) {
         if (!isEqual(newValues, oldValues)) {
-          this.query = newValues.map((value) => {
+          let query = [];
+          newValues.every((value) => {
             if (typeof value === "string") {
               let positive = true;
               if (value.charAt(0) === "-") {
                 value = value.slice(1);
                 positive = false;
               }
-              value = { type: "txt", positive, value };
+              query.push({ type: "txt", positive, value });
+            } else if (typeof value === "object") {
+              if (value.example) {
+                query = value.entries;
+                return false;
+              } else {
+                query.push(value);
+              }
             }
-            return value;
+            return true;
           });
-          this.$store.commit("api/updateQuery", this.query);
+          this.$store.commit("api/updateQuery", query);
         }
       },
       deep: true,
@@ -298,5 +406,18 @@ header .v-text-field--filled>.v-input__control>.v-input__slot,
 header .v-text-field--full-width>.v-input__control>.v-input__slot,
 header .v-text-field--outlined>.v-input__control>.v-input__slot {
   min-height: 48px;
+}
+
+.v-chip__content .v-btn__content {
+  justify-content: center;
+}
+
+.v-input.lang {
+  font-family: "Roboto Mono", monospace;
+  text-transform: uppercase;
+}
+
+.v-input.lang .v-input__append-inner {
+  display: none;
 }
 </style>

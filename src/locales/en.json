@@ -5,7 +5,9 @@
       "query": {
         "positive": "Set as Positive Query",
         "negative": "Set as Negative Query"
-      }
+      },
+      "examples": "Query Examples",
+      "lang": "Query Language"
     }
   },
   "help": {

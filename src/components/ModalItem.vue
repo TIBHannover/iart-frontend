@@ -172,7 +172,7 @@
               size="18"
               :title="$t('plugin')[tag.plugin]"
             >
-              {{ pluginIcon[tag.plugin] }}
+              {{ pluginIcons[tag.plugin] }}
             </v-icon>
             <v-icon
               v-if="tag.disable"
@@ -295,7 +295,7 @@
                       size="18"
                       :title="$t('plugin')[tag.plugin]"
                     >
-                      {{ pluginIcon[tag.plugin] }}
+                      {{ pluginIcons[tag.plugin] }}
                     </v-icon>
                     <v-icon
                       v-if="tag.disable"
@@ -348,6 +348,7 @@
 </template>
 
 <script>
+import { EXCLUDE_ANNOTATION_NAMES, PLUGIN_ICONS } from '../../app.config';
 import { keyInObj } from '@/plugins/helpers';
 const scheme = new RegExp(
   /^(\d{1,2})([A-IK-Z]{1,2})?(\d+)?(\([^+)]+\))?(\d+)?(\(\+[0-9]+\))?$/, "m");
@@ -355,13 +356,7 @@ export default {
   props: ["value", "entry", "entries"],
   data() {
     return {
-      pluginIcon: {
-        iconclass_clip_classifier: "mdi-alpha-c-circle-outline",
-        iconclass_lstm_classifier: "mdi-alpha-l-circle-outline",
-        kaggle_resnet_classifier: "mdi-alpha-k-circle-outline",
-        i_met2020_resnet_classifier: "mdi-alpha-m-circle-outline",
-        image_net_resnet_classifier: "mdi-alpha-i-circle-outline",
-      },
+      pluginIcons: PLUGIN_ICONS,
       moreTags: true,
     };
   },
@@ -454,12 +449,14 @@ export default {
       this.entry.classifier.forEach(({ plugin, annotations }) => {
         if (!deselectedPlugins.includes(plugin)) {
           annotations.forEach(({ name, value }) => {
-            keywords.push({
-              name: name.split(",")[0],
-              value,
-              plugin,
-              disable: value < 0.4,
-            });
+            if (!EXCLUDE_ANNOTATION_NAMES.includes(name)) {
+              keywords.push({
+                name: name.split(",")[0],
+                value,
+                plugin,
+                disable: value < 0.4,
+              });
+            }
           });
         }
       });
@@ -478,16 +475,18 @@ export default {
       this.entry.classifier.forEach(({ plugin, annotations }) => {
         if (selectedPlugins.includes(plugin)) {
           annotations.forEach(({ name, value }) => {
-            const [code, keywords, label] = name.split("; ");
-            const codeParts = scheme.exec(code).slice(1, 7);
-            if (!codeParts[3]) {
-              texts.push({
-                code,
-                label,
-                value,
-                plugin,
-                disable: value < 0.1,
-              });
+            if (!EXCLUDE_ANNOTATION_NAMES.includes(name)) {
+              const [code, keywords, label] = name.split("; ");
+              const codeParts = scheme.exec(code).slice(1, 7);
+              if (!codeParts[3]) {
+                texts.push({
+                  code,
+                  label,
+                  value,
+                  plugin,
+                  disable: value < 0.1,
+                });
+              }
             }
           });
         }
