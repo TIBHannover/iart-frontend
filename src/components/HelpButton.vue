@@ -1,110 +1,151 @@
 <template>
-  <v-btn 
-    :title="$t('help.title')" @click="help" class="help"
-    color="accent" fixed fab large bottom right
+  <v-btn
+    :title="$t('help.title')"
+    @click="help"
+    class="help"
+    color="accent"
+    fixed
+    fab
+    large
+    bottom
+    right
   >
     <v-icon>mdi-help</v-icon>
   </v-btn>
 </template>
 
 <script>
+import { keyInObj } from "@/plugins/helpers";
 export default {
+  data() {
+    return {
+      options: {
+        disableInteraction: true,
+        keyboardNavigation: true,
+      },
+    };
+  },
   methods: {
     help() {
       const { path } = this.$router.currentRoute;
       this.$store.commit("user/updateAllDrawers", true);
-
-      const steps = [
-        {
+      let startStep = 1;
+      const steps = [{
           intro: this.$t("help.search.general"),
           element: "#search-general",
-          tooltipClass: path === "/search" ? "move-top8" : "",
-          highlightClass: path === "/search" ? "move-top8" : "",
-          disableInteraction: true,
+          ...this.options,
         },
         {
           intro: this.$t("help.search.image"),
           element: "#search-image",
-          tooltipClass: path === "/search" ? "move-top12" : "",
-          highlightClass: path === "/search" ? "move-top12" : "",
-          disableInteraction: true,
+          ...this.options,
         },
         {
           intro: this.$t("help.search.random"),
           element: "#search-random",
-          tooltipClass: path === "/search" ? "move-top12" : "",
-          highlightClass: path === "/search" ? "move-top12" : "",
-          disableInteraction: true,
+          ...this.options,
         },
       ];
-
       if (path === "/search") {
-        steps.push(...[
-          {
+        steps.push(...[{
             intro: this.$t("help.filter.general"),
             element: "#filter-general",
-            disableInteraction: true,
+            ...this.options,
           },
           {
             intro: this.$t("help.filter.period"),
             element: ".v-navigation-drawer .date-range",
-            disableInteraction: true,
+            ...this.options,
           },
           {
             intro: this.$t("help.settings.general"),
             element: "#settings-general",
-            disableInteraction: true,
+            ...this.options,
           },
           {
             intro: this.$t("help.settings.weights"),
             element: "#weights-col",
-            disableInteraction: true,
             tooltipClass: "move-right",
             position: "right",
+            ...this.options,
           },
           {
             intro: this.$t("help.settings.layout"),
             element: "#layout-col",
-            disableInteraction: true,
             tooltipClass: "move-right",
             position: "right",
+            ...this.options,
           },
           {
             intro: this.$t("help.settings.cluster"),
             element: "#cluster-col",
-            disableInteraction: true,
             position: "left",
+            ...this.options,
           },
         ]);
-      }
-
-      window.scrollTo(0, 0);
-
-      this.$intro().addSteps(steps)
-      .onbeforechange((el) => {
-        let modal = { modal: null, value: false };
-        this.$store.commit("user/updateAllModals", false);
-
-        switch (el.id) {
-          case "weights-col":
-            modal = { modal: "weights", value: true };
-            this.$store.commit("user/updateModal", modal);
-
-            break;
-          case "layout-col":
-            modal = { modal: "layout", value: true };
-            this.$store.commit("user/updateModal", modal);
-
-            break;
-          case "cluster-col":
-            modal = { modal: "cluster", value: true };
-            this.$store.commit("user/updateModal", modal);
+        if (this.isClusterView) {
+          if (this.is2dView) {
+            steps.push({
+              intro: this.$t("help.cluster.2d"),
+              ...this.options,
+            });
+          } else {
+            steps.push({
+              intro: this.$t("help.cluster.1d"),
+              ...this.options,
+            });
+          }
+          startStep = steps.length;
         }
-      })
-      .onexit(() => {
-        this.$store.commit("user/updateAllModals", false);
-      })
-      .start()
+      }
+      window.scrollTo(0, 0);
+      this.$intro().addSteps(steps)
+        .onbeforechange((el) => {
+          let modal = { modal: null, value: false };
+          this.$store.commit("user/updateAllModals", false);
+          if (el) {
+            switch (el.id) {
+              case "weights-col":
+                modal = { modal: "weights", value: true };
+                this.$store.commit("user/updateModal", modal);
+                break;
+              case "layout-col":
+                modal = { modal: "layout", value: true };
+                this.$store.commit("user/updateModal", modal);
+                break;
+              case "cluster-col":
+                modal = { modal: "cluster", value: true };
+                this.$store.commit("user/updateModal", modal);
+            }
+          }
+        })
+        .onexit(() => {
+          this.$store.commit("user/updateAllModals", false);
+        })
+        .start()
+        .goToStep(startStep);
+    },
+  },
+  computed: {
+    isClusterView() {
+      const { settings } = this.$store.state.api;
+      if (
+        keyInObj("n", settings.cluster) &&
+        settings.cluster.n > 1
+      ) {
+        return true;
+      }
+      return false;
+    },
+    is2dView() {
+      const { settings } = this.$store.state.api;
+      if (
+        keyInObj("viewType", settings.layout) &&
+        settings.layout.viewType === "umap"
+      ) {
+        return true;
+      }
+      return false;
     },
   },
 };

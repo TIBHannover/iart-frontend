@@ -361,17 +361,6 @@ header .v-autocomplete .v-text-field.v-text-field--solo .v-input__control input 
   overflow: initial;
 }
 
-.theme--light.v-chip,
-.theme--light.v-sheet,
-.theme--light.v-input input,
-.theme--light.v-application,
-.theme--light.v-expansion-panels .v-expansion-panel,
-.theme--light.v-list-item:not(.v-list-item--active):not(.v-list-item--disabled),
-.v-card.login .v-btn.register,
-.v-banner .v-btn--text:hover .v-icon {
-  color: #1d3557 !important;
-}
-
 .theme--light.v-icon,
 .v-dialog .v-expansion-panel-content__wrap .capitalize {
   color: rgba(69, 123, 157, 0.54);
@@ -390,7 +379,6 @@ header .v-autocomplete .v-text-field.v-text-field--solo .v-input__control input 
 .v-main .v-text-field--outlined.v-input--has-state fieldset,
 .v-main .v-text-field--outlined.v-input--is-focused fieldset {
   border: 3px solid;
-  color: #1d3557;
 }
 
 header .theme--light.v-text-field--outlined:not(.v-input--is-focused):not(.v-input--has-state)>.v-input__control>.v-input__slot fieldset {
@@ -415,6 +403,11 @@ header .v-text-field--outlined>.v-input__control>.v-input__slot {
 .v-input.lang {
   font-family: "Roboto Mono", monospace;
   text-transform: uppercase;
+  width: min-content;
+}
+
+.v-input.lang>.v-input__control>.v-input__slot {
+  padding: 0 6px !important;
 }
 
 .v-input.lang .v-input__append-inner {

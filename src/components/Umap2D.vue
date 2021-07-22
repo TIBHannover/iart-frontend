@@ -362,7 +362,6 @@ export default {
   text-rendering: auto;
   font-size: 24px;
   line-height: 1;
-  color: #1d3557;
 }
 
 .vis-button:hover:after {

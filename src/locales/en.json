@@ -19,13 +19,17 @@
     },
     "filter": {
       "general": "Using a faceted search, the list of results can be further narrowed down.",
-      "period": "E.g., objects can be filtered based on their date of origin."
+      "period": "Objects can be filtered based on their metadata, e.g., by their date of origin."
     },
     "settings": {
       "general": "iART is flexibly configurable and adapts to your research interests.",
       "weights": "You can change weighting of plug-ins and thus adjust the order of results.",
-      "layout": "Different result views are available: from ranked lists to 2D visualizations.",
-      "cluster": "Results can be clustered and visualized, e.g., as image carousels."
+      "layout": "Different result views are available: from ranked lists to 2D canvas visualizations.",
+      "cluster": "Results can be clustered with various algorithms and visualized, e.g., as image carousels."
+    },
+    "cluster": {
+      "1d": "For each cluster, the number of objects assigned to it is specified. In addition, tags that best describe it are displayed.",
+      "2d": "Cluster memberships are indicated by colored dots. Press and hold the right mouse button to select multiple objects."
     }
   },
   "drawer": {

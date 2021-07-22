@@ -86,10 +86,6 @@ nav[role=navigation] button:focus {
   outline: none;
 }
 
-.theme--light.v-pagination .v-pagination__item {
-  color: #1D3557;
-}
-
 .theme--light.v-pagination .v-pagination__item--active {
   color: #fff;
 }
