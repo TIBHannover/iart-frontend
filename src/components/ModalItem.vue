@@ -5,6 +5,7 @@
     @keydown.left="getPrevious"
     @keydown.right="getNext"
     max-width="750px"
+    class="detail-view"
   >
     <v-btn
       class="middle"
@@ -567,31 +568,31 @@ export default {
   word-break: break-word;
 }
 
-.v-dialog .text-h5>span,
-.v-dialog .text-h6>span,
-.v-dialog .v-expansion-panel .capitalize,
-.v-dialog .v-chip.origin-name {
+.v-dialog.detail-view .text-h5>span,
+.v-dialog.detail-view .text-h6>span,
+.v-dialog.detail-view .v-expansion-panel .capitalize,
+.v-dialog.detail-view .v-chip.origin-name {
   text-transform: capitalize;
 }
 
-.v-dialog .text-h6>span,
-.v-dialog .text-h5>span {
+.v-dialog.detail-view .text-h6>span,
+.v-dialog.detail-view .text-h5>span {
   cursor: pointer;
 }
 
-.v-dialog .text-h6>span:after {
+.v-dialog.detail-view .text-h6>span:after {
   content: ", ";
 }
 
-.v-dialog .text-h6>span:last-child:after {
+.v-dialog.detail-view .text-h6>span:last-child:after {
   content: "";
 }
 
-.v-dialog .text-h5>span:after {
+.v-dialog.detail-view .text-h5>span:after {
   content: " ";
 }
 
-.v-dialog .text-h5>span:last-child:after {
+.v-dialog.detail-view .text-h5>span:last-child:after {
   content: "";
 }
 
