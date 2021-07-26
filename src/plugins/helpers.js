@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import * as jsts from 'jsts';
 export function keyInObj(key, obj) {
   if (typeof obj !== 'object') return false;
   return Object.prototype.hasOwnProperty.call(obj, key);
@@ -35,4 +36,32 @@ export function isMobile() {
     return true;
   }
   return false;
+};
+export function vectorToJts(points) {
+  return points.map(([x, y]) => {
+    return new jsts.geom.Coordinate(x, y);
+  });
+};
+export function inflatePolygon(points, spacing) {
+  try {
+    const input = vectorToJts(points); input.push(input[0]);
+    const geometryFactory = new jsts.geom.GeometryFactory();
+    let polygon = geometryFactory.createPolygon(input);
+    const { BufferParameters } = jsts.operation.buffer;
+    polygon = polygon.buffer(spacing, BufferParameters.CAP_FLAT);
+    const { _coordinates } = polygon._shell._points;
+    return _coordinates.map(({ x, y }) => {
+      return [x, y];
+    });
+  } catch (error) {
+    return points;
+  }
+};
+export function getCentroid(points) {
+  const input = vectorToJts(points); input.push(input[0]);
+  const geometryFactory = new jsts.geom.GeometryFactory();
+  const polygon = geometryFactory.createPolygon(input);
+  const { _coordinates } = polygon.getCentroid();
+  const { x, y } = _coordinates._coordinates[0];
+  return [x, y];
 };

@@ -17,8 +17,11 @@
 </template>
 
 <script>
+import hull from "hull.js";
+import clustering from "density-clustering";
 import { DataSet } from "vis-data/peer";
 import { Network } from "vis-network/peer";
+import { keyInObj, inflatePolygon, getCentroid } from "@/plugins/helpers";
 import ModalItem from "@/components/ModalItem.vue";
 import ModalGrid from "@/components/ModalGrid.vue";
 const Colors = [
@@ -36,6 +39,7 @@ export default {
       clickTime: 0,
       entries: [],
       state: {
+        highlight: true,
         drag: false,
         grid: false,
       },
@@ -84,13 +88,10 @@ export default {
       });
       this.network.on("afterDrawing", () => {
         if (this.state.drag) {
-          const start = this.toCanvas(this.rect.startX, this.rect.startY);
-          const end = this.toCanvas(this.rect.endX, this.rect.endY);
-          const w = end.x - start.x;
-          const h = end.y - start.y;
-          this.ctx.setLineDash([]);
-          this.ctx.fillStyle = "rgba(29, 53, 87, 0.25)";
-          this.ctx.fillRect(start.x, start.y, w, h);
+          this.drawSelection();
+        }
+        if (this.state.highlight) {
+          this.drawHulls();
         }
       });
       this.network.on("click", this.onClick);
@@ -167,6 +168,94 @@ export default {
         this.rect.endX = pageX - offset.left;
         this.rect.endY = pageY - offset.top;
         this.network.redraw();
+      }
+    },
+    drawSelection() {
+      const start = this.toCanvas(this.rect.startX, this.rect.startY);
+      const end = this.toCanvas(this.rect.endX, this.rect.endY);
+      const w = end.x - start.x;
+      const h = end.y - start.y;
+      this.ctx.setLineDash([]);
+      this.ctx.fillStyle = "rgba(29, 53, 87, 0.25)";
+      this.ctx.fillRect(start.x, start.y, w, h);
+    },
+    createHulls() {
+      this.hulls = {};
+      this.centroids = {};
+      if (this.nodes) {
+        let groups = this.nodes.map(({ group }) => group);
+        groups = [...new Set(groups)];
+        if (groups.length > 1) {
+          const dbscan = new clustering.DBSCAN();
+          const f = Math.min(...this.getSize()) / 500;
+          groups.forEach((groupID) => {
+            const entryPoints = this.nodes.filter(({ group }) => {
+              return group === groupID;
+            }).map(({ x, y }) => {
+              return [x, y];
+            });
+            const clusters = dbscan.run(entryPoints, f * 20, 1);
+            clusters.sort((a, b) => b.length - a.length);
+            clusters.forEach((cluster, index) => {
+              if (cluster.length > 3) {
+                const clusterPoints = entryPoints.filter((obj, index) => {
+                  return cluster.includes(index);
+                });
+                const x = clusterPoints.map(([x, y]) => x);
+                const nX = [...new Set(x)].length;
+                const y = clusterPoints.map(([x, y]) => y);
+                const nY = [...new Set(y)].length;
+                if (nX > 1 && nY > 1) {
+                  let hullPoints = hull(clusterPoints, f * 50);
+                  hullPoints = inflatePolygon(hullPoints, f * 10);
+                  if (index === 0) {
+                    this.centroids[groupID] = getCentroid(hullPoints);
+                  }
+                  if (this.hulls[groupID] instanceof Array) {
+                    this.hulls[groupID].push(hullPoints);
+                  } else {
+                    this.hulls[groupID] = [hullPoints];
+                  }
+                }
+              }
+            });
+          });
+        }
+      }
+    },
+    drawHulls() {
+      if (this.hulls) {
+        Object.keys(this.hulls).forEach((groupID) => {
+          this.hulls[groupID].forEach((hullPoints) => {
+            this.ctx.globalAlpha = 0.25;
+            this.ctx.fillStyle = Colors[groupID];
+            this.ctx.beginPath();
+            hullPoints.forEach(([x, y], index) => {
+              if (index === 0) {
+                this.ctx.moveTo(x, y);
+              } else {
+                this.ctx.lineTo(x, y);
+              }
+            });
+            this.ctx.closePath();
+            this.ctx.fill();
+          });
+        });
+      }
+      if (this.centroids) {
+        const f = Math.min(...this.getSize()) / 500;
+        Object.keys(this.centroids).forEach((groupID) => {
+          const [xC, yC] = this.centroids[groupID];
+          this.ctx.globalAlpha = 1;
+          this.ctx.textAlign = "center";
+          this.ctx.textBaseline = "middle";
+          this.ctx.font = `${f*30}px Roboto, sans-serif`;
+          this.ctx.lineWidth = 5;
+          this.ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
+          this.ctx.fillStyle = Colors[groupID];
+          this.ctx.strokeText(parseInt(groupID) + 1, xC, yC);
+          this.ctx.fillText(parseInt(groupID) + 1, xC, yC);
+        });
       }
     },
     drawNodes() {
@@ -264,6 +353,7 @@ export default {
         };
       });
       this.network.setData({ nodes: this.nodes });
+      this.createHulls();
       this.onResize();
     },
     selectNodes() {
@@ -290,7 +380,8 @@ export default {
       this.drawNodes();
     },
     settings: {
-      handler({ layout }) {
+      handler({ layout, cluster }) {
+        this.state.highlight = cluster.highlight;
         this.state.grid = layout.viewGrid;
         this.drawNodes();
       },
@@ -304,8 +395,19 @@ export default {
   },
   created() {
     const { settings } = this.$store.state.api;
-    if (Object.keys(settings).length) {
-      this.state.grid = settings.layout.viewGrid;
+    if (settings && Object.keys(settings).length) {
+      if (
+        keyInObj("cluster", settings) && 
+        keyInObj("highlight", settings.cluster)
+      ) {
+        this.state.highlight = settings.cluster.highlight;
+      }
+      if (
+        keyInObj("layout", settings) && 
+        keyInObj("viewGrid", settings.layout)
+      ) {
+        this.state.grid = settings.layout.viewGrid;
+      }
     }
   },
   mounted() {

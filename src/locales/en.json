@@ -143,11 +143,17 @@
     },
     "cluster": {
       "title": "Cluster Display",
-      "type": {
-        "kmeans": "K-Means Clustering",
-        "agglomerative": "Hierarchical Clustering"
-      },
-      "n": "Number of Clusters"
+      "n": "Number of Clusters",
+      "method": {
+        "type": {
+          "kmeans": "K-Means Clustering",
+          "agglomerative": "Hierarchical Clustering"
+        },
+        "highlight": {
+          "show": "Highlight Clusters",
+          "hide": "Don't Highlight Clusters"
+        }
+      }
     },
     "search": {
       "title": "Search by Image",
