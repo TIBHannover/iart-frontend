@@ -3,6 +3,7 @@
     v-model="drawer"
     class="filters"
     width="350"
+    style="padding-bottom: 100px;"
     app
     right
     hide-overlay

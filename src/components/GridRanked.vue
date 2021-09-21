@@ -86,7 +86,7 @@ nav[role=navigation] button:focus {
   outline: none;
 }
 
-.theme--light.v-pagination .v-pagination__item--active {
-  color: #fff;
+.theme--light.v-pagination .v-pagination__item--active.accent {
+  color: #fff !important;
 }
 </style>

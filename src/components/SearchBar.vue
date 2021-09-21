@@ -174,7 +174,9 @@
           <v-img
             v-if="item.type==='idx'&&item.preview"
             :src="item.preview"
+            class="grey lighten-1"
             max-height="200px"
+            contain
           ></v-img>
 
           <Weights
