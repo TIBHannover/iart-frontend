@@ -3,7 +3,7 @@
     <v-app-bar app flat>
       <v-layout row>
         <div class="logo ml-3 mr-5" @click="reset">
-          <img title="iART" src="/assets/images/logo.png" />
+          <img :title="appName" src="/assets/images/logo.png" />
         </div>
 
         <SearchBar />
@@ -55,6 +55,11 @@ import HelpButton from "@/components/HelpButton.vue";
 import DrawerFilter from "@/components/DrawerFilter.vue";
 import DrawerSettings from "@/components/DrawerSettings.vue";
 export default {
+  data() {
+    return {
+      appName: process.env.VUE_APP_NAME,
+    };
+  },
   methods: {
     load() {
       this.$store.dispatch("api/load");

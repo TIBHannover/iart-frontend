@@ -76,7 +76,7 @@ export default {
         }
       }
       return new Promise(resolve =>
-        setTimeout(() => resolve(hits), 50)
+        setTimeout(() => resolve(hits), 5)
       );
     },
   },

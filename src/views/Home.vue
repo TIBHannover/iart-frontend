@@ -27,7 +27,7 @@
           >
             <div class="logo">
               <img
-                title="iART"
+                :title="appName"
                 src="/assets/images/logo.png"
               />
             </div>
@@ -50,6 +50,11 @@ import UserMenu from "@/components/UserMenu.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import HelpButton from "@/components/HelpButton.vue";
 export default {
+  data() {
+    return {
+      appName: process.env.VUE_APP_NAME,
+    };
+  },
   components: {
     History,
     UserMenu,
