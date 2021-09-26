@@ -41,12 +41,14 @@
 
     <v-card>
       <div class="img-wrapper">
-        <v-img
+        <div style="margin-left:auto;margin-right:auto;height:100%">
+        <ROISelector
           :lazy-src="entry.preview"
           :src="entry.path"
           class="grey lighten-1"
           max-height="500px"
           contain
+          v-model="roi"
         >
           <template v-slot:placeholder>
             <v-row
@@ -57,8 +59,33 @@
               <v-progress-circular indeterminate></v-progress-circular>
             </v-row>
           </template>
-        </v-img>
+          <template v-slot:context>
+                      <v-list class="pa-0">
+            <v-list-item class="px-0 h44">
+              <v-btn
+                @click="query(null, false, 'idx')"
+                text
+                block
+                large
+              >
+                {{ $t('search.new') }}
+              </v-btn>
+            </v-list-item>
 
+            <v-list-item class="px-0 h44">
+              <v-btn
+                @click="query(null, true, 'idx')"
+                text
+                block
+                large
+              >
+                {{ $t('search.append') }}
+              </v-btn>
+            </v-list-item>
+          </v-list>
+          </template>
+        </ROISelector>
+        </div>
         <v-btn
           @click.native="$emit('input')"
           icon
@@ -349,16 +376,22 @@
 </template>
 
 <script>
-import { EXCLUDE_ANNOTATION_NAMES, PLUGIN_ICONS } from '../../app.config';
-import { keyInObj } from '@/plugins/helpers';
+import { EXCLUDE_ANNOTATION_NAMES, PLUGIN_ICONS } from "../../app.config";
+import { keyInObj } from "@/plugins/helpers";
+
+import ROISelector from "@/components/ROISelector.vue";
+
 const scheme = new RegExp(
-  /^(\d{1,2})([A-IK-Z]{1,2})?(\d+)?(\([^+)]+\))?(\d+)?(\(\+[0-9]+\))?$/, "m");
+  /^(\d{1,2})([A-IK-Z]{1,2})?(\d+)?(\([^+)]+\))?(\d+)?(\(\+[0-9]+\))?$/,
+  "m"
+);
 export default {
   props: ["value", "entry", "entries"],
   data() {
     return {
       pluginIcons: PLUGIN_ICONS,
       moreTags: true,
+      roi: null,
     };
   },
   methods: {
@@ -370,6 +403,9 @@ export default {
         query.weights = {};
         query.label = this.title.join(" ");
         query.preview = this.entry.preview;
+      }
+      if (this.roi) {
+        query.roi = this.roi;
       }
       if (append) {
         this.$store.commit("api/addQuery", query);
@@ -516,7 +552,7 @@ export default {
         }
       });
       this.entry.origin.forEach(({ value_str }) => {
-        metadata["origin.name"] = [{ name: value_str, disable: false }]
+        metadata["origin.name"] = [{ name: value_str, disable: false }];
       });
       return metadata;
     },
@@ -543,6 +579,14 @@ export default {
       return index + 1 === this.entries.length;
     },
   },
+  watch: {
+    roi() {
+      console.log(this.roi);
+    },
+  },
+  components: {
+    ROISelector,
+  },
 };
 </script>
 
@@ -555,7 +599,7 @@ export default {
   position: relative;
 }
 
-.v-dialog .v-expansion-panel-header> :not(.v-expansion-panel-header__icon) {
+.v-dialog .v-expansion-panel-header > :not(.v-expansion-panel-header__icon) {
   flex: initial;
 }
 
@@ -568,31 +612,31 @@ export default {
   word-break: break-word;
 }
 
-.v-dialog.detail-view .text-h5>span,
-.v-dialog.detail-view .text-h6>span,
+.v-dialog.detail-view .text-h5 > span,
+.v-dialog.detail-view .text-h6 > span,
 .v-dialog.detail-view .v-expansion-panel .capitalize,
 .v-dialog.detail-view .v-chip.origin-name {
   text-transform: capitalize;
 }
 
-.v-dialog.detail-view .text-h6>span,
-.v-dialog.detail-view .text-h5>span {
+.v-dialog.detail-view .text-h6 > span,
+.v-dialog.detail-view .text-h5 > span {
   cursor: pointer;
 }
 
-.v-dialog.detail-view .text-h6>span:after {
+.v-dialog.detail-view .text-h6 > span:after {
   content: ", ";
 }
 
-.v-dialog.detail-view .text-h6>span:last-child:after {
+.v-dialog.detail-view .text-h6 > span:last-child:after {
   content: "";
 }
 
-.v-dialog.detail-view .text-h5>span:after {
+.v-dialog.detail-view .text-h5 > span:after {
   content: " ";
 }
 
-.v-dialog.detail-view .text-h5>span:last-child:after {
+.v-dialog.detail-view .text-h5 > span:last-child:after {
   content: "";
 }
 
