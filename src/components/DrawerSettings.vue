@@ -192,4 +192,12 @@ export default {
 .v-banner .v-btn--text:focus:before {
   background-color: transparent;
 }
+
+.v-banner__content {
+  overflow: initial;
+}
+
+.v-banner .v-btn--text:hover .v-badge__badge.accent .v-icon {
+  color: inherit !important;
+}
 </style>

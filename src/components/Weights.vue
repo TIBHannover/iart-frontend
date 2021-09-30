@@ -232,4 +232,8 @@ export default {
   align-items: center;
   height: 30px;
 }
+
+.weights.v-sheet.v-card:not(.v-sheet--outlined) {
+  box-shadow: none;
+}
 </style>

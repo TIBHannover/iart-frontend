@@ -22,7 +22,19 @@
         >
           mdi-view-dashboard-outline
         </v-icon>
-        <span style="font-size: 14px">
+        <v-badge
+          v-if="!defaultLayout"
+          color="accent"
+          :icon="layoutIcon"
+        >
+          <span style="font-size: 14px">
+            {{ $t("modal.layout.title") }}
+          </span>
+        </v-badge>
+        <span
+          v-else
+          style="font-size: 14px"
+        >
           {{ $t("modal.layout.title") }}
         </span>
       </v-btn>
@@ -93,7 +105,7 @@
 
           <template v-slot:append-outer>
             <v-btn
-              v-if="sort.order==='desc'"
+              v-if="sort.order === 'desc'"
               class="ml-2"
               @click="changeSortOrder('asc')"
               :title="$t('modal.layout.sort.order.asc')"
@@ -121,7 +133,7 @@
             min="-7"
             max="7"
             color="secondary"
-            :disabled="view.default==='umap' && view.grid"
+            :disabled="view.default === 'umap' && view.grid"
             prepend-icon="mdi-magnify-scan"
             hide-details
             @end="update"
@@ -226,6 +238,29 @@ export default {
     },
     reset() {
       return this.$store.state.api.settings.layout;
+    },
+    defaultLayout() {
+      return this.sort.order === "asc" && this.sort.default === "relevance";
+    },
+    layoutIcon() {
+      if (this.sort.order === "asc") {
+        switch (this.sort.default) {
+          case "title":
+            return "mdi-sort-alphabetical-ascending";
+          case "date":
+            return "mdi-sort-clock-ascending";
+          default:
+            return "mdi-sort-bool-ascending";
+        };
+      }
+      switch (this.sort.default) {
+        case "title":
+          return "mdi-sort-alphabetical-descending";
+        case "date":
+          return "mdi-sort-clock-descending";
+        default:
+          return "mdi-sort-bool-descending";
+      };
     },
   },
   watch: {

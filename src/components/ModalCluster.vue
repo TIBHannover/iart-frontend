@@ -21,7 +21,19 @@
         >
           mdi-select-group
         </v-icon>
-        <span style="font-size: 14px">
+        <v-badge
+          v-if="nClusters > 1"
+          color="accent"
+          :content="nClusters"
+        >
+          <span style="font-size: 14px">
+            {{ $t("modal.cluster.title") }}
+          </span>
+        </v-badge>
+        <span
+          v-else
+          style="font-size: 14px"
+        >
           {{ $t("modal.cluster.title") }}
         </span>
       </v-btn>
