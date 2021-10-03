@@ -20,18 +20,18 @@
       <canvas
         ref="canvas"
         class="canvas"
-        @mousedown="mouseDown"
-        @mouseup="mouseUp"
-        @mousemove="mouseMove"
-        @mouseleave="mouseUp"
-        @click="mouseClick"
+        @mousedown="onMouseDown"
+        @mouseup="onMouseUp"
+        @mousemove="onMouseMove"
+        @mouseleave="onMouseUp"
+        @click="onMouseClick"
         v-click-outside="clickOutside"
       >
       </canvas>
       <v-menu
-        :value="showMenu"
-        :position-x="x"
-        :position-y="y"
+        :value="menu.show"
+        :position-x="menu.x"
+        :position-y="menu.y"
         :close-on-click="false"
         transition="fade-transition"
         absolute
@@ -44,77 +44,53 @@
 </template>
 
 <script>
-import { keyInObj } from "@/plugins/helpers";
 import { VImg } from "vuetify/lib";
-
 export default {
   extends: VImg,
-  name: "roi-selector",
-  props: {
-    ...VImg.props,
-    value: Object,
-  },
   data: function () {
     return {
       ...VImg.data,
-      roi: null,
-      showMenu: false,
-      image: null,
       canvas: null,
       ctx: null,
-      x: null,
-      y: null,
+      roi: null,
       mouse: {
         start: null,
         down: null,
       },
+      image: {
+        base: null,
+        width: 0,
+        height: 0,
+      },
+      menu: {
+        show: false,
+        x: null,
+        y: null,
+      },
+      client: {
+        width: 0,
+        height: 0,
+      },
     };
   },
-  computed: {
-    computedProps: function () {
-      return {
-        ...this.$props,
-      };
-    },
-    imageHeight: function () {
-      if (this.image) {
-        return this.scaleSelector().height;
-      }
-      return 0;
-    },
-    imageWidth: function () {
-      if (this.image) {
-        return this.scaleSelector().width;
-      }
-      return 100;
-    },
+  props: {
+    ...VImg.props,
+    value: Object,
   },
-
   methods: {
-    scaleSelector() {
-      let current_height = this.$el.clientHeight;
-      let element_height = this.image.naturalHeight;
-      let current_width = this.$el.clientWidth;
-      let element_width = this.image.naturalWidth;
-
-      let height_scale = 1.0;
-      let width_scale = 1.0;
-      // if (element_height > current_height) {
-      height_scale = current_height / element_height;
-      // }
-      // if (element_width > current_width) {
-      width_scale = current_width / element_width;
-      // }
-      let scale = Math.min(height_scale, width_scale);
-
+    getScale() {
+      const imageHeight = this.image.base.naturalHeight;
+      const imageWidth = this.image.base.naturalWidth;
+      const scaleHeight = this.client.height / imageHeight;
+      const scaleWidth = this.client.width / imageWidth;
+      const scale = Math.min(scaleHeight, scaleWidth);
       return {
-        height: element_height * scale,
-        width: element_width * scale,
+        height: imageHeight * scale,
+        width: imageWidth * scale,
       };
     },
     loaded(src) {
       const image = new Image();
-
       image.onload = () => {
         /* istanbul ignore if */
         if (image.decode) {
@@ -124,130 +100,145 @@ export default {
         }
       };
       image.src = src;
-      this.image = image;
+      this.image.base = image;
+      this.$nextTick(() => {
+        if (this.client.height === 0) {
+          this.client.height = this.$el.clientHeight;
+        }
+        if (this.client.width === 0) {
+          this.client.width = this.$el.clientWidth;
+        }
+        const { width, height } = this.getScale();
+        if (width > 0 && height > 0) {
+          this.image.width = width;
+          this.image.height = height;
+          this.ctx.canvas.width = width;
+          this.ctx.canvas.height = height;
+          this.ctx.clearRect(0, 0, width, height);
+        } 
+        this.setROI(this.value);
+        this.drawROI();
+      });
     },
-
     computeRect(pos1, pos2) {
+      const x = Math.min(pos1.x, pos2.x);
+      const y = Math.min(pos1.y, pos2.y);
       return {
-        x: Math.min(pos1.x, pos2.x),
-        y: Math.min(pos1.y, pos2.y),
-        width: Math.max(pos1.x, pos2.x) - Math.min(pos1.x, pos2.x),
-        height: Math.max(pos1.y, pos2.y) - Math.min(pos1.y, pos2.y),
+        x,
+        y,
+        width: Math.max(pos1.x, pos2.x) - x,
+        height: Math.max(pos1.y, pos2.y) - y,
       };
+    },
+    drawDefaultRect() {
+      this.ctx.clearRect(0, 0, this.image.width, this.image.height);
+      this.ctx.fillStyle = "rgba(189, 189, 189, 0.65)";
+      this.ctx.fillRect(0, 0, this.image.width, this.image.height);
+    },
+    setROI(roi, relative=true) {
+      if (roi && !relative) {
+        roi = {
+          x: roi.x / this.image.width,
+          y: roi.y / this.image.height,
+          width: roi.width / this.image.width,
+          height: roi.height / this.image.height,
+        };
+      }
+      this.roi = roi;
+    },
+    drawROI() {
+      if (this.roi) {
+        this.drawDefaultRect();
+        let { x, y, width, height } = this.roi;
+        x *= this.image.width;
+        y *= this.image.height;
+        width *= this.image.width;
+        height *= this.image.height;
+        this.ctx.clearRect(x, y, width, height);
+        this.ctx.beginPath();
+        this.ctx.rect(x, y, width, height);
+        this.ctx.lineWidth = 1;
+        this.ctx.strokeStyle = "rgba(230, 57, 70, 1)";
+        this.ctx.stroke();
+      }
     },
     clickOutside(evt) {
       this.mouse.down = false;
-      this.showMenu = false;
+      this.menu.show = false;
     },
-    mouseClick(evt) {
+    onMouseClick(evt) {
       evt.preventDefault();
-      console.log("click");
     },
-    mouseDown(evt) {
-      console.log("Down");
+    onMouseDown(evt) {
       evt.preventDefault();
-      let event_pos = this.mousePos(evt);
-      this.mouse.start = event_pos;
+      this.mouse.start = this.mousePos(evt);
       this.mouse.down = true;
-
-      this.showMenu = false;
-
+      this.menu.show = false;
       if (this.ctx) {
-        this.ctx.clearRect(0, 0, this.imageWidth, this.imageHeight);
-        this.ctx.fillStyle = "#bdbdbdaa";
-        this.ctx.fillRect(0, 0, this.imageWidth, this.imageHeight);
+        this.$el.style.cursor = "crosshair";
+        this.drawDefaultRect();
       }
     },
-    mouseUp(evt) {
-      console.log("UP");
-      let event_pos = this.mousePos(evt);
+    onMouseUp(evt) {
       if (this.ctx && this.mouse.down) {
         this.mouse.down = false;
-        let rect = this.computeRect(this.mouse.start, event_pos);
-
-        // area to small
+        this.$el.style.cursor = "default";
+        const rect = this.computeRect(this.mouse.start, this.mousePos(evt));
+        // region of interest is too small
         if (rect.width * rect.height < 20) {
-          // set roi
-          this.$emit("input", null);
-          this.ctx.clearRect(0, 0, this.imageWidth, this.imageHeight);
+          this.ctx.clearRect(0, 0, this.image.width, this.image.height);
+          this.$emit("update", null);
           return;
         }
-
-        // draw selected area
-        this.ctx.clearRect(0, 0, this.imageWidth, this.imageHeight);
-        this.ctx.fillStyle = "#bdbdbdaa";
-        this.ctx.fillRect(0, 0, this.imageWidth, this.imageHeight);
-
-        this.ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
-        this.ctx.beginPath();
-        this.ctx.rect(rect.x, rect.y, rect.width, rect.height);
-        this.ctx.stroke();
-
-        // set roi
-        this.$emit("input", {
-          x: rect.x / this.imageWidth,
-          y: rect.y / this.imageHeight,
-          width: rect.width / this.imageWidth,
-          height: rect.height / this.imageHeight,
-        });
-
-        this.showMenu = false;
-        this.x = evt.clientX;
-        this.y = evt.clientY;
+        this.setROI(rect, false);
+        this.drawROI();
+        this.$emit("update", this.roi);
+        this.menu = {
+          show: false,
+          x: evt.clientX,
+          y: evt.clientY,
+        };
         this.$nextTick(() => {
-          this.showMenu = true;
+          this.menu.show = true;
         });
       }
-
-      // disable tracking
     },
-    mouseMove(evt) {
-      let event_pos = this.mousePos(evt);
+    onMouseMove(evt) {
       if (this.ctx && this.mouse.down) {
-        let rect = this.computeRect(this.mouse.start, event_pos);
-        this.ctx.clearRect(0, 0, this.imageWidth, this.imageHeight);
-        this.ctx.fillStyle = "#bdbdbdaa";
-        this.ctx.fillRect(0, 0, this.imageWidth, this.imageHeight);
-
-        this.ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
-        this.ctx.beginPath();
-        this.ctx.rect(rect.x, rect.y, rect.width, rect.height);
-        this.ctx.stroke();
+        const rect = this.computeRect(this.mouse.start, this.mousePos(evt));
+        this.setROI(rect, false);
+        this.drawROI();
       }
     },
-    mousePos(evt) {
-      var rect = this.canvas.getBoundingClientRect(),
-        scaleX = this.canvas.width / rect.width,
-        scaleY = this.canvas.height / rect.height;
-
+    mousePos({ clientX, clientY }) {
+      const rect = this.canvas.getBoundingClientRect();
+      const scaleX = this.canvas.width / rect.width;
+      const scaleY = this.canvas.height / rect.height;
       return {
-        x: (evt.clientX - rect.left) * scaleX,
-        y: (evt.clientY - rect.top) * scaleY,
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY,
       };
     },
   },
-  mounted() {
-    var canvas = this.$refs.canvas;
-    this.canvas = canvas;
-    this.ctx = canvas.getContext("2d");
+  computed: {
+    computedProps() {
+      return { ...this.$props };
+    },
   },
   watch: {
-    imageHeight() {
-      if (this.ctx) {
-        this.ctx.canvas.width = this.imageWidth;
-        this.ctx.canvas.height = this.imageHeight;
-      }
+    src() {
+      const { width, height } = this.canvas;
+      this.ctx.clearRect(0, 0, width, height);
+      this.menu = { show: false, x: null, y: null };
     },
-    imageWidth() {
-      if (this.ctx) {
-        this.ctx.canvas.width = this.imageWidth;
-        this.ctx.canvas.height = this.imageHeight;
-      }
+    value(rect) {
+      this.setROI(rect);
+      this.drawROI();
     },
-    showMenu() {
-      console.log("############");
-      console.log(this.showMenu);
-    },
+  },
+  mounted() {
+    this.canvas = this.$refs.canvas;
+    this.ctx = this.canvas.getContext("2d");
   },
 };
 </script>

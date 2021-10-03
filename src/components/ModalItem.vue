@@ -41,50 +41,51 @@
 
     <v-card>
       <div class="img-wrapper">
-        <div style="margin-left:auto;margin-right:auto;height:100%">
-        <ROISelector
-          :lazy-src="entry.preview"
-          :src="entry.path"
-          class="grey lighten-1"
-          max-height="500px"
-          contain
-          v-model="roi"
-        >
-          <template v-slot:placeholder>
-            <v-row
-              class="fill-height ma-0"
-              align="center"
-              justify="center"
-            >
-              <v-progress-circular indeterminate></v-progress-circular>
-            </v-row>
-          </template>
-          <template v-slot:context>
-                      <v-list class="pa-0">
-            <v-list-item class="px-0 h44">
-              <v-btn
-                @click="query(null, false, 'idx')"
-                text
-                block
-                large
+        <div style="margin-left:auto; margin-right:auto; height:100%">
+          <ROISelector
+            v-model="roi"
+            :lazy-src="entry.preview"
+            :src="entry.path"
+            @update="updateROI"
+            class="grey lighten-1"
+            max-height="500px"
+            contain
+          >
+            <template v-slot:placeholder>
+              <v-row
+                class="fill-height ma-0"
+                align="center"
+                justify="center"
               >
-                {{ $t('search.new') }}
-              </v-btn>
-            </v-list-item>
+                <v-progress-circular indeterminate></v-progress-circular>
+              </v-row>
+            </template>
+            <template v-slot:context>
+              <v-list class="pa-0">
+                <v-list-item class="px-0 h44">
+                  <v-btn
+                    @click="query(null, false, 'idx')"
+                    text
+                    block
+                    large
+                  >
+                    {{ $t('search.new') }}
+                  </v-btn>
+                </v-list-item>
 
-            <v-list-item class="px-0 h44">
-              <v-btn
-                @click="query(null, true, 'idx')"
-                text
-                block
-                large
-              >
-                {{ $t('search.append') }}
-              </v-btn>
-            </v-list-item>
-          </v-list>
-          </template>
-        </ROISelector>
+                <v-list-item class="px-0 h44">
+                  <v-btn
+                    @click="query(null, true, 'idx')"
+                    text
+                    block
+                    large
+                  >
+                    {{ $t('search.append') }}
+                  </v-btn>
+                </v-list-item>
+              </v-list>
+            </template>
+          </ROISelector>
         </div>
         <v-btn
           @click.native="$emit('input')"
@@ -378,9 +379,7 @@
 <script>
 import { EXCLUDE_ANNOTATION_NAMES, PLUGIN_ICONS } from "../../app.config";
 import { keyInObj } from "@/plugins/helpers";
-
 import ROISelector from "@/components/ROISelector.vue";
-
 const scheme = new RegExp(
   /^(\d{1,2})([A-IK-Z]{1,2})?(\d+)?(\([^+)]+\))?(\d+)?(\(\+[0-9]+\))?$/,
   "m"
@@ -401,11 +400,9 @@ export default {
       if (type === "idx") {
         query.value = this.entry.id;
         query.weights = {};
+        query.roi = this.roi;
         query.label = this.title.join(" ");
         query.preview = this.entry.preview;
-      }
-      if (this.roi) {
-        query.roi = this.roi;
       }
       if (append) {
         this.$store.commit("api/addQuery", query);
@@ -420,6 +417,9 @@ export default {
       const filter = { positive: true, name: value };
       this.$store.commit("api/addFilter", { field, filter });
       this.$emit("input");
+    },
+    updateROI(value) {
+      this.roi = value;
     },
     getNext() {
       const index = this.entries.indexOf(this.entry);
@@ -577,11 +577,6 @@ export default {
     isLast() {
       const index = this.entries.indexOf(this.entry);
       return index + 1 === this.entries.length;
-    },
-  },
-  watch: {
-    roi() {
-      console.log(this.roi);
     },
   },
   components: {

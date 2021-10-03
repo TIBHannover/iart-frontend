@@ -3,6 +3,7 @@
     <v-combobox
       v-model="query"
       class="mx-1 sbar"
+      ref="combobox"
       @click:clear="remove(-1)"
       @keyup.enter="submit($event, random=false)"
       :items="queryExamples"
@@ -52,7 +53,6 @@
       <template v-slot:item="{ attrs, item }">
         <v-chip
           v-for="entry in item.entries"
-          :key="entry"
           v-bind="attrs"
           class="mr-2"
         >
@@ -74,7 +74,7 @@
           </v-btn>
 
           <v-icon
-            v-if="entry.type==='idx'"
+            v-if="entry.type === 'idx'"
             class="mr-1"
             style="font-size: 18px"
           >
@@ -89,7 +89,7 @@
           </v-icon>
 
           <span
-            v-if="entry.type==='idx'"
+            v-if="entry.type === 'idx'"
             :title="entry.label"
           >
             {{ entry.label }}
@@ -105,8 +105,9 @@
 
       <template v-slot:selection="{ attrs, selected, item, index }">
         <v-menu
-          v-model="weightDialog[index]"
           :close-on-content-click="false"
+          min-width="300"
+          max-width="300"
           offset-y
           bottom
           right
@@ -142,7 +143,7 @@
               </v-btn>
 
               <v-icon
-                v-if="item.type==='idx'"
+                v-if="item.type === 'idx'"
                 class="mr-1"
                 style="font-size: 18px"
               >
@@ -157,7 +158,7 @@
               </v-icon>
 
               <span
-                v-if="item.type==='idx'"
+                v-if="item.type === 'idx'"
                 :title="item.label"
               >
                 {{ item.label }}
@@ -171,22 +172,39 @@
             </v-chip>
           </template>
 
-          <v-img
-            v-if="item.type==='idx'&&item.preview"
-            :src="item.preview"
-            class="grey lighten-1"
-            max-height="200px"
-            contain
-          ></v-img>
+          <div 
+            v-if="item.type === 'idx' && item.preview"
+            style="margin-left:auto; margin-right:auto; height:100%"
+          >
+            <ROISelector
+              v-model="item.roi"
+              :src="item.preview"
+              class="grey lighten-1"
+              @update="updateROI(index, ...arguments)"
+              max-height="200px"
+              contain
+            />
+          </div>
 
           <Weights
-            v-if="item.type==='idx'"
-            :default="item.weights"
+            v-if="item.type === 'idx'"
+            v-model="item.weights"
+            :key="item.value"
             :local="true"
-            :key="item"
-            :visible="weightDialog[index]"
             @update="updateWeights(index, ...arguments)"
           />
+
+          <div class="pa-6">
+            <v-btn
+              @click="submitQueryStore"
+              color="accent"
+              block
+              rounded
+              depressed
+            >
+              {{ $t("button.update") }}
+            </v-btn>
+          </div>
         </v-menu>
       </template>
     </v-combobox>
@@ -194,21 +212,21 @@
 </template>
 
 <script>
-import { isEqual } from "@/plugins/helpers";
+import { isEqual, keyInObj } from "@/plugins/helpers";
 import Weights from "@/components/Weights.vue";
 import ModalSearch from "@/components/ModalSearch.vue";
+import ROISelector from "@/components/ROISelector.vue";
 export default {
   data() {
     return {
       lang: this.$store.state.api.lang.toUpperCase(),
       langItems: ["EN"],
-      weightDialog: {},
       queryExamples: [
         { header: this.$t('home.search.examples'), },
         {
           example: true,
           entries: [
-            { type: "idx", positive: true, value: "3A3fa6b53c7e163ebd9663a01ab3efd24a", label: "Salvator Mundi" }
+            { type: "idx", positive: true, value: "3fa6b53c7e163ebd9663a01ab3efd24a", label: "Salvator Mundi" }
           ],
         },
         {
@@ -233,12 +251,24 @@ export default {
         },
       ],
       query: this.$store.state.api.query,
+      queryStore: [],
     };
   },
   methods: {
     submit(event, random = false) {
       this.$store.commit("api/updateRandom", random);
       this.$store.dispatch("api/load");
+      this.$refs.combobox.isMenuActive = false;
+    },
+    submitQueryStore() {
+      this.queryStore.forEach(({ index, value, type }) => {
+        if (type === "weights") {
+          this.query[index].weights = value;
+        } else if (type === "roi") {
+          this.query[index].roi = value;
+        }
+      });
+      this.queryStore = [];
     },
     remove(index) {
       if (index === -1) {
@@ -248,16 +278,17 @@ export default {
       }
     },
     toggle(index) {
-      const value = this.query[index].positive;
-      this.query[index].positive = !value;
+      const { positive } = this.query[index];
+      this.query[index].positive = !positive;
     },
     updateLang(value) {
       this.$store.commit("api/updateLang", value.toLowerCase());
     },
     updateWeights(index, value) {
-      if (!isEqual(value, this.query[index].weights)) {
-        this.query[index].weights = value;
-      }
+      this.queryStore.push({ index, value, type: "weights" });
+    },
+    updateROI(index, value) {
+      this.queryStore.push({ index, value, type: "roi" });
     },
   },
   computed: {
@@ -306,6 +337,7 @@ export default {
   components: {
     Weights,
     ModalSearch,
+    ROISelector,
   },
 };
 </script>
@@ -410,6 +442,10 @@ header .v-text-field--outlined>.v-input__control>.v-input__slot {
 
 .v-input.lang>.v-input__control>.v-input__slot {
   padding: 0 6px !important;
+}
+
+.v-input.lang>.v-input__control .v-select__selections>input {
+  display: none;
 }
 
 .v-input.lang .v-input__append-inner {

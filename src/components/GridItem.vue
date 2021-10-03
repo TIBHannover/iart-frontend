@@ -129,6 +129,7 @@ export default {
         positive: true,
         value: this.entry.id,
         weights: {},
+        roi: null,
         label: this.title,
         preview: this.entry.preview,
       };

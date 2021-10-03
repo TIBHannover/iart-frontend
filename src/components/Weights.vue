@@ -17,7 +17,7 @@
 
       <div
         v-if="selectWeights"
-        :class="local ? 'mt-6' : ''"
+        :class="local ? 'mt-6 mb-n4' : 'mb-n4'"
       >
         <div
           v-for="(values, key, index) in weights"
@@ -77,6 +77,7 @@
             v-if="weights[key].items.length > 1 && weights[key].advanced"
             v-model="weights[key].default"
             :items="weights[key].items"
+            @change="update"
             item-value="key"
             item-text="name"
             style="font-size: 14px"
@@ -94,19 +95,6 @@
         </div>
       </div>
     </v-card-text>
-
-    <v-card-actions :class="local && !selectWeights ? 'pb-3' : 'px-6 pb-6 pt-n2'">
-      <v-btn
-        v-if="selectWeights"
-        @click="update"
-        color="accent"
-        block
-        rounded
-        depressed
-      >
-        {{ $t("button.update") }}
-      </v-btn>
-    </v-card-actions>
   </v-card>
 </template>
 
@@ -143,7 +131,10 @@ export default {
       },
     };
   },
-  props: ["default", "local", "visible"],
+  props: {
+    value: Object,
+    local: Boolean,
+  },
   methods: {
     check(key) {
       const total = Object.values(this.weights).reduce(
@@ -152,6 +143,7 @@ export default {
       if (total === 0) {
         this.weights[key].value = 0.5;
       }
+      this.update();
     },
     update() {
       const weights = {};
@@ -166,17 +158,16 @@ export default {
       }
       if (Object.keys(weights).length) {
         this.$emit("update", weights);
-        this.$emit("close");
       }
     },
     change() {
-      if (this.default && Object.keys(this.default).length) {
+      if (this.value && Object.keys(this.value).length) {
         Object.keys(this.weights).forEach((group) => {
           const keys = this.weights[group].items.map((x) => x.key);
-          Object.keys(this.default).every((key) => {
-            if (this.default[key] > 0 && keys.includes(key)) {
+          Object.keys(this.value).every((key) => {
+            if (this.value[key] > 0 && keys.includes(key)) {
               this.weights[group].default = key;
-              this.weights[group].value = this.default[key];
+              this.weights[group].value = this.value[key];
               return false;
             }
             return true;
@@ -197,11 +188,6 @@ export default {
     },
   },
   watch: {
-    visible(value) {
-      if (!value) {
-        this.update();
-      }
-    },
     reset(newValues, oldValues) {
       if (!this.local && !isEqual(newValues, oldValues)) {
         this.change();
@@ -210,7 +196,7 @@ export default {
   },
   created() {
     this.change();
-    if (!this.local) {
+    if (!this.local || Object.keys(this.value).length) {
       this.selectWeights = true;
     }
   },

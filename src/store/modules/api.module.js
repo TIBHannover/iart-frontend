@@ -68,7 +68,6 @@ const api = {
               commit('updateJobID', res.data.job_id);
               setTimeout(() => dispatch('checkLoad'), 500);
             } else {
-              // TODO: add cache here
               if (keyInObj('entries', res.data)) {
                 commit('updateHits', res.data.entries);
                 commit('updateCounts', res.data.aggregations);
@@ -132,6 +131,7 @@ const api = {
                   positive: true,
                   value: id,
                   weights: {},
+                  roi: null,
                   label: meta.title,
                   preview,
                 };
@@ -145,6 +145,7 @@ const api = {
                   positive: true,
                   value: id,
                   weights: {},
+                  roi: null,
                   label: meta.title,
                   preview,
                 });
@@ -221,8 +222,9 @@ const api = {
                         type = type.slice(1);
                       }
                     }
-                    let query = { type, positive, value, weights: {} };
+                    let query = { type, positive, value };
                     if (type === 'idx') {
+                      query = { ...query, weights: {}, roi: null };
                       await dispatch('fetchIDXQuery', query).then((query) => {
                         queries.push(query);
                         count += 1;

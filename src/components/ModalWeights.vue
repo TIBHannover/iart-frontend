@@ -40,12 +40,22 @@
     </template>
 
     <Weights
-      :default="values"
+      v-model="weights"
       :local="false"
-      :visible="dialog"
       @update="update"
-      @close="dialog=false"
     />
+
+    <div class="pa-6">
+      <v-btn
+        @click="submit"
+        color="accent"
+        block
+        rounded
+        depressed
+      >
+        {{ $t("button.update") }}
+      </v-btn>
+    </div>
   </v-menu>
 </template>
 
@@ -55,13 +65,17 @@ import Weights from "@/components/Weights.vue";
 export default {
   data() {
     return {
+      weights: this.values,
       dialog: false,
     };
   },
   props: ["values"],
   methods: {
-    update(value) {
-      this.$emit("update", value);
+    submit() {
+      this.$emit("update", this.weights);
+    },
+    update(values) {
+      this.weights = values;
     },
   },
   computed: {
@@ -71,9 +85,7 @@ export default {
     changed() {
       if (this.values && Object.keys(this.values).length) {
         const defaultValue = { clip_embedding_feature: 1 };
-        if (!isEqual(this.values, defaultValue)) {
-          return true;
-        }
+        return !isEqual(this.values, defaultValue);
       }
       return false;
     },
