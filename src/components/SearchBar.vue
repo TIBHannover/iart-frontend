@@ -186,24 +186,25 @@
             />
           </div>
 
-          <Weights
-            v-if="item.type === 'idx'"
-            v-model="item.weights"
-            :key="item.value"
-            :local="true"
-            @update="updateWeights(index, ...arguments)"
-          />
+          <div v-if="item.type === 'idx'">
+            <Weights
+              v-model="item.weights"
+              :key="item.value"
+              :local="true"
+              @update="updateWeights(index, ...arguments)"
+            />
 
-          <div class="pa-6">
-            <v-btn
-              @click="submitQueryStore"
-              color="accent"
-              block
-              rounded
-              depressed
-            >
-              {{ $t("button.update") }}
-            </v-btn>
+            <div class="pa-6">
+              <v-btn
+                @click="submitQueryStore"
+                color="accent"
+                block
+                rounded
+                depressed
+              >
+                {{ $t("button.update") }}
+              </v-btn>
+            </div>
           </div>
         </v-menu>
       </template>

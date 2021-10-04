@@ -182,8 +182,8 @@ const api = {
           if (name === 'title' && value_str) {
             title.push(value_str);
           }
-        })
-        if (!title) title = [this.$t("griditem.notitle")];
+        });
+        if (!title.length) title.push('No title');
         return { ...params, label: title[0], preview };
       }
       return params;

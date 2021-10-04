@@ -196,7 +196,7 @@ export default {
   },
   created() {
     this.change();
-    if (!this.local || Object.keys(this.value).length) {
+    if (!this.local || (this.value && Object.keys(this.value).length)) {
       this.selectWeights = true;
     }
   },
