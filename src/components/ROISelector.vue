@@ -10,8 +10,8 @@
     </template>
     <div
       v-bind:style="{
-        height: imageHeight + 'px',
-        width: imageWidth + 'px',
+        height: image.height + 'px',
+        width: image.width + 'px',
         position: 'relative',
         margin: 'auto',
         zIndex: 100,

@@ -178,6 +178,7 @@
           >
             <ROISelector
               v-model="item.roi"
+              :key="item.value"
               :src="item.preview"
               class="grey lighten-1"
               @update="updateROI(index, ...arguments)"
