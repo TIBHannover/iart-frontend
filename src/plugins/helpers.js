@@ -1,5 +1,7 @@
 import Vue from 'vue';
-import * as jsts from 'jsts';
+// import * as jsts from 'jsts';
+// const jsts = require('jsts');
+
 export function keyInObj(key, obj) {
   if (typeof obj !== 'object') return false;
   return Object.prototype.hasOwnProperty.call(obj, key);
