@@ -2,6 +2,8 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import Home from '../views/Home.vue';
 import Search from '../views/Search.vue';
+import Legal from '../views/Legal.vue';
+import Privacy from '../views/Privacy.vue';
 import NotFound from '../views/NotFound.vue';
 Vue.use(VueRouter);
 const router = new VueRouter({
@@ -10,6 +12,8 @@ const router = new VueRouter({
   routes: [
     { path: '/', name: 'Home', component: Home },
     { path: '/search', name: 'Search', component: Search },
+    { path: '/legal', name: 'Legal', component: Legal },
+    { path: '/privacy', name: 'Privacy', component: Privacy },
     { path: '*', name: 'NotFound', component: NotFound },
   ],
 });

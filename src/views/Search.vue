@@ -42,6 +42,7 @@
     <Main />
     <DrawerFilter />
     <HelpButton />
+    <Footer />
   </v-app>
 </template>
 
@@ -54,6 +55,7 @@ import SearchBar from "@/components/SearchBar.vue";
 import HelpButton from "@/components/HelpButton.vue";
 import DrawerFilter from "@/components/DrawerFilter.vue";
 import DrawerSettings from "@/components/DrawerSettings.vue";
+import Footer from "@/components/Footer.vue";
 export default {
   data() {
     return {
@@ -134,10 +136,8 @@ export default {
         if (keyInObj("viewType", newValues.layout)) {
           if (
             newValues.layout.viewType === "umap" &&
-            (
-              oldValues.layout.viewType !== "umap" ||
-              newValues.layout.viewGrid !== oldValues.layout.viewGrid
-            )
+            (oldValues.layout.viewType !== "umap" ||
+              newValues.layout.viewGrid !== oldValues.layout.viewGrid)
           ) {
             this.load();
             return;
@@ -145,10 +145,8 @@ export default {
         }
         if (
           !isEqual(newValues.weights, oldValues.weights) &&
-          (
-            !isEqual(newValues.weights, { clip_embedding_feature: 1 }) ||
-            !isEqual(oldValues.weights, {})
-          )
+          (!isEqual(newValues.weights, { clip_embedding_feature: 1 }) ||
+            !isEqual(oldValues.weights, {}))
         ) {
           this.load();
           return;
@@ -171,6 +169,7 @@ export default {
     HelpButton,
     DrawerFilter,
     DrawerSettings,
+    Footer,
   },
 };
 </script>
