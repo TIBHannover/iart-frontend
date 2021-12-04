@@ -66,11 +66,11 @@
 
 <script>
 import Vue from 'vue';
-import { EXCLUDE_ANNOTATION_NAMES, PLUGIN_ICONS } from '../../app.config';
-import { keyInObj } from "@/plugins/helpers";
-import GridItem from "@/components/GridItem.vue";
+import { EXCLUDE_ANNOTATION_NAMES, PLUGIN_ICONS } from '@/../app.config';
+import GridItem from '@/components/GridItem.vue';
+
 export default {
-  props: ["entries"],
+  props: ['entries'],
   data() {
     return {
       slide: {},
@@ -122,12 +122,12 @@ export default {
           const values = entries[cluster].slice(0, 25);
           values.forEach(({ classifier }) => {
             classifier.forEach(({ plugin, annotations }) => {
-              if (!keyInObj(plugin, pluginTags)) {
+              if (!this.keyInObj(plugin, pluginTags)) {
                 pluginTags[plugin] = {};
               }
               annotations.forEach(({ name, value }) => {
                 if (!EXCLUDE_ANNOTATION_NAMES.includes(name) && value >= 0.1) {
-                  if (keyInObj(name, pluginTags[plugin])) {
+                  if (this.keyInObj(name, pluginTags[plugin])) {
                     pluginTags[plugin][name] += 1;
                   } else {
                     pluginTags[plugin][name] = 1;
@@ -167,7 +167,7 @@ export default {
   display: flex;
 }
 
-.cluster-view .text-h6>.v-label {
+.cluster-view .text-h6 > .v-label {
   font-size: 14px;
   cursor: auto;
 }
@@ -178,13 +178,13 @@ export default {
   min-width: 36px;
 }
 
-.cluster-view .v-slide-group:not(.v-slide-group--has-affixes)>.v-slide-group__next,
-.cluster-view .v-slide-group:not(.v-slide-group--has-affixes)>.v-slide-group__prev {
+.cluster-view .v-slide-group:not(.v-slide-group--has-affixes) > .v-slide-group__next,
+.cluster-view .v-slide-group:not(.v-slide-group--has-affixes) > .v-slide-group__prev {
   display: flex;
 }
 
-.cluster-view .v-slide-group__next--disabled>.theme--light.v-icon.v-icon.v-icon--disabled,
-.cluster-view .v-slide-group__prev--disabled>.theme--light.v-icon.v-icon.v-icon--disabled {
+.cluster-view .v-slide-group__next--disabled > .theme--light.v-icon.v-icon.v-icon--disabled,
+.cluster-view .v-slide-group__prev--disabled > .theme--light.v-icon.v-icon.v-icon--disabled {
   color: rgba(69, 123, 157, .2) !important;
 }
 

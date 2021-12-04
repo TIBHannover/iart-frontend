@@ -1,5 +1,9 @@
 <template>
-  <v-dialog v-model="dialog" max-width="450px" persistent>
+  <v-dialog
+    v-model="dialog"
+    max-width="450px"
+    persistent
+  >
     <v-card>
       <v-card-title class="mb-2">
         {{ $t("modal.cookies.title") }}

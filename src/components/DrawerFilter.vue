@@ -160,7 +160,7 @@
             </v-chip>
             <v-spacer></v-spacer>
           </template>
-          </v-autocomplete>
+        </v-combobox>
       </div>
 
       <div class="date-range mb-4">
@@ -238,7 +238,6 @@
 </template>
 
 <script>
-import { keyInObj } from "@/plugins/helpers";
 export default {
   data() {
     return {
@@ -252,25 +251,28 @@ export default {
   },
   methods: {
     close() {
-      this.$store.commit("user/toggleDrawer", "filter");
+      this.$store.commit('user/toggleDrawer', 'filter');
     },
     change() {
       Object.keys(this.data).forEach((field) => {
         this.data[field] = this.data[field].map((name) => {
-          if (typeof name === "string") {
+          if (typeof name === 'string') {
             let positive = true;
-            if (name.charAt(0) === "-") {
+            if (name.charAt(0) === '-') {
               name = name.slice(1);
               positive = false;
             }
             name = { positive, name };
-          } else if (typeof name === "object" && !keyInObj("positive", name)) {
+          } else if (
+            typeof name === 'object'
+            && !this.keyInObj('positive', name)
+          ) {
             name = { positive: true, ...name };
           }
           return name;
         });
       });
-      this.$store.commit("api/updateFilters", this.data);
+      this.$store.commit('api/updateFilters', this.data);
     },
     remove(index, field) {
       if (index === -1) {
@@ -284,10 +286,10 @@ export default {
       this.data[field][index].positive = !value;
     },
     removeAllFilters() {
-      this.$store.commit("api/removeAllFilters");
+      this.$store.commit('api/removeAllFilters');
     },
     commitDateRange() {
-      this.$store.commit("api/updateDateRange", this.dateRange);
+      this.$store.commit('api/updateDateRange', this.dateRange);
     },
     filterAutocomplete(item, queryText) {
       const key = item.name.toLocaleLowerCase();
@@ -332,20 +334,20 @@ export default {
     },
     drawer(value) {
       if (!value && this.$store.state.user.drawer.filter) {
-        this.$store.commit("user/toggleDrawer", "filter");
+        this.$store.commit('user/toggleDrawer', 'filter');
       }
     },
     toggleDrawer(value) {
       this.drawer = value;
     },
     toggleBookmarks(value) {
-      this.$store.commit("bookmark/update", value);
+      this.$store.commit('bookmark/update', value);
     },
     dateToggle(value) {
       if (value) {
-        this.$store.commit("api/updateDateRange", this.dateRange);
+        this.$store.commit('api/updateDateRange', this.dateRange);
       } else {
-        this.$store.commit("api/updateDateRange", []);
+        this.$store.commit('api/updateDateRange', []);
       }
     },
     updateDateToggle(value) {
@@ -354,7 +356,7 @@ export default {
       }
     },
     fullText() {
-      this.$store.commit("api/updateFullText", this.fullText);
+      this.$store.commit('api/updateFullText', this.fullText);
     },
     updateFullText(value) {
       this.fullText = value;

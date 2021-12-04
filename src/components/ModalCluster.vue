@@ -118,46 +118,45 @@
 </template>
 
 <script>
-import { keyInObj, isEqual } from "@/plugins/helpers";
 export default {
   data() {
     return {
       dialog: false,
       nClusters: 1,
       cluster: {
-        default: "kmeans",
+        default: 'kmeans',
         highlight: true,
         items: [
-          { key: "kmeans", name: this.$t("modal.cluster.method.type.kmeans") },
-          // { key: "agglomerative", name: this.$t("modal.cluster.method.type.agglomerative") },
+          { key: 'kmeans', name: this.$t('modal.cluster.method.type.kmeans') },
+          // { key: 'agglomerative', name: this.$t('modal.cluster.method.type.agglomerative') },
         ],
-      }
+      },
     };
   },
-  props: ["values"],
+  props: ['values'],
   methods: {
     update() {
       const values = {
         highlight: this.cluster.highlight,
         type: this.cluster.default,
         n: this.nClusters,
-      }
-      this.$emit("update", values);
+      };
+      this.$emit('update', values);
     },
     change() {
       if (this.values && Object.keys(this.values).length) {
-        if (keyInObj("highlight", this.values)) {
+        if (this.keyInObj('highlight', this.values)) {
           this.cluster.highlight = this.values.highlight;
         }
-        if (keyInObj("type", this.values)) {
+        if (this.keyInObj('type', this.values)) {
           this.cluster.default = this.values.type;
         }
-        if (keyInObj("n", this.values)) {
+        if (this.keyInObj('n', this.values)) {
           this.nClusters = this.values.n;
         }
       } else {
         this.cluster.highlight = true;
-        this.cluster.default = "kmeans";
+        this.cluster.default = 'kmeans';
         this.nClusters = 1;
       }
       this.update();
@@ -177,8 +176,8 @@ export default {
     is2dView() {
       const { settings } = this.$store.state.api;
       if (
-        keyInObj("viewType", settings.layout) &&
-        settings.layout.viewType === "umap"
+        this.keyInObj('viewType', settings.layout)
+        && settings.layout.viewType === 'umap'
       ) {
         return true;
       }
@@ -190,7 +189,7 @@ export default {
       this.dialog = value;
     },
     reset(newValues, oldValues) {
-      if (!isEqual(newValues, oldValues)) {
+      if (!this.isEqual(newValues, oldValues)) {
         this.change();
       }
     },

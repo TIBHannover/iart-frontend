@@ -60,8 +60,8 @@
 </template>
 
 <script>
-import { isEqual } from "@/plugins/helpers";
-import Weights from "@/components/Weights.vue";
+import Weights from '@/components/Weights.vue';
+
 export default {
   data() {
     return {
@@ -69,10 +69,10 @@ export default {
       dialog: false,
     };
   },
-  props: ["values"],
+  props: ['values'],
   methods: {
     submit() {
-      this.$emit("update", this.weights);
+      this.$emit('update', this.weights);
     },
     update(values) {
       this.weights = values;
@@ -85,7 +85,7 @@ export default {
     changed() {
       if (this.values && Object.keys(this.values).length) {
         const defaultValue = { clip_embedding_feature: 1 };
-        return !isEqual(this.values, defaultValue);
+        return !this.isEqual(this.values, defaultValue);
       }
       return false;
     },
@@ -93,7 +93,7 @@ export default {
   watch: {
     toggle(value) {
       this.dialog = value;
-    }
+    },
   },
   components: {
     Weights,

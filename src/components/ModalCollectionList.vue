@@ -92,23 +92,20 @@
 </template>
 
 <script>
-import { keyInObj, isEqual } from "../plugins/helpers";
 export default {
   data() {
     return {
       dialog: false,
       checkInterval: null,
       headers: [
-        { text: "", value: "status", width: 10, sortable: false },
-        { text: this.$t('modal.collection.list.table.name'), value: "name" },
-        { text: this.$t('modal.collection.list.table.count'), value: "count",
-          align: "end", width: 150 },
-        { text: this.$t('modal.collection.list.table.date'), value: "date",
-          align: "end", width: 150 },
-        { text: this.$t('modal.collection.list.table.actions'), value: "actions", align: "end", width: 100, sortable: false },
+        { text: '', value: 'status', width: 10, sortable: false },
+        { text: this.$t('modal.collection.list.table.name'), value: 'name' },
+        { text: this.$t('modal.collection.list.table.count'), value: 'count', align: 'end', width: 150 },
+        { text: this.$t('modal.collection.list.table.date'), value: 'date', align: 'end', width: 150 },
+        { text: this.$t('modal.collection.list.table.actions'), value: 'actions', align: 'end', width: 100, sortable: false },
       ],
       footerProps: {
-        "items-per-page-text": "",
+        'items-per-page-text': '',
       },
     };
   },
@@ -116,11 +113,11 @@ export default {
     toDate(item) {
       return new Date(item).toLocaleDateString();
     },
-    showCollection(item) {
+    showCollection() {
       // TODO
     },
     deleteCollection(item) {
-      this.$store.dispatch("collection/delete", item);
+      this.$store.dispatch('collection/delete', item);
     },
   },
   computed: {
@@ -136,24 +133,25 @@ export default {
       clearInterval(this.checkInterval);
       if (this.dialog) {
         this.checkInterval = setInterval(() => {
-          this.$store.dispatch("collection/list");
+          this.$store.dispatch('collection/list');
         }, 5000);
       }
     },
     dialog(value) {
       if (value) {
-        this.$store.dispatch("collection/list");
-        this.$emit("close");
+        this.$store.dispatch('collection/list');
+        this.$emit('close');
       }
     },
     toggleModal(value) {
       this.dialog = value;
-    }
+    },
   },
 };
 </script>
-<style>
-.v-data-footer__select>div {
+
+<style scoped>
+.v-data-footer__select > div {
   display: none;
 }
 </style>

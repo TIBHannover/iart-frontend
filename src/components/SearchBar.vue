@@ -53,6 +53,7 @@
       <template v-slot:item="{ attrs, item }">
         <v-chip
           v-for="entry in item.entries"
+          :key="entry.value"
           v-bind="attrs"
           class="mr-2"
         >
@@ -172,7 +173,7 @@
             </v-chip>
           </template>
 
-          <div 
+          <div
             v-if="item.type === 'idx' && item.preview"
             style="margin-left:auto; margin-right:auto; height:100%"
           >
@@ -214,42 +215,42 @@
 </template>
 
 <script>
-import { isEqual, keyInObj } from "@/plugins/helpers";
-import Weights from "@/components/Weights.vue";
-import ModalSearch from "@/components/ModalSearch.vue";
-import ROISelector from "@/components/ROISelector.vue";
+import Weights from '@/components/Weights.vue';
+import ModalSearch from '@/components/ModalSearch.vue';
+import ROISelector from '@/components/ROISelector.vue';
+
 export default {
   data() {
     return {
       lang: this.$store.state.api.lang.toUpperCase(),
-      langItems: ["EN"],
+      langItems: ['EN'],
       queryExamples: [
-        { header: this.$t('home.search.examples'), },
+        { header: this.$t('home.search.examples') },
         {
           example: true,
           entries: [
-            { type: "idx", positive: true, value: "3fa6b53c7e163ebd9663a01ab3efd24a", label: "Salvator Mundi" }
+            { type: 'idx', positive: true, value: '3fa6b53c7e163ebd9663a01ab3efd24a', label: 'Salvator Mundi' },
           ],
         },
         {
           example: true,
           entries: [
-            { type: "txt", positive: true, value: "adam and eve" },
-            { type: "txt", positive: false, value: "hercules" },
-          ]
+            { type: 'txt', positive: true, value: 'adam and eve' },
+            { type: 'txt', positive: false, value: 'hercules' },
+          ],
         },
         {
           example: true,
           entries: [
-            { type: "txt", positive: true, value: "too much alcohol" },
-          ]
+            { type: 'txt', positive: true, value: 'too much alcohol' },
+          ],
         },
         {
           example: true,
           entries: [
-            { type: "txt", positive: true, value: "ceiling painting" },
-            { type: "txt", positive: true, value: "cabinet" },
-          ]
+            { type: 'txt', positive: true, value: 'ceiling painting' },
+            { type: 'txt', positive: true, value: 'cabinet' },
+          ],
         },
       ],
       query: this.$store.state.api.query,
@@ -258,15 +259,15 @@ export default {
   },
   methods: {
     submit(event, random = false) {
-      this.$store.commit("api/updateRandom", random);
-      this.$store.dispatch("api/load");
+      this.$store.commit('api/updateRandom', random);
+      this.$store.dispatch('api/load');
       this.$refs.combobox.isMenuActive = false;
     },
     submitQueryStore() {
       this.queryStore.forEach(({ index, value, type }) => {
-        if (type === "weights") {
+        if (type === 'weights') {
           this.query[index].weights = value;
-        } else if (type === "roi") {
+        } else if (type === 'roi') {
           this.query[index].roi = value;
         }
       });
@@ -284,13 +285,13 @@ export default {
       this.query[index].positive = !positive;
     },
     updateLang(value) {
-      this.$store.commit("api/updateLang", value.toLowerCase());
+      this.$store.commit('api/updateLang', value.toLowerCase());
     },
     updateWeights(index, value) {
-      this.queryStore.push({ index, value, type: "weights" });
+      this.queryStore.push({ index, value, type: 'weights' });
     },
     updateROI(index, value) {
-      this.queryStore.push({ index, value, type: "roi" });
+      this.queryStore.push({ index, value, type: 'roi' });
     },
   },
   computed: {
@@ -301,27 +302,26 @@ export default {
   watch: {
     query: {
       handler(newValues, oldValues) {
-        if (!isEqual(newValues, oldValues)) {
+        if (!this.isEqual(newValues, oldValues)) {
           let query = [];
           newValues.every((value) => {
-            if (typeof value === "string") {
+            if (typeof value === 'string') {
               let positive = true;
-              if (value.charAt(0) === "-") {
+              if (value.charAt(0) === '-') {
                 value = value.slice(1);
                 positive = false;
               }
-              query.push({ type: "txt", positive, value });
-            } else if (typeof value === "object") {
+              query.push({ type: 'txt', positive, value });
+            } else if (typeof value === 'object') {
               if (value.example) {
                 query = value.entries;
                 return false;
-              } else {
-                query.push(value);
               }
+              query.push(value);
             }
             return true;
           });
-          this.$store.commit("api/updateQuery", query);
+          this.$store.commit('api/updateQuery', query);
         }
       },
       deep: true,

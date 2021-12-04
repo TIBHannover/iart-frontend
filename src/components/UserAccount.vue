@@ -29,11 +29,10 @@
 </template>
 
 <script>
-import { repPlace } from "../plugins/helpers";
 export default {
   methods: {
     logout() {
-      this.$store.dispatch("user/logout");
+      this.$store.dispatch('user/logout');
     },
   },
   computed: {
@@ -46,15 +45,16 @@ export default {
       return Math.round(diffInMs / (1000 * 60 * 60 * 24));
     },
     joined() {
-     let text = this.$t("user.menu.joined");
-     return repPlace({ n_days: this.nDays }, text);
+      const text = this.$t('user.menu.joined');
+      return this.repPlace({ n_days: this.nDays }, text);
     },
     initials() {
-     return this.data.username.slice(0, 2);
-    }
+      return this.data.username.slice(0, 2);
+    },
   },
 };
 </script>
+
 <style>
 .v-list-item__content.account {
   min-width: 250px;

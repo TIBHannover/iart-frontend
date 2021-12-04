@@ -2,7 +2,7 @@
   <v-main class="ma-1">
     <div
       v-if="entries"
-      style="height: 100%;"
+      style="height: calc(100% - 56px);"
     >
       <Umap
         v-if="layout==='umap'"
@@ -18,6 +18,8 @@
       />
     </div>
 
+    <Footer />
+
     <Loader :updating="$asyncComputed.entries" />
     <ModalNoResults :entries="entries" />
     <ModalError />
@@ -25,25 +27,27 @@
 </template>
 
 <script>
-import { keyInObj } from "@/plugins/helpers";
-import Umap from "@/components/Umap2D.vue";
-import Loader from "@/components/Loader.vue";
-import GridRanked from "@/components/GridRanked.vue";
-import GridCluster from "@/components/GridCluster.vue";
-import ModalError from "@/components/ModalError.vue";
-import ModalNoResults from "@/components/ModalNoResults.vue";
+import Umap from '@/components/Umap2D.vue';
+import Loader from '@/components/Loader.vue';
+import Footer from '@/components/Footer.vue';
+import GridRanked from '@/components/GridRanked.vue';
+import GridCluster from '@/components/GridCluster.vue';
+import ModalError from '@/components/ModalError.vue';
+import ModalNoResults from '@/components/ModalNoResults.vue';
+
 export default {
   asyncComputed: {
     entries() {
-      let { hits, settings } = this.$store.state.api;
+      let { hits } = this.$store.state.api;
+      const { settings } = this.$store.state.api;
       if (hits && Object.keys(settings).length) {
-        if (keyInObj("sortType", settings.layout)) {
+        if (this.keyInObj('sortType', settings.layout)) {
           switch (settings.layout.sortType) {
-            case "title":
+            case 'title':
               hits = hits.map((entry) => {
-                entry.order = "zzzz";
+                entry.order = 'zzzz';
                 entry.meta.every(({ name, value_str }) => {
-                  if (name === "title" && value_str) {
+                  if (name === 'title' && value_str) {
                     entry.order = value_str;
                     return false;
                   }
@@ -53,11 +57,11 @@ export default {
               });
               hits.sort((a, b) => a.order.localeCompare(b.order));
               break;
-            case "date":
+            case 'date':
               hits = hits.map((entry) => {
                 entry.order = 9999;
                 entry.meta.every(({ name, value_str }) => {
-                  if (name === "year_min" && value_str) {
+                  if (name === 'year_min' && value_str) {
                     entry.order = value_str;
                     return false;
                   }
@@ -66,18 +70,19 @@ export default {
                 return entry;
               });
               hits.sort((a, b) => a.order - b.order);
+              break;
+            default:
+              break;
           }
         }
         if (
-          keyInObj("sortOrder", settings.layout) &&
-          settings.layout.sortOrder === "desc"
+          this.keyInObj('sortOrder', settings.layout)
+          && settings.layout.sortOrder === 'desc'
         ) {
           hits = [...hits].reverse();
         }
       }
-      return new Promise(resolve =>
-        setTimeout(() => resolve(hits), 5)
-      );
+      return new Promise((resolve) => setTimeout(() => resolve(hits), 5));
     },
   },
   computed: {
@@ -87,25 +92,27 @@ export default {
         const { settings } = this.$store.state.api;
         if (Object.keys(settings).length) {
           if (
-            keyInObj("viewType", settings.layout) &&
-            settings.layout.viewType === "umap"
+            this.keyInObj('viewType', settings.layout)
+            && settings.layout.viewType === 'umap'
           ) {
-            return "umap";
+            return 'umap';
           }
           if (
-            keyInObj("n", settings.cluster) &&
-            settings.cluster.n > 1
+            this.keyInObj('n', settings.cluster)
+            && settings.cluster.n > 1
           ) {
-            return "cluster";
+            return 'cluster';
           }
         }
-        return "ranked";
+        return 'ranked';
       }
+      return null;
     },
   },
   components: {
     Umap,
     Loader,
+    Footer,
     GridRanked,
     GridCluster,
     ModalError,

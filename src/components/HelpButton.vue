@@ -15,7 +15,6 @@
 </template>
 
 <script>
-import { keyInObj } from "@/plugins/helpers";
 export default {
   data() {
     return {
@@ -28,70 +27,72 @@ export default {
   methods: {
     help() {
       const { path } = this.$router.currentRoute;
-      this.$store.commit("user/updateAllDrawers", true);
+      this.$store.commit('user/updateAllDrawers', true);
       let startStep = 1;
-      const steps = [{
-          intro: this.$t("help.search.general"),
-          element: "#search-general",
+      const steps = [
+        {
+          intro: this.$t('help.search.general'),
+          element: '#search-general',
           ...this.options,
         },
         {
-          intro: this.$t("help.search.image"),
-          element: "#search-image",
+          intro: this.$t('help.search.image'),
+          element: '#search-image',
           ...this.options,
         },
         {
-          intro: this.$t("help.search.random"),
-          element: "#search-random",
+          intro: this.$t('help.search.random'),
+          element: '#search-random',
           ...this.options,
         },
       ];
-      if (path === "/search") {
-        steps.push(...[{
-            intro: this.$t("help.filter.general"),
-            element: "#filter-general",
+      if (path === '/search') {
+        steps.push(...[
+          {
+            intro: this.$t('help.filter.general'),
+            element: '#filter-general',
             ...this.options,
           },
           {
-            intro: this.$t("help.filter.period"),
-            element: ".v-navigation-drawer .date-range",
+            intro: this.$t('help.filter.period'),
+            element: '.v-navigation-drawer .date-range',
             ...this.options,
           },
           {
-            intro: this.$t("help.settings.general"),
-            element: "#settings-general",
+            intro: this.$t('help.settings.general'),
+            element: '#settings-general',
             ...this.options,
           },
           {
-            intro: this.$t("help.settings.weights"),
-            element: "#weights-col",
-            tooltipClass: "move-right",
-            position: "right",
+            intro: this.$t('help.settings.weights'),
+            element: '#weights-col',
+            tooltipClass: 'move-right',
+            position: 'right',
             ...this.options,
           },
           {
-            intro: this.$t("help.settings.layout"),
-            element: "#layout-col",
-            tooltipClass: "move-right",
-            position: "right",
+            intro: this.$t('help.settings.layout'),
+            element: '#layout-col',
+            tooltipClass: 'move-right',
+            position: 'right',
             ...this.options,
           },
           {
-            intro: this.$t("help.settings.cluster"),
-            element: "#cluster-col",
-            position: "left",
+            intro: this.$t('help.settings.cluster'),
+            element: '#cluster-col',
+            position: 'left',
             ...this.options,
           },
         ]);
         if (this.isClusterView) {
           if (this.is2dView) {
             steps.push({
-              intro: this.$t("help.cluster.2d"),
+              intro: this.$t('help.cluster.2d'),
               ...this.options,
             });
           } else {
             steps.push({
-              intro: this.$t("help.cluster.1d"),
+              intro: this.$t('help.cluster.1d'),
               ...this.options,
             });
           }
@@ -102,25 +103,28 @@ export default {
       this.$intro().addSteps(steps)
         .onbeforechange((el) => {
           let modal = { modal: null, value: false };
-          this.$store.commit("user/updateAllModals", false);
+          this.$store.commit('user/updateAllModals', false);
           if (el) {
             switch (el.id) {
-              case "weights-col":
-                modal = { modal: "weights", value: true };
-                this.$store.commit("user/updateModal", modal);
+              case 'weights-col':
+                modal = { modal: 'weights', value: true };
+                this.$store.commit('user/updateModal', modal);
                 break;
-              case "layout-col":
-                modal = { modal: "layout", value: true };
-                this.$store.commit("user/updateModal", modal);
+              case 'layout-col':
+                modal = { modal: 'layout', value: true };
+                this.$store.commit('user/updateModal', modal);
                 break;
-              case "cluster-col":
-                modal = { modal: "cluster", value: true };
-                this.$store.commit("user/updateModal", modal);
+              case 'cluster-col':
+                modal = { modal: 'cluster', value: true };
+                this.$store.commit('user/updateModal', modal);
+                break;
+              default:
+                break;
             }
           }
         })
         .onexit(() => {
-          this.$store.commit("user/updateAllModals", false);
+          this.$store.commit('user/updateAllModals', false);
         })
         .start()
         .goToStep(startStep);
@@ -130,8 +134,8 @@ export default {
     isClusterView() {
       const { settings } = this.$store.state.api;
       if (
-        keyInObj("n", settings.cluster) &&
-        settings.cluster.n > 1
+        this.keyInObj('n', settings.cluster)
+        && settings.cluster.n > 1
       ) {
         return true;
       }
@@ -140,8 +144,8 @@ export default {
     is2dView() {
       const { settings } = this.$store.state.api;
       if (
-        keyInObj("viewType", settings.layout) &&
-        settings.layout.viewType === "umap"
+        this.keyInObj('viewType', settings.layout)
+        && settings.layout.viewType === 'umap'
       ) {
         return true;
       }

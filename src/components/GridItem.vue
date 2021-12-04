@@ -109,23 +109,23 @@
 </template>
 
 <script>
-import { keyInObj } from "@/plugins/helpers";
-import ModalItem from "@/components/ModalItem.vue";
+import ModalItem from '@/components/ModalItem.vue';
+
 export default {
   data() {
     return {
-      width: "auto",
-      height: "200px",
+      width: 'auto',
+      height: '200px',
       dialog: false,
       disabled: false,
       bookmarked: false,
     };
   },
-  props: ["entry", "entries"],
+  props: ['entry', 'entries'],
   methods: {
     query(append) {
       const query = {
-        type: "idx",
+        type: 'idx',
         positive: true,
         value: this.entry.id,
         weights: {},
@@ -134,25 +134,25 @@ export default {
         preview: this.entry.preview,
       };
       if (append) {
-        this.$store.commit("api/addQuery", query);
+        this.$store.commit('api/addQuery', query);
       } else {
-        this.$store.commit("api/updateQuery", [query]);
-        this.$store.commit("api/removeAllFilters");
+        this.$store.commit('api/updateQuery', [query]);
+        this.$store.commit('api/removeAllFilters');
       }
-      this.$store.commit("api/updateRandom", false);
+      this.$store.commit('api/updateRandom', false);
     },
     bookmark(event) {
-      if (event.target.nodeName === "I") {
+      if (event.target.nodeName === 'I') {
         if (!this.bookmarked) {
-          this.$store.dispatch("bookmark/add", this.entry.id);
+          this.$store.dispatch('bookmark/add', this.entry.id);
         } else {
-          this.$store.dispatch("bookmark/remove", this.entry.id);
+          this.$store.dispatch('bookmark/remove', this.entry.id);
         }
         this.bookmarked = !this.bookmarked;
       }
     },
     showDetails(event) {
-      if (event.target.nodeName !== "I") {
+      if (event.target.nodeName !== 'I') {
         this.dialog = true;
       }
     },
@@ -164,7 +164,7 @@ export default {
         const pixels = this.settings.layout.itemSize * 25;
         if (!this.settings.layout.viewGrid) {
           this.height = `${200 + pixels}px`;
-          this.width = "auto";
+          this.width = 'auto';
         } else {
           this.height = `${200 + pixels}px`;
           this.width = `${200 + pixels}px`;
@@ -175,10 +175,10 @@ export default {
       const { history } = this.$store.state.bookmark;
       if (history.length) {
         let check = history[0].bookmarks.includes(this.entry.id);
-        if (keyInObj("user", this.entry)) {
-          check |= this.entry.user.bookmarked;
+        if (this.keyInObj('user', this.entry)) {
+          check = check || this.entry.user.bookmarked;
         }
-        return check;      
+        return check;
       }
       return false;
     },
@@ -190,22 +190,22 @@ export default {
     title() {
       const title = [];
       this.entry.meta.forEach(({ name, value_str }) => {
-        if (name === "title" && value_str) {
+        if (name === 'title' && value_str) {
           title.push(value_str);
         }
       });
       if (title.length) return title[0];
-      return this.$t("griditem.notitle");
+      return this.$t('griditem.notitle');
     },
     artist() {
       const artist = [];
       this.entry.meta.forEach(({ name, value_str }) => {
-        if (name === "artist_name" && value_str) {
+        if (name === 'artist_name' && value_str) {
           artist.push(value_str);
         }
       });
-      if (artist.length) return artist.join(", ");
-      return this.$t("griditem.noartist");
+      if (artist.length) return artist.join(', ');
+      return this.$t('griditem.noartist');
     },
     settings() {
       return this.$store.state.api.settings;
@@ -214,7 +214,7 @@ export default {
       return {
         height: this.height,
         width: this.width,
-        cursor: "pointer",
+        cursor: 'pointer',
       };
     },
   },
@@ -258,7 +258,7 @@ export default {
   text-shadow: 0 0 5px black;
 }
 
-.grid-item>.bookmark {
+.grid-item > .bookmark {
   transition: opacity 0.25s ease;
   position: absolute;
   padding: 5px;
@@ -266,16 +266,16 @@ export default {
   top: 0;
 }
 
-.grid-item>.bookmark button {
+.grid-item > .bookmark button {
   opacity: 0;
 }
 
-.grid-item>.bookmark button.clicked,
+.grid-item > .bookmark button.clicked,
 .grid-item:hover>.bookmark button {
   opacity: 1;
 }
 
-.grid-item>img {
+.grid-item > img {
   transition: transform 0.5s ease;
   transform: scale(1.05);
   object-fit: cover;
@@ -285,15 +285,15 @@ export default {
   opacity: 1;
 }
 
-.grid-item:hover>img {
+.grid-item:hover > img {
   transform: scale(1.4);
 }
 
-.grid-item:hover>.overlay {
+.grid-item:hover > .overlay {
   opacity: 1;
 }
 
-.grid-item>.overlay {
+.grid-item > .overlay {
   background: linear-gradient(to top, black, #00000000 50%);
   transform: translate(-50%, -50%);
   transition: opacity 0.25s ease;
@@ -308,12 +308,12 @@ export default {
   top: 50%;
 }
 
-.grid-item>.overlay .view {
+.grid-item > .overlay .view {
   padding: 5px 35px 0 0;
   text-align: right;
 }
 
-.grid-item>.overlay .meta {
+.grid-item > .overlay .meta {
   position: absolute;
   padding: 5px 10px;
   width: 100%;
@@ -321,7 +321,7 @@ export default {
   left: 0;
 }
 
-.grid-item>.overlay .meta * {
+.grid-item > .overlay .meta * {
   text-transform: capitalize;
   text-overflow: ellipsis;
   line-height: 1.35rem;

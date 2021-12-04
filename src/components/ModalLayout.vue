@@ -159,33 +159,33 @@
 </template>
 
 <script>
-import { keyInObj, isEqual, isMobile } from "@/plugins/helpers";
+import { isMobile } from '@/plugins/helpers';
+
 export default {
   data() {
     return {
       dialog: false,
       itemSize: 0,
       view: {
-        default: "flexible",
+        default: 'flexible',
         grid: false,
         items: [
-          { key: "flexible", name: this.$t("modal.layout.view.type.flexible"), disabled: false },
-          { key: "umap", name: this.$t("modal.layout.view.type.umap"), disabled: false },
+          { key: 'flexible', name: this.$t('modal.layout.view.type.flexible'), disabled: false },
+          { key: 'umap', name: this.$t('modal.layout.view.type.umap'), disabled: false },
         ],
       },
       sort: {
-        default: "relevance",
-        order: "asc",
+        default: 'relevance',
+        order: 'asc',
         items: [
-          { key: "relevance", name: this.$t(
-              "modal.layout.sort.type.relevance") },
-          { key: "title", name: this.$t("modal.layout.sort.type.title") },
-          { key: "date", name: this.$t("modal.layout.sort.type.date") },
+          { key: 'relevance', name: this.$t('modal.layout.sort.type.relevance') },
+          { key: 'title', name: this.$t('modal.layout.sort.type.title') },
+          { key: 'date', name: this.$t('modal.layout.sort.type.date') },
         ],
       },
     };
   },
-  props: ["values"],
+  props: ['values'],
   methods: {
     update() {
       const values = {
@@ -194,32 +194,32 @@ export default {
         sortType: this.sort.default,
         viewGrid: this.view.grid,
         viewType: this.view.default,
-      }
-      this.$emit("update", values);
+      };
+      this.$emit('update', values);
     },
     change() {
       if (this.values && Object.keys(this.values).length) {
-        if (keyInObj("itemSize", this.values)) {
+        if (this.keyInObj('itemSize', this.values)) {
           this.itemSize = this.values.itemSize;
         }
-        if (keyInObj("viewGrid", this.values)) {
+        if (this.keyInObj('viewGrid', this.values)) {
           this.view.grid = this.values.viewGrid;
         }
-        if (keyInObj("viewType", this.values)) {
+        if (this.keyInObj('viewType', this.values)) {
           this.view.default = this.values.viewType;
         }
-        if (keyInObj("sortOrder", this.values)) {
+        if (this.keyInObj('sortOrder', this.values)) {
           this.sort.order = this.values.sortOrder;
         }
-        if (keyInObj("sortType", this.values)) {
+        if (this.keyInObj('sortType', this.values)) {
           this.sort.default = this.values.sortType;
         }
       } else {
         this.itemSize = 0;
-        this.sort.order = "asc";
-        this.sort.default = "relevance";
+        this.sort.order = 'asc';
+        this.sort.default = 'relevance';
         this.view.grid = false;
-        this.view.default = "flexible";
+        this.view.default = 'flexible';
       }
       this.update();
     },
@@ -240,27 +240,27 @@ export default {
       return this.$store.state.api.settings.layout;
     },
     defaultLayout() {
-      return this.sort.order === "asc" && this.sort.default === "relevance";
+      return this.sort.order === 'asc' && this.sort.default === 'relevance';
     },
     layoutIcon() {
-      if (this.sort.order === "asc") {
+      if (this.sort.order === 'asc') {
         switch (this.sort.default) {
-          case "title":
-            return "mdi-sort-alphabetical-ascending";
-          case "date":
-            return "mdi-sort-clock-ascending";
+          case 'title':
+            return 'mdi-sort-alphabetical-ascending';
+          case 'date':
+            return 'mdi-sort-clock-ascending';
           default:
-            return "mdi-sort-bool-ascending";
-        };
+            return 'mdi-sort-bool-ascending';
+        }
       }
       switch (this.sort.default) {
-        case "title":
-          return "mdi-sort-alphabetical-descending";
-        case "date":
-          return "mdi-sort-clock-descending";
+        case 'title':
+          return 'mdi-sort-alphabetical-descending';
+        case 'date':
+          return 'mdi-sort-clock-descending';
         default:
-          return "mdi-sort-bool-descending";
-      };
+          return 'mdi-sort-bool-descending';
+      }
     },
   },
   watch: {
@@ -268,7 +268,7 @@ export default {
       this.dialog = value;
     },
     reset(newValues, oldValues) {
-      if (!isEqual(newValues, oldValues)) {
+      if (!this.isEqual(newValues, oldValues)) {
         this.change();
       }
     },
@@ -276,7 +276,7 @@ export default {
   created() {
     this.change();
     this.view.items.forEach((item, index) => {
-      if (item.key === "umap" && isMobile()) {
+      if (item.key === 'umap' && isMobile()) {
         this.view.items[index].disabled = true;
       }
     });

@@ -22,9 +22,10 @@
 </template>
 
 <script>
-import GridItem from "@/components/GridItem.vue";
+import GridItem from '@/components/GridItem.vue';
+
 export default {
-  props: ["entries"],
+  props: ['entries'],
   data() {
     return {
       perPage: 150,

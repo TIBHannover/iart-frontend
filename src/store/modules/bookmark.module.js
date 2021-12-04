@@ -1,6 +1,7 @@
-import axios from '../../plugins/axios';
-import config from '../../../app.config';
-import { getHash } from '../../plugins/helpers';
+import mixins from '@/mixins';
+import axios from '@/plugins/axios';
+import config from '@/../app.config';
+
 const bookmark = {
   namespaced: true,
   state: {
@@ -9,42 +10,42 @@ const bookmark = {
     toggle: false,
   },
   actions: {
-    add({ commit, state, rootState }, params) {
+    add({ commit, rootState }, params) {
       if (rootState.user.loggedIn) {
         axios.post(`${config.API_LOCATION}/add_bookmark`, { id: params })
           .then((res) => {
             if (res.data.status === 'ok') {
-              commit("add", params);
+              commit('add', params);
             }
           })
           .catch((error) => {
             console.log(error);
           });
       } else {
-        commit("add", params);
+        commit('add', params);
       }
     },
-    remove({ commit, state, rootState }, params) {
+    remove({ commit, rootState }, params) {
       if (rootState.user.loggedIn) {
         axios.post(`${config.API_LOCATION}/remove_bookmark`, { id: params })
           .then((res) => {
             if (res.data.status === 'ok') {
-              commit("remove", params);
+              commit('remove', params);
             }
           })
           .catch((error) => {
             console.log(error);
           });
       } else {
-        commit("remove", params);
+        commit('remove', params);
       }
     },
-    list({ commit, state, rootState }, params) {
+    list({ commit, rootState }, params) {
       if (rootState.user.loggedIn) {
         axios.post(`${config.API_LOCATION}/list_bookmark`, { params })
           .then((res) => {
             if (res.data.status === 'ok') {
-              commit("set", res.data.data);
+              commit('set', res.data.data);
             }
           })
           .catch((error) => {
@@ -57,22 +58,22 @@ const bookmark = {
     update(state, value) {
       state.toggle = value;
     },
-    add(state, bookmark) {
-      let index = state.bookmarks.indexOf(bookmark);
+    add(state, values) {
+      let index = state.bookmarks.indexOf(values);
       if (index === -1) {
-        state.bookmarks.push(bookmark);
+        state.bookmarks.push(values);
       }
-      index = state.history[0].bookmarks.indexOf(bookmark);
+      index = state.history[0].bookmarks.indexOf(values);
       if (index === -1) {
-        state.history[0].bookmarks.push(bookmark);
+        state.history[0].bookmarks.push(values);
       }
     },
-    remove(state, bookmark) {
-      let index = state.bookmarks.indexOf(bookmark);
+    remove(state, values) {
+      let index = state.bookmarks.indexOf(values);
       if (index !== -1) {
         state.bookmarks.splice(index, 1);
       }
-      index = state.history[0].bookmarks.indexOf(bookmark);
+      index = state.history[0].bookmarks.indexOf(values);
       if (index !== -1) {
         state.history[0].bookmarks.splice(index, 1);
       }
@@ -88,7 +89,7 @@ const bookmark = {
           delete params[key];
         }
       });
-      const hash = getHash(params);
+      const hash = mixins.methods.getHash(params);
       const hashes = state.history.map((x) => x.hash);
       const index = hashes.indexOf(hash);
       if (index !== -1) {

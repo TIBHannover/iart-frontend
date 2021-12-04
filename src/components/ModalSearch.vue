@@ -110,8 +110,8 @@
 </template>
 
 <script>
-import { repPlace } from "../plugins/helpers";
-import isURL from "validator/lib/isURL";
+import isURL from 'validator/lib/isURL';
+
 export default {
   data() {
     return {
@@ -120,18 +120,18 @@ export default {
       selectFile: false,
     };
   },
-  props: ["value"],
+  props: ['value'],
   methods: {
     search(append) {
       const query = { positive: true, append };
       if (this.selectFile) {
-        query.type = "file";
+        query.type = 'file';
         query.value = this.user.file;
       } else {
-        query.type = "url";
+        query.type = 'url';
         query.value = this.user.url;
       }
-      this.$store.dispatch("api/upload", query);
+      this.$store.dispatch('api/upload', query);
       this.dialog = false;
       this.user = {};
     },
@@ -141,10 +141,10 @@ export default {
         if (value.size < 2000000) {
           return true;
         }
-        const text = this.$t("modal.search.file.rule");
-        return repPlace({ file_size: 2 }, text);
+        const text = this.$t('modal.search.file.rule');
+        return this.repPlace({ file_size: 2 }, text);
       }
-      return this.$t("field.required");
+      return this.$t('field.required');
     },
     checkURL() {
       const value = this.user.url;
@@ -152,9 +152,9 @@ export default {
         if (value.length && isURL(value)) {
           return true;
         }
-        return this.$t("modal.search.url.rule");
+        return this.$t('modal.search.url.rule');
       }
-      return this.$t("field.required");
+      return this.$t('field.required');
     },
   },
   computed: {
@@ -175,7 +175,7 @@ export default {
 
 <style>
 .v-text-field__details,
-.v-text-field__details>div {
+.v-text-field__details > div {
   min-height: 0;
 }
 </style>

@@ -4,8 +4,8 @@ const loading = {
     status: false,
   },
   mutations: {
-    update(state, loading) {
-      state.status = loading;
+    update(state, status) {
+      state.status = status;
     },
   },
 };

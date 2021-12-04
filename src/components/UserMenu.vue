@@ -31,7 +31,10 @@
 
     <UserAccount v-if="loggedIn" />
 
-    <v-list v-if="loggedIn" class="pa-0">
+    <v-list
+      v-if="loggedIn"
+      class="pa-0"
+    >
       <v-list-item-group>
         <v-list-item class="px-0" >
           <ModalCollectionUpload @close="menu = false" />
@@ -44,7 +47,11 @@
         </v-list-item>
       </v-list-item-group>
     </v-list>
-    <v-list v-else class="pa-0">
+
+    <v-list
+      v-else
+      class="pa-0"
+    >
       <v-list-item-group>
         <v-list-item class="px-0">
           <UserLogin @close="menu = false" />
@@ -58,11 +65,12 @@
 </template>
 
 <script>
-import UserLogin from "@/components/UserLogin.vue";
-import UserAccount from "@/components/UserAccount.vue";
-import UserRegister from "@/components/UserRegister.vue";
-import ModalCollectionList from "@/components/ModalCollectionList.vue";
-import ModalCollectionUpload from "@/components/ModalCollectionUpload.vue";
+import UserLogin from '@/components/UserLogin.vue';
+import UserAccount from '@/components/UserAccount.vue';
+import UserRegister from '@/components/UserRegister.vue';
+import ModalCollectionList from '@/components/ModalCollectionList.vue';
+import ModalCollectionUpload from '@/components/ModalCollectionUpload.vue';
+
 export default {
   data() {
     return {

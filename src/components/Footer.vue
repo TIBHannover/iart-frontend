@@ -1,35 +1,38 @@
 <template>
-  <v-footer v-bind="localAttrs" padless>
-    <v-card flat tile width="100%" class="text-center">
-      <v-card-text class="footer">
-        <a @click="legal"> Legal notice </a>
-        <a @click="privacy"> Data protection </a>
-      </v-card-text>
-    </v-card>
-  </v-footer>
+  <v-bottom-navigation>
+    <v-btn
+      @click="imprint"
+      text
+    >
+      {{ $t("imprint.title") }}
+    </v-btn>
+
+    <v-btn
+      @click="privacy"
+      text
+    >
+      {{ $t("privacy.title") }}
+    </v-btn>
+  </v-bottom-navigation>
 </template>
 
 <script>
-import router from "../router";
+import router from '@/router';
 
 export default {
-  data() {
-    return {};
-  },
   methods: {
-    legal() {
-      router.push({ path: "legal" });
+    imprint() {
+      router.push({ path: 'imprint' });
     },
     privacy() {
-      router.push({ path: "privacy" });
+      router.push({ path: 'privacy' });
     },
   },
 };
 </script>
 
-<style>
-.footer * {
-  padding-left: 1em;
-  padding-right: 1em;
-}
+<style scoped>
+  .v-bottom-navigation {
+    box-shadow: none;
+  }
 </style>

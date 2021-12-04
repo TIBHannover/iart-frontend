@@ -6,10 +6,9 @@ const error = {
     origin: null,
   },
   mutations: {
-    update(state, { date, error, origin }) {
-      console.log('error', date, origin);
+    update(state, { date, text, origin }) {
       state.date = date;
-      state.text = error;
+      state.text = text;
       state.origin = origin;
     },
   },

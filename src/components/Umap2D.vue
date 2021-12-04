@@ -17,21 +17,21 @@
 </template>
 
 <script>
-import hull from "hull.js";
-import clustering from "density-clustering";
-import { DataSet } from "vis-data/peer";
-import { Network } from "vis-network/peer";
-import { keyInObj, inflatePolygon, getCentroid } from "@/plugins/helpers";
-import ModalItem from "@/components/ModalItem.vue";
-import ModalGrid from "@/components/ModalGrid.vue";
+import hull from 'hull.js';
+import clustering from 'density-clustering';
+import { Network } from 'vis-network/peer';
+import { inflatePolygon, getCentroid } from '@/plugins/helpers';
+import ModalItem from '@/components/ModalItem.vue';
+import ModalGrid from '@/components/ModalGrid.vue';
+
 const Colors = [
-  "#F44336", "#2196F3", "#8BC34A", "#FF5722", "#E91E63",
-  "#03A9F4", "#CDDC39", "#795548", "#9C27B0", "#00BCD4",
-  "#FFEB3B", "#607D8B", "#673AB7", "#009688", "#FFC107",
-  "#9E9E9E", "#3F51B5", "#4CAF50", "#FF9800", "#000000",
+  '#F44336', '#2196F3', '#8BC34A', '#FF5722', '#E91E63',
+  '#03A9F4', '#CDDC39', '#795548', '#9C27B0', '#00BCD4',
+  '#FFEB3B', '#607D8B', '#673AB7', '#009688', '#FFC107',
+  '#9E9E9E', '#3F51B5', '#4CAF50', '#FF9800', '#000000',
 ];
 export default {
-  props: ["data"],
+  props: ['data'],
   data() {
     return {
       itemDialog: false,
@@ -55,7 +55,7 @@ export default {
       focusOptions: {
         scale: 25,
         animation: {
-          easingFunction: "easeInOutQuad",
+          easingFunction: 'easeInOutQuad',
           duration: 1000,
         },
       },
@@ -71,22 +71,22 @@ export default {
   },
   methods: {
     init() {
-      this.container = document.querySelector("#network .canvas");
-      this.container.oncontextmenu = function() { return false; };
-      this.container.addEventListener("mousemove", this.onMouseMove);
-      this.container.addEventListener("mousedown", this.onMouseDown);
-      this.container.addEventListener("mouseup", this.onMouseUp);
+      this.container = document.querySelector('#network .canvas');
+      this.container.oncontextmenu = function () { return false; };
+      this.container.addEventListener('mousemove', this.onMouseMove);
+      this.container.addEventListener('mousedown', this.onMouseDown);
+      this.container.addEventListener('mouseup', this.onMouseUp);
       this.network = new Network(this.container);
       this.network.setOptions(this.options);
       this.canvas = this.network.canvas.frame.canvas;
-      this.ctx = this.canvas.getContext("2d");
-      this.network.on("hoverNode", function() {
-        this.canvas.body.container.style.cursor = "pointer";
+      this.ctx = this.canvas.getContext('2d');
+      this.network.on('hoverNode', function () {
+        this.canvas.body.container.style.cursor = 'pointer';
       });
-      this.network.on("blurNode", function() {
-        this.canvas.body.container.style.cursor = "default";
+      this.network.on('blurNode', function () {
+        this.canvas.body.container.style.cursor = 'default';
       });
-      this.network.on("afterDrawing", () => {
+      this.network.on('afterDrawing', () => {
         if (this.state.drag) {
           this.drawSelection();
         }
@@ -94,17 +94,18 @@ export default {
           this.drawHulls();
         }
       });
-      this.network.on("click", this.onClick);
-      this.network.on("doubleClick", this.onDoubleClick);
-      window.addEventListener("resize", this.onResize);
+      this.network.on('click', this.onClick);
+      this.network.on('doubleClick', this.onDoubleClick);
+      window.addEventListener('resize', this.onResize);
       const rObs = new ResizeObserver(this.drawNodes);
       rObs.observe(this.container);
     },
     getSize() {
-      const network = document.querySelector("#network");
+      const network = document.querySelector('#network');
       if (network) {
         const { bottom } = network.getBoundingClientRect();
-        let { clientWidth, clientHeight } = network;
+        let { clientHeight } = network;
+        const { clientWidth } = network;
         if (bottom >= window.innerHeight) {
           clientHeight -= (bottom - window.innerHeight + 6);
         }
@@ -119,7 +120,7 @@ export default {
           if (t0 - this.clickTime > 250) {
             if (nodes && nodes.length === 1) {
               const item = this.nodes.find(
-                ({ id }) => nodes.includes(id)
+                ({ id }) => nodes.includes(id),
               );
               this.entries = [item.entry];
               this.itemDialog = true;
@@ -150,13 +151,13 @@ export default {
           endX: pageX - offset.left,
           endY: pageY - offset.top,
         };
-        this.container.style.cursor = "crosshair";
+        this.container.style.cursor = 'crosshair';
         this.state.drag = true;
       }
     },
     onMouseUp({ button }) {
       if (this.network && button === 2) {
-        this.container.style.cursor = "default";
+        this.container.style.cursor = 'default';
         this.state.drag = false;
         this.network.redraw();
         this.selectNodes();
@@ -176,7 +177,7 @@ export default {
       const w = end.x - start.x;
       const h = end.y - start.y;
       this.ctx.setLineDash([]);
-      this.ctx.fillStyle = "rgba(29, 53, 87, 0.25)";
+      this.ctx.fillStyle = 'rgba(29, 53, 87, 0.25)';
       this.ctx.fillRect(start.x, start.y, w, h);
     },
     createHulls() {
@@ -191,9 +192,7 @@ export default {
           groups.forEach((groupID) => {
             const entryPoints = this.nodes.filter(({ group }) => {
               return group === groupID;
-            }).map(({ x, y }) => {
-              return [x, y];
-            });
+            }).map(({ x, y }) => [x, y]);
             const clusters = dbscan.run(entryPoints, f * 20, 1);
             clusters.sort((a, b) => b.length - a.length);
             clusters.forEach((cluster, index) => {
@@ -201,9 +200,9 @@ export default {
                 const clusterPoints = entryPoints.filter((obj, index) => {
                   return cluster.includes(index);
                 });
-                const x = clusterPoints.map(([x, y]) => x);
+                const x = clusterPoints.map(([x]) => x);
                 const nX = [...new Set(x)].length;
-                const y = clusterPoints.map(([x, y]) => y);
+                const y = clusterPoints.map(([, y]) => y);
                 const nY = [...new Set(y)].length;
                 if (nX > 1 && nY > 1) {
                   let hullPoints = hull(clusterPoints, f * 50);
@@ -247,11 +246,11 @@ export default {
         Object.keys(this.centroids).forEach((groupID) => {
           const [xC, yC] = this.centroids[groupID];
           this.ctx.globalAlpha = 1;
-          this.ctx.textAlign = "center";
-          this.ctx.textBaseline = "middle";
-          this.ctx.font = `${f*30}px Roboto, sans-serif`;
+          this.ctx.textAlign = 'center';
+          this.ctx.textBaseline = 'middle';
+          this.ctx.font = `${f * 30}px Roboto, sans-serif`;
           this.ctx.lineWidth = 5;
-          this.ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
+          this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
           this.ctx.fillStyle = Colors[groupID];
           this.ctx.strokeText(parseInt(groupID) + 1, xC, yC);
           this.ctx.fillText(parseInt(groupID) + 1, xC, yC);
@@ -260,26 +259,27 @@ export default {
     },
     drawNodes() {
       const minSize = Math.min(...this.getSize());
-      let [boxSize, { grid }] = [0, this.state];
+      let boxSize = 0;
+      const { grid } = this.state;
       if (grid) {
         const x = this.data.map(
-          ({ coordinates }) => coordinates[0]
+          ({ coordinates }) => coordinates[0],
         );
         const nX = [...new Set(x)].length;
         const y = this.data.map(
-          ({ coordinates }) => coordinates[1]
+          ({ coordinates }) => coordinates[1],
         );
         const nY = [...new Set(y)].length;
         boxSize = minSize / Math.max(nX, nY);
       } else {
-        let { settings } = this.$store.state.api;
+        const { settings } = this.$store.state.api;
         if (!settings) settings.layout = { itemSize: 0 };
         boxSize = (settings.layout.itemSize + 8) * 2;
       }
       this.nodes = this.data.map((entry) => {
         return {
           id: entry.id,
-          shape: "custom",
+          shape: 'custom',
           image: entry.preview,
           group: entry.cluster,
           x: entry.coordinates[0] * minSize,
@@ -348,7 +348,7 @@ export default {
                 width: boxSize,
                 height: boxSize,
               },
-            }
+            };
           },
         };
       });
@@ -364,7 +364,7 @@ export default {
       const selected = this.nodes.filter(({ x, y }) => {
         return x >= startX && x <= endX && y >= startY && y <= endY;
       });
-      this.entries = selected.map(({ entry }) => { return entry });
+      this.entries = selected.map(({ entry }) => entry);
       this.gridDialog = true;
     },
     toCanvas(domX, domY) {
@@ -397,14 +397,14 @@ export default {
     const { settings } = this.$store.state.api;
     if (settings && Object.keys(settings).length) {
       if (
-        keyInObj("cluster", settings) && 
-        keyInObj("highlight", settings.cluster)
+        this.keyInObj('cluster', settings)
+        && this.keyInObj('highlight', settings.cluster)
       ) {
         this.state.highlight = settings.cluster.highlight;
       }
       if (
-        keyInObj("layout", settings) && 
-        keyInObj("viewGrid", settings.layout)
+        this.keyInObj('layout', settings)
+        && this.keyInObj('viewGrid', settings.layout)
       ) {
         this.state.grid = settings.layout.viewGrid;
       }

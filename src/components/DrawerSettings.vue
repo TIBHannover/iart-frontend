@@ -57,10 +57,10 @@
 </template>
 
 <script>
-import { isEqual, keyInObj } from "@/plugins/helpers";
-import ModalLayout from "@/components/ModalLayout.vue";
-import ModalWeights from "@/components/ModalWeights.vue";
-import ModalCluster from "@/components/ModalCluster.vue";
+import ModalLayout from '@/components/ModalLayout.vue';
+import ModalWeights from '@/components/ModalWeights.vue';
+import ModalCluster from '@/components/ModalCluster.vue';
+
 export default {
   data() {
     return {
@@ -72,7 +72,7 @@ export default {
   },
   methods: {
     close() {
-      this.$store.commit("user/toggleDrawer", "settings");
+      this.$store.commit('user/toggleDrawer', 'settings');
     },
     commit() {
       const settings = {
@@ -80,7 +80,7 @@ export default {
         cluster: this.cluster,
         layout: this.layout,
       };
-      this.$store.commit("api/updateSettings", settings);
+      this.$store.commit('api/updateSettings', settings);
     },
     reset() {
       this.weights = {};
@@ -89,19 +89,19 @@ export default {
       this.commit();
     },
     updateWeights(value) {
-      if (!isEqual(value, this.weights)) {
+      if (!this.isEqual(value, this.weights)) {
         this.weights = value;
         this.commit();
       }
     },
     updateLayout(value) {
-      if (!isEqual(value, this.layout)) {
+      if (!this.isEqual(value, this.layout)) {
         this.layout = value;
         this.commit();
       }
     },
     updateCluster(value) {
-      if (!isEqual(value, this.cluster)) {
+      if (!this.isEqual(value, this.cluster)) {
         this.cluster = value;
         this.commit();
       }
@@ -114,7 +114,7 @@ export default {
     getCss() {
       const { filter } = this.$store.state.user.drawer;
       return {
-        "margin-right": `${filter * 350}px`,
+        'margin-right': `${filter * 350}px`,
       };
     },
   },
@@ -126,13 +126,13 @@ export default {
   created() {
     const { settings } = this.$store.state.api;
     if (Object.keys(settings).length) {
-      if (keyInObj("weights", settings)) {
+      if (this.keyInObj('weights', settings)) {
         this.weights = settings.weights;
       }
-      if (keyInObj("cluster", settings)) {
+      if (this.keyInObj('cluster', settings)) {
         this.cluster = settings.cluster;
       }
-      if (keyInObj("layout", settings)) {
+      if (this.keyInObj('layout', settings)) {
         this.layout = settings.layout;
       }
     }

@@ -1,5 +1,8 @@
 <template>
-  <v-dialog v-model="dialog" max-width="450px">
+  <v-dialog
+    v-model="dialog"
+    max-width="450px"
+  >
     <v-card>
       <v-card-title class="mb-2">
         {{ $t("modal.noresults.title") }}
@@ -25,7 +28,7 @@
 
 <script>
 export default {
-  props: ["entries"],
+  props: ['entries'],
   data() {
     return {
       dialog: false,
@@ -33,13 +36,13 @@ export default {
   },
   methods: {
     removeAllFilters() {
-      this.$store.commit("api/removeAllFilters");
+      this.$store.commit('api/removeAllFilters');
       this.dialog = false;
     },
   },
   watch: {
     entries(value) {
-      if (typeof value !== "undefined") {
+      if (typeof value !== 'undefined') {
         if (value.length === 0) {
           this.dialog = true;
         } else {

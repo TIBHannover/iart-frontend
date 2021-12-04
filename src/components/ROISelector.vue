@@ -44,10 +44,11 @@
 </template>
 
 <script>
-import { VImg } from "vuetify/lib";
+import { VImg } from 'vuetify/lib';
+
 export default {
   extends: VImg,
-  data: function () {
+  data() {
     return {
       ...VImg.data,
       canvas: null,
@@ -115,7 +116,7 @@ export default {
           this.ctx.canvas.width = width;
           this.ctx.canvas.height = height;
           this.ctx.clearRect(0, 0, width, height);
-        } 
+        }
         this.setROI(this.value);
         this.drawROI();
       });
@@ -132,10 +133,10 @@ export default {
     },
     drawDefaultRect() {
       this.ctx.clearRect(0, 0, this.image.width, this.image.height);
-      this.ctx.fillStyle = "rgba(189, 189, 189, 0.65)";
+      this.ctx.fillStyle = 'rgba(189, 189, 189, 0.65)';
       this.ctx.fillRect(0, 0, this.image.width, this.image.height);
     },
-    setROI(roi, relative=true) {
+    setROI(roi, relative = true) {
       if (roi && !relative) {
         roi = {
           x: roi.x / this.image.width,
@@ -158,11 +159,11 @@ export default {
         this.ctx.beginPath();
         this.ctx.rect(x, y, width, height);
         this.ctx.lineWidth = 1;
-        this.ctx.strokeStyle = "rgba(230, 57, 70, 1)";
+        this.ctx.strokeStyle = 'rgba(230, 57, 70, 1)';
         this.ctx.stroke();
       }
     },
-    clickOutside(evt) {
+    clickOutside() {
       this.mouse.down = false;
       this.menu.show = false;
     },
@@ -175,24 +176,24 @@ export default {
       this.mouse.down = true;
       this.menu.show = false;
       if (this.ctx) {
-        this.$el.style.cursor = "crosshair";
+        this.$el.style.cursor = 'crosshair';
         this.drawDefaultRect();
       }
     },
     onMouseUp(evt) {
       if (this.ctx && this.mouse.down) {
         this.mouse.down = false;
-        this.$el.style.cursor = "default";
+        this.$el.style.cursor = 'default';
         const rect = this.computeRect(this.mouse.start, this.mousePos(evt));
         // region of interest is too small
         if (rect.width * rect.height < 20) {
           this.ctx.clearRect(0, 0, this.image.width, this.image.height);
-          this.$emit("update", null);
+          this.$emit('update', null);
           return;
         }
         this.setROI(rect, false);
         this.drawROI();
-        this.$emit("update", this.roi);
+        this.$emit('update', this.roi);
         this.menu = {
           show: false,
           x: evt.clientX,
@@ -238,7 +239,7 @@ export default {
   },
   mounted() {
     this.canvas = this.$refs.canvas;
-    this.ctx = this.canvas.getContext("2d");
+    this.ctx = this.canvas.getContext('2d');
   },
 };
 </script>

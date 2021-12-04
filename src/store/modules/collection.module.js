@@ -1,5 +1,6 @@
-import axios from '../../plugins/axios';
-import config from '../../../app.config';
+import axios from '@/plugins/axios';
+import config from '@/../app.config';
+
 const collection = {
   namespaced: true,
   state: {
@@ -10,22 +11,22 @@ const collection = {
     },
     modal: {
       list: false,
-    }
+    },
   },
   actions: {
-    upload({ commit, state }, params) {
-      let formData = new FormData();
+    upload({ commit }, params) {
+      const formData = new FormData();
       formData.append('image', params.image);
       formData.append('meta', params.meta);
       formData.append('name', params.name);
       commit('loading/update', true, { root: true });
       axios.post(`${config.API_LOCATION}/collection_upload`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          onUploadProgress: progressEvent => {
-            console.log(progressEvent.loaded);
-            console.log(progressEvent.total);
-          }
-        })
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (progressEvent) => {
+          console.log(progressEvent.loaded);
+          console.log(progressEvent.total);
+        },
+      })
         .then((res) => {
           commit('updateUpload', res.data);
         })
@@ -37,7 +38,7 @@ const collection = {
           commit('loading/update', false, { root: true });
         });
     },
-    list({ commit, state }) {
+    list({ commit }) {
       axios.get(`${config.API_LOCATION}/collection_list`)
         .then((res) => {
           if (res.data.status === 'ok') {
@@ -49,7 +50,7 @@ const collection = {
           commit('error/update', info, { root: true });
         });
     },
-    delete({ commit, state, dispatch }, params) {
+    delete({ commit, dispatch }, params) {
       axios.post(`${config.API_LOCATION}/collection_delete`, { params })
         .then((res) => {
           if (res.data.status === 'ok') {

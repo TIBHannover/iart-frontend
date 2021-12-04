@@ -5,7 +5,6 @@
     @keydown.left="getPrevious"
     @keydown.right="getNext"
     max-width="750px"
-    class="detail-view"
   >
     <v-btn
       class="middle"
@@ -176,7 +175,7 @@
             @click="filter(name, 'meta.artist_name')"
           >
             {{ name }}
-            <span>
+          </span>
         </div>
       </v-card-title>
 
@@ -377,15 +376,15 @@
 </template>
 
 <script>
-import { EXCLUDE_ANNOTATION_NAMES, PLUGIN_ICONS } from "../../app.config";
-import { keyInObj } from "@/plugins/helpers";
-import ROISelector from "@/components/ROISelector.vue";
+import { EXCLUDE_ANNOTATION_NAMES, PLUGIN_ICONS } from '../../app.config';
+import ROISelector from '@/components/ROISelector.vue';
+
 const scheme = new RegExp(
   /^(\d{1,2})([A-IK-Z]{1,2})?(\d+)?(\([^+)]+\))?(\d+)?(\(\+[0-9]+\))?$/,
-  "m"
+  'm',
 );
 export default {
-  props: ["value", "entry", "entries"],
+  props: ['value', 'entry', 'entries'],
   data() {
     return {
       pluginIcons: PLUGIN_ICONS,
@@ -395,28 +394,27 @@ export default {
   },
   methods: {
     query(value, append, type) {
-      const { settings } = this.$store.state.api;
       const query = { type, positive: true, value };
-      if (type === "idx") {
+      if (type === 'idx') {
         query.value = this.entry.id;
         query.weights = {};
         query.roi = this.roi;
-        query.label = this.title.join(" ");
+        query.label = this.title.join(' ');
         query.preview = this.entry.preview;
       }
       if (append) {
-        this.$store.commit("api/addQuery", query);
+        this.$store.commit('api/addQuery', query);
       } else {
-        this.$store.commit("api/updateQuery", [query]);
-        this.$store.commit("api/removeAllFilters");
+        this.$store.commit('api/updateQuery', [query]);
+        this.$store.commit('api/removeAllFilters');
       }
-      this.$store.commit("api/updateRandom", false);
-      this.$emit("input");
+      this.$store.commit('api/updateRandom', false);
+      this.$emit('input');
     },
     filter(value, field) {
       const filter = { positive: true, name: value };
-      this.$store.commit("api/addFilter", { field, filter });
-      this.$emit("input");
+      this.$store.commit('api/addFilter', { field, filter });
+      this.$emit('input');
     },
     updateROI(value) {
       this.roi = value;
@@ -438,31 +436,31 @@ export default {
     title() {
       const title = [];
       this.entry.meta.forEach(({ name, value_str }) => {
-        if (name === "title" && value_str) {
+        if (name === 'title' && value_str) {
           title.push(value_str);
         }
       });
-      if (title.length) return title[0].split(" ");
-      return [this.$t("griditem.notitle")];
+      if (title.length) return title[0].split(' ');
+      return [this.$t('griditem.notitle')];
     },
     artist() {
       const artist = [];
       this.entry.meta.forEach(({ name, value_str }) => {
-        if (name === "artist_name" && value_str) {
+        if (name === 'artist_name' && value_str) {
           artist.push(value_str);
         }
       });
       if (artist.length) return artist;
-      return [this.$t("griditem.noartist")];
+      return [this.$t('griditem.noartist')];
     },
     date() {
       let year_min = null;
       let year_max = null;
       this.entry.meta.forEach(({ name, value_str }) => {
         if (value_str) {
-          if (name === "year_min") {
+          if (name === 'year_min') {
             year_min = value_str;
-          } else if (name === "yaer_max") {
+          } else if (name === 'yaer_max') {
             year_max = value_str;
           }
         }
@@ -479,8 +477,8 @@ export default {
     },
     keywords() {
       const deselectedPlugins = [
-        "iconclass_clip_classifier",
-        "iconclass_lstm_classifier",
+        'iconclass_clip_classifier',
+        'iconclass_lstm_classifier',
       ];
       let keywords = [];
       this.entry.classifier.forEach(({ plugin, annotations }) => {
@@ -488,7 +486,7 @@ export default {
           annotations.forEach(({ name, value }) => {
             if (!EXCLUDE_ANNOTATION_NAMES.includes(name)) {
               keywords.push({
-                name: name.split(",")[0],
+                name: name.split(',')[0],
                 value,
                 plugin,
                 disable: value < 0.4,
@@ -505,15 +503,15 @@ export default {
     },
     texts() {
       const selectedPlugins = [
-        "iconclass_clip_classifier",
-        "iconclass_lstm_classifier",
+        'iconclass_clip_classifier',
+        'iconclass_lstm_classifier',
       ];
-      let texts = [];
+      const texts = [];
       this.entry.classifier.forEach(({ plugin, annotations }) => {
         if (selectedPlugins.includes(plugin)) {
           annotations.forEach(({ name, value }) => {
             if (!EXCLUDE_ANNOTATION_NAMES.includes(name)) {
-              const [code, keywords, label] = name.split("; ");
+              const [code, , label] = name.split('; ');
               const codeParts = scheme.exec(code).slice(1, 7);
               if (!codeParts[3]) {
                 texts.push({
@@ -533,34 +531,36 @@ export default {
     },
     metadata() {
       const selectedFields = [
-        "meta.depicts",
-        "meta.genre",
-        "meta.location",
-        "meta.medium",
-        "meta.object_type",
-        "meta.institution",
+        'meta.depicts',
+        'meta.genre',
+        'meta.location',
+        'meta.medium',
+        'meta.object_type',
+        'meta.institution',
       ];
-      const metadata = {};
+      const meta = {};
       this.entry.meta.forEach(({ name, value_str }) => {
         const field = `meta.${name}`;
         if (selectedFields.includes(field)) {
-          if (Object.prototype.hasOwnProperty.call(metadata, field)) {
-            metadata[field].push({ name: value_str, disable: false });
+          if (Object.prototype.hasOwnProperty.call(meta, field)) {
+            meta[field].push({ name: value_str, disable: false });
           } else {
-            metadata[field] = [{ name: value_str, disable: false }];
+            meta[field] = [{ name: value_str, disable: false }];
           }
         }
       });
-      this.entry.origin.forEach(({ value_str }) => {
-        metadata["origin.name"] = [{ name: value_str, disable: false }];
+      const origin = {};
+      this.entry.origin.forEach(({ name, value_str }) => {
+        origin[name] = value_str;
       });
-      return metadata;
+      meta['origin.name'] = [origin];
+      return meta;
     },
     references() {
-      const wd = "https://www.wikidata.org/wiki/";
+      const wd = 'https://www.wikidata.org/wiki/';
       const references = [];
       this.entry.meta.forEach(({ name, value_str }) => {
-        if (name === "wikidata" && value_str) {
+        if (name === 'wikidata' && value_str) {
           references.push({
             name,
             value: value_str,
@@ -585,7 +585,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .v-dialog .max-w {
   width: 100%;
 }
@@ -607,38 +607,38 @@ export default {
   word-break: break-word;
 }
 
-.v-dialog.detail-view .text-h5 > span,
-.v-dialog.detail-view .text-h6 > span,
-.v-dialog.detail-view .v-expansion-panel .capitalize,
-.v-dialog.detail-view .v-chip.origin-name {
+.v-dialog .text-h5 > span,
+.v-dialog .text-h6 > span,
+.v-dialog .v-expansion-panel .capitalize,
+.v-dialog .v-chip.origin-name {
   text-transform: capitalize;
 }
 
-.v-dialog.detail-view .text-h6 > span,
-.v-dialog.detail-view .text-h5 > span {
+.v-dialog .text-h6 > span,
+.v-dialog .text-h5 > span {
   cursor: pointer;
 }
 
-.v-dialog.detail-view .text-h6 > span:after {
+.v-dialog .text-h6 > span:after {
   content: ", ";
 }
 
-.v-dialog.detail-view .text-h6 > span:last-child:after {
+.v-dialog .text-h6 > span:last-child:after {
   content: "";
 }
 
-.v-dialog.detail-view .text-h5 > span:after {
+.v-dialog .text-h5 > span:after {
   content: " ";
 }
 
-.v-dialog.detail-view .text-h5 > span:last-child:after {
+.v-dialog .text-h5 > span:last-child:after {
   content: "";
 }
 
 .v-dialog span.clip {
   text-overflow: ellipsis;
   overflow: hidden;
-  max-width: 185px;
+  max-width: 170px;
 }
 
 .v-dialog span.tag {

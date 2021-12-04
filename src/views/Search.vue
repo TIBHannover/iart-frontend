@@ -1,6 +1,9 @@
 <template>
-  <v-app id="search">
-    <v-app-bar app flat>
+  <v-app>
+    <v-app-bar
+      app
+      flat
+    >
       <v-layout row>
         <div class="logo ml-3 mr-5" @click="reset">
           <img :title="appName" src="/assets/images/logo.png" />
@@ -42,20 +45,18 @@
     <Main />
     <DrawerFilter />
     <HelpButton />
-    <Footer />
   </v-app>
 </template>
 
 <script>
-import { keyInObj, isEqual } from "@/plugins/helpers";
-import Main from "@/components/Main.vue";
-import History from "@/components/History.vue";
-import UserMenu from "@/components/UserMenu.vue";
-import SearchBar from "@/components/SearchBar.vue";
-import HelpButton from "@/components/HelpButton.vue";
-import DrawerFilter from "@/components/DrawerFilter.vue";
-import DrawerSettings from "@/components/DrawerSettings.vue";
-import Footer from "@/components/Footer.vue";
+import Main from '@/components/Main.vue';
+import History from '@/components/History.vue';
+import UserMenu from '@/components/UserMenu.vue';
+import SearchBar from '@/components/SearchBar.vue';
+import HelpButton from '@/components/HelpButton.vue';
+import DrawerFilter from '@/components/DrawerFilter.vue';
+import DrawerSettings from '@/components/DrawerSettings.vue';
+
 export default {
   data() {
     return {
@@ -64,15 +65,15 @@ export default {
   },
   methods: {
     load() {
-      this.$store.dispatch("api/load");
+      this.$store.dispatch('api/load');
     },
     reset() {
-      this.$store.commit("api/removeAllFilters");
-      this.$store.commit("api/updateQuery", []);
-      this.$store.dispatch("api/load");
+      this.$store.commit('api/removeAllFilters');
+      this.$store.commit('api/updateQuery', []);
+      this.$store.dispatch('api/load');
     },
     toggleDrawer(value) {
-      this.$store.commit("user/toggleDrawer", value);
+      this.$store.commit('user/toggleDrawer', value);
     },
   },
   computed: {
@@ -83,7 +84,7 @@ export default {
       const { filters, dateRange, fullText } = this.$store.state.api;
       let total = Object.values(filters).reduce(
         (t, values) => t + values.length,
-        0
+        0,
       );
       if (dateRange.length) total += 1;
       total += fullText.length;
@@ -123,33 +124,32 @@ export default {
     },
     settings: {
       handler(newValues, oldValues) {
-        if (keyInObj("n", newValues.cluster)) {
+        if (this.keyInObj('n', newValues.cluster)) {
           if (
-            !keyInObj("n", oldValues.cluster) ||
-            newValues.cluster.n !== oldValues.cluster.n ||
-            newValues.cluster.type !== oldValues.cluster.type
+            !this.keyInObj('n', oldValues.cluster)
+            || newValues.cluster.n !== oldValues.cluster.n
+            || newValues.cluster.type !== oldValues.cluster.type
           ) {
             this.load();
             return;
           }
         }
-        if (keyInObj("viewType", newValues.layout)) {
+        if (this.keyInObj('viewType', newValues.layout)) {
           if (
-            newValues.layout.viewType === "umap" &&
-            (oldValues.layout.viewType !== "umap" ||
-              newValues.layout.viewGrid !== oldValues.layout.viewGrid)
+            newValues.layout.viewType === 'umap'
+            && (oldValues.layout.viewType !== 'umap'
+              || newValues.layout.viewGrid !== oldValues.layout.viewGrid)
           ) {
             this.load();
             return;
           }
         }
         if (
-          !isEqual(newValues.weights, oldValues.weights) &&
-          (!isEqual(newValues.weights, { clip_embedding_feature: 1 }) ||
-            !isEqual(oldValues.weights, {}))
+          !this.isEqual(newValues.weights, oldValues.weights)
+          && (!this.isEqual(newValues.weights, { clip_embedding_feature: 1 })
+            || !this.isEqual(oldValues.weights, {}))
         ) {
           this.load();
-          return;
         }
       },
       deep: true,
@@ -157,8 +157,8 @@ export default {
   },
   mounted() {
     window.onpopstate = () => {
-      this.$store.dispatch("api/setState", this.$route.query);
-      this.$store.commit("api/toggleBackBtn");
+      this.$store.dispatch('api/setState', this.$route.query);
+      this.$store.commit('api/toggleBackBtn');
     };
   },
   components: {
@@ -169,19 +169,18 @@ export default {
     HelpButton,
     DrawerFilter,
     DrawerSettings,
-    Footer,
   },
 };
 </script>
 
-<style>
-#search .logo {
+<style scoped>
+.logo {
   align-items: center;
   cursor: pointer;
   display: flex;
 }
 
-#search .logo > img {
+.logo > img {
   max-height: 28px;
 }
 </style>

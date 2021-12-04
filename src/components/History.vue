@@ -58,11 +58,14 @@
               <v-icon>mdi-trash-can-outline</v-icon>
             </v-btn>
           </v-layout>
+        </v-col>
       </v-row>
-      </v-flex>
 
       <v-list-item-group>
-        <v-list-item v-for="(item, index) in data">
+        <v-list-item
+          v-for="(item, index) in data"
+          :key="index"
+        >
           <v-list-item-content @click="submit(item, ...arguments)">
             <div class="query">
               <span
@@ -111,10 +114,10 @@ export default {
   methods: {
     title(item) {
       if (item.random) {
-        return this.$t("search.random");
+        return this.$t('search.random');
       }
       if (item.query.length) {
-        const title = this.$t("drawer.history.query.filled");
+        const title = this.$t('drawer.history.query.filled');
         const values = [];
         item.query.forEach(({ value, label }) => {
           if (label) {
@@ -123,60 +126,60 @@ export default {
             values.push(value);
           }
         });
-        return `${title}: ${values.join(", ")}`;
+        return `${title}: ${values.join(', ')}`;
       }
-      return this.$t("drawer.history.query.empty");
+      return this.$t('drawer.history.query.empty');
     },
     date(item) {
       const date = new Date(item.date);
       const hours = date.getHours();
-      let minutes = date.getMinutes();
+      const minutes = date.getMinutes();
       if (date.setHours(0, 0, 0, 0) === (new Date()).setHours(0, 0, 0, 0)) {
         if (minutes < 10) {
           return `${hours}:0${minutes}`;
         }
         return `${hours}:${minutes}`;
       }
-      let month = date.toLocaleString("default", { month: "short" });
-      if (navigator.language.startsWith("en-")) {
+      const month = date.toLocaleString('default', { month: 'short' });
+      if (navigator.language.startsWith('en-')) {
         return `${month}, ${date.getDate()}`;
       }
       return `${date.getDate()}. ${month}`;
     },
     filters(item) {
-      let values = [];
+      const values = [];
       if (item.full_text && item.full_text.length) {
-        const title = this.$t("drawer.filter.field")["full.text"];
-        values.push(`${title}: ${item.full_text.join(", ")}`);
+        const title = this.$t('drawer.filter.field')['full.text'];
+        values.push(`${title}: ${item.full_text.join(', ')}`);
       }
       if (item.filters && Object.keys(item.filters).length) {
         Object.keys(item.filters).forEach((field) => {
           if (item.filters[field].length) {
-            const title = this.$t("drawer.filter.field")[field];
+            const title = this.$t('drawer.filter.field')[field];
             const value = item.filters[field].map((n) => {
               if (!n.positive) return `–${n.name}`;
               return n.name;
             });
-            values.push(`${title}: ${value.join(", ")}`);
+            values.push(`${title}: ${value.join(', ')}`);
           }
         });
       }
       if (item.date_range && item.date_range.length) {
-        const title = this.$t("drawer.filter.field")["meta.period"];
-        values.push(`${title}: ${item.date_range.join("–")}`);
+        const title = this.$t('drawer.filter.field')['meta.period'];
+        values.push(`${title}: ${item.date_range.join('–')}`);
       }
-      if (values.length) return `${values.join(" · ")}`;
-      return this.$t("drawer.history.filter.empty");
+      if (values.length) return `${values.join(' · ')}`;
+      return this.$t('drawer.history.filter.empty');
     },
     removeItem(item) {
-      this.$store.commit("bookmark/removeHistory", item);
+      this.$store.commit('bookmark/removeHistory', item);
     },
     removeAllItems() {
-      this.$store.commit("bookmark/removeAllHistory");
+      this.$store.commit('bookmark/removeAllHistory');
     },
     submit(item, event) {
-      if (event.target.nodeName !== "I") {
-        this.$store.commit("api/updateAll", item);
+      if (event.target.nodeName !== 'I') {
+        this.$store.commit('api/updateAll', item);
       }
     },
   },
@@ -188,7 +191,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .v-menu__content:empty {
   box-shadow: none;
 }

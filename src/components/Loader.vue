@@ -17,7 +17,7 @@ export default {
       loading: true,
     };
   },
-  props: ["updating"],
+  props: ['updating'],
   computed: {
     status() {
       return this.$store.state.loading.status;
@@ -28,7 +28,7 @@ export default {
       this.loading = value;
     },
     updating: {
-      handler (value) {
+      handler(value) {
         if (value && !this.status) {
           this.loading = value.updating;
         }
@@ -39,7 +39,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .loading {
   background-color: rgba(0, 0, 0, 0.3);
   text-align: center;
@@ -51,7 +51,7 @@ export default {
   right: 0;
 }
 
-.loading>div {
+.loading > div {
   height: 100% !important;
 }
 </style>

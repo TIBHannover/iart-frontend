@@ -20,24 +20,20 @@
 </template>
 
 <script>
-import { keyInObj } from "@/plugins/helpers";
-
-import GridRanked from "@/components/GridRanked.vue";
-import GridCluster from "@/components/GridCluster.vue";
+import GridRanked from '@/components/GridRanked.vue';
+import GridCluster from '@/components/GridCluster.vue';
 
 export default {
-  props: ["value", "entries"],
+  props: ['value', 'entries'],
   computed: {
     layout() {
       const { settings } = this.$store.state.api;
-
       if (
-        keyInObj('n', settings.cluster) &&
-        settings.cluster.n > 1
+        this.keyInObj('n', settings.cluster)
+        && settings.cluster.n > 1
       ) {
         return 'cluster';
       }
-
       return 'ranked';
     },
   },

@@ -10,6 +10,12 @@
       "lang": "Query Language"
     }
   },
+  "imprint": {
+    "title": "Imprint"
+  },
+  "privacy": {
+    "title": "Privacy Statement"
+  },
   "help": {
     "title": "Need Help?",
     "search": {

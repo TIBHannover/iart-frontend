@@ -1,14 +1,14 @@
-import axios from '../../plugins/axios';
-import config from '../../../app.config';
+import axios from '@/plugins/axios';
+import config from '@/../app.config';
 
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {
     const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
+    for (let i = 0; i < cookies.length; i += 1) {
       const cookie = cookies[i].trim();
       // Does this cookie string begin with the name we want?
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+      if (cookie.substring(0, name.length + 1) === `${name}=`) {
         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
         break;
       }
@@ -35,9 +35,9 @@ const user = {
   actions: {
     getCSRFToken({ commit, state }, params) {
       axios.get(`${config.API_LOCATION}/get_csrf_token`, {
-          params, withCredentials: true
-        })
-        .then((res) => {
+        params, withCredentials: true,
+      })
+        .then(() => {
           const csrftoken = getCookie('csrftoken');
           if (state.csrfToken !== csrftoken) {
             commit('updateCSRFToken', csrftoken);
@@ -47,7 +47,7 @@ const user = {
           console.log(error);
         });
     },
-    getUserData({ commit, state }, params) {
+    getUserData({ commit }, params) {
       axios.post(`${config.API_LOCATION}/get_user`, { params })
         .then((res) => {
           if (res.data.status === 'ok') {
@@ -61,7 +61,7 @@ const user = {
     },
     login({ commit }, params) {
       commit('loading/update', true, { root: true });
-      let info = { date: Date(), origin: 'login' };
+      const info = { date: Date(), origin: 'login' };
       axios.post(`${config.API_LOCATION}/login`, { params })
         .then((res) => {
           if (res.data.status === 'ok') {
@@ -98,7 +98,7 @@ const user = {
     },
     register({ commit }, params) {
       commit('loading/update', true, { root: true });
-      let info = { date: Date(), origin: 'register' };
+      const info = { date: Date(), origin: 'register' };
       axios.post(`${config.API_LOCATION}/register`, { params })
         .then((res) => {
           if (res.data.status === 'ok') {

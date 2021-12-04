@@ -1,16 +1,17 @@
 import Vue from 'vue';
-import router from '../../router';
-import axios from '../../plugins/axios';
-import config from '../../../app.config';
-import { isEqual, lsplit, keyInObj } from '../../plugins/helpers';
+import router from '@/router';
+import mixins from '@/mixins';
+import axios from '@/plugins/axios';
+import config from '@/../app.config';
+import { lsplit } from '@/plugins/helpers';
 
 function generateRandomStr(length) {
-  var result = [];
-  var characters = 'abcdef0123456789';
-  var charactersLength = characters.length;
-  for (var i = 0; i < length; i++) {
-    result.push(characters.charAt(Math.floor(Math.random() *
-      charactersLength)));
+  const result = [];
+  const characters = 'abcdef0123456789';
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i += 1) {
+    const random = Math.random() * charactersLength;
+    result.push(characters.charAt(Math.floor(random)));
   }
   return result.join('');
 }
@@ -18,7 +19,7 @@ const api = {
   namespaced: true,
   state: {
     random: null,
-    lang: "en",
+    lang: 'en',
     query: [],
     dateRange: [],
     fullText: [],
@@ -29,10 +30,10 @@ const api = {
       weights: {},
       layout: {
         itemSize: 0,
-        sortOrder: "asc",
-        sortType: "relevance",
+        sortOrder: 'asc',
+        sortType: 'relevance',
         viewGrid: false,
-        viewType: "flexible",
+        viewType: 'flexible',
       },
       cluster: {},
     },
@@ -41,7 +42,9 @@ const api = {
     jobID: null,
   },
   actions: {
-    load({ commit, dispatch, state, rootState }) {
+    load({
+      commit, dispatch, state, rootState,
+    }) {
       const params = {
         lang: state.lang,
         query: state.query,
@@ -53,7 +56,7 @@ const api = {
         bookmarks: rootState.bookmark.toggle,
         aggregate: config.DEFAULT_AGGREGATION_FIELDS,
       };
-      if (!isEqual(params, state.prevParams)) {
+      if (!mixins.methods.isEqual(params, state.prevParams)) {
         commit('updateParams', params);
         commit('loading/update', true, { root: true });
         commit('bookmark/addHistory', params, { root: true });
@@ -68,7 +71,7 @@ const api = {
               commit('updateJobID', res.data.job_id);
               setTimeout(() => dispatch('checkLoad'), 500);
             } else {
-              if (keyInObj('entries', res.data)) {
+              if (mixins.methods.keyInObj('entries', res.data)) {
                 commit('updateHits', res.data.entries);
                 commit('updateCounts', res.data.aggregations);
               } else {
@@ -83,7 +86,7 @@ const api = {
             const info = { date: Date(), error, origin: 'search' };
             commit('error/update', info, { root: true });
             commit('loading/update', false, { root: true });
-          });;
+          });
       }
     },
     checkLoad({ commit, dispatch, state }) {
@@ -94,7 +97,7 @@ const api = {
             commit('updateJobID', res.data.job_id);
             setTimeout(() => dispatch('checkLoad'), 500);
           } else {
-            if (keyInObj('entries', res.data)) {
+            if (mixins.methods.keyInObj('entries', res.data)) {
               commit('updateHits', res.data.entries);
               commit('updateCounts', res.data.aggregations);
             } else {
@@ -112,7 +115,7 @@ const api = {
         });
     },
     upload({ commit }, params) {
-      let formData = new FormData();
+      const formData = new FormData();
       if (params.type === 'file') {
         formData.append('file', params.value);
       } else if (params.type === 'url') {
@@ -153,9 +156,8 @@ const api = {
               commit('updateQuery', queries);
               commit('removeAllFilters');
             }
-          }
-          else {
-            const info = { date: Date(), error, origin: 'upload' };
+          } else {
+            const info = { date: Date(), error: '', origin: 'upload' };
             commit('error/update', info, { root: true });
             commit('loading/update', false, { root: true });
           }
@@ -166,17 +168,18 @@ const api = {
           commit('loading/update', false, { root: true });
         });
     },
-    async fetchIDXQuery({ state }, params) {
+    async fetchIDXQuery(params) {
       let res;
       try {
         res = await axios.post(
-          `${config.API_LOCATION}/get`, { id: params.value }
+          `${config.API_LOCATION}/get`,
+          { id: params.value },
         );
       } catch (error) {
         return params;
       }
       if (res.data.status === 'ok') {
-        let title = [];
+        const title = [];
         const { preview } = res.data.entry;
         res.data.entry.meta.forEach(({ name, value_str }) => {
           if (name === 'title' && value_str) {
@@ -222,18 +225,18 @@ const api = {
                         type = type.slice(1);
                       }
                     }
-                    let query = { type, positive, value };
+                    let newQuery = { type, positive, value };
                     if (type === 'idx') {
-                      query = { ...query, weights: {}, roi: null };
-                      await dispatch('fetchIDXQuery', query).then((query) => {
-                        queries.push(query);
+                      newQuery = { ...newQuery, weights: {}, roi: null };
+                      await dispatch('fetchIDXQuery', newQuery).then((result) => {
+                        queries.push(result);
                         count += 1;
                         if (count === maxCount) {
                           resolve();
                         }
                       });
                     } else {
-                      queries.push(query);
+                      queries.push(newQuery);
                       count += 1;
                     }
                   });
@@ -241,9 +244,9 @@ const api = {
                 case 'random':
                   random = values;
                   break;
-                case 'period':
-                  let period = values.split('-').map(
-                    (x) => parseInt(x, 10)
+                case 'period': {
+                  const period = values.split('-').map(
+                    (x) => parseInt(x, 10),
                   );
                   if (period.length === 1) {
                     period.push(period[0]);
@@ -254,6 +257,7 @@ const api = {
                     dateRange = period;
                   }
                   break;
+                }
                 case 'full.text':
                   fullText = values.split(',');
                   break;
@@ -267,7 +271,7 @@ const api = {
                         }
                         name = name.slice(1);
                       }
-                      if (keyInObj(field, filters)) {
+                      if (mixins.methods.keyInObj(field, filters)) {
                         filters[field].push({ positive, name });
                       } else {
                         filters[field] = [{ positive, name }];
@@ -404,7 +408,7 @@ const api = {
       }
     },
     updateQuery(state, query) {
-      if (!isEqual(state.query, query)) {
+      if (!mixins.methods.isEqual(state.query, query)) {
         state.query = query;
       }
     },
@@ -412,28 +416,12 @@ const api = {
       state.lang = lang;
     },
     addFilter(state, { field, filter }) {
-      if (keyInObj(field, state.filters)) {
+      if (mixins.methods.keyInObj(field, state.filters)) {
         if (!state.filters[field].includes(filter)) {
           state.filters[field].push(filter);
         }
       } else {
         Vue.set(state.filters, field, [filter]);
-      }
-    },
-    removeFilter(state, { field, filter }) {
-      if (keyInObj(field, state.filters)) {
-        if (value === -1) {
-          Vue.delete(state.filters, field);
-        } else {
-          const values = state.filters[field];
-          const index = values.indexOf(filter);
-          if (index !== -1) {
-            state.filters[field].splice(index, 1);
-          }
-          if (state.filters[field].length === 0) {
-            Vue.delete(state.filters, field);
-          }
-        }
       }
     },
     removeAllFilters(state) {
@@ -449,24 +437,24 @@ const api = {
       state.bookmarks = false;
     },
     updateFilters(state, filters) {
-      if (!isEqual(state.filters, filters)) {
+      if (!mixins.methods.isEqual(state.filters, filters)) {
         state.filters = filters;
       }
     },
     updateAll(state, params) {
-      if (keyInObj('query', params)) {
+      if (mixins.methods.keyInObj('query', params)) {
         state.query = params.query;
       }
-      if (keyInObj('random', params)) {
+      if (mixins.methods.keyInObj('random', params)) {
         state.random = params.random;
       }
-      if (keyInObj('filters', params)) {
+      if (mixins.methods.keyInObj('filters', params)) {
         state.filters = params.filters;
       }
-      if (keyInObj('full_text', params)) {
+      if (mixins.methods.keyInObj('full_text', params)) {
         state.fullText = params.full_text;
       }
-      if (keyInObj('date_range', params)) {
+      if (mixins.methods.keyInObj('date_range', params)) {
         state.dateRange = params.date_range;
       }
     },

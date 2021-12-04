@@ -99,7 +99,6 @@
 </template>
 
 <script>
-import { isEqual } from "@/plugins/helpers";
 export default {
   data() {
     return {
@@ -107,25 +106,25 @@ export default {
       selectWeights: false,
       weights: {
         color: {
-          default: "yuv_histogram_feature",
-          icon: "mdi-palette-outline",
-          name: this.$t("modal.weights.group.color"),
+          default: 'yuv_histogram_feature',
+          icon: 'mdi-palette-outline',
+          name: this.$t('modal.weights.group.color'),
           advanced: false,
           value: 0.0,
           items: [
-            { key: "yuv_histogram_feature", name: "YUV Histogram" },
+            { key: 'yuv_histogram_feature', name: 'YUV Histogram' },
           ],
         },
         content: {
-          default: "clip_embedding_feature",
-          icon: "mdi-image-outline",
-          name: this.$t("modal.weights.group.content"),
+          default: 'clip_embedding_feature',
+          icon: 'mdi-image-outline',
+          name: this.$t('modal.weights.group.content'),
           advanced: false,
           value: 1.0,
           items: [
-            { key: "clip_embedding_feature", name: "CLIP Embedding" },
-            { key: "byol_embedding_feature", name: "Wikimedia Embedding" },
-            { key: "image_net_inception_feature", name: "ImageNet Embedding" },
+            { key: 'clip_embedding_feature', name: 'CLIP Embedding' },
+            { key: 'byol_embedding_feature', name: 'Wikimedia Embedding' },
+            { key: 'image_net_inception_feature', name: 'ImageNet Embedding' },
           ],
         },
       },
@@ -138,7 +137,8 @@ export default {
   methods: {
     check(key) {
       const total = Object.values(this.weights).reduce(
-        (t, weight) => t + weight.value, 0
+        (t, weight) => t + weight.value,
+        0,
       );
       if (total === 0) {
         this.weights[key].value = 0.5;
@@ -157,7 +157,7 @@ export default {
         });
       }
       if (Object.keys(weights).length) {
-        this.$emit("update", weights);
+        this.$emit('update', weights);
       }
     },
     change() {
@@ -174,9 +174,9 @@ export default {
           });
         });
       } else {
-        this.weights.color.default = "yuv_histogram_feature";
+        this.weights.color.default = 'yuv_histogram_feature';
         this.weights.color.value = 0.0;
-        this.weights.content.default = "clip_embedding_feature";
+        this.weights.content.default = 'clip_embedding_feature';
         this.weights.content.value = 1.0;
       }
       this.update();
@@ -189,7 +189,7 @@ export default {
   },
   watch: {
     reset(newValues, oldValues) {
-      if (!this.local && !isEqual(newValues, oldValues)) {
+      if (!this.local && !this.isEqual(newValues, oldValues)) {
         this.change();
       }
     },
@@ -203,8 +203,8 @@ export default {
 };
 </script>
 
-<style>
-.weight .row>label {
+<style scoped>
+.weight .row > label {
   align-items: center;
 }
 

@@ -1,5 +1,8 @@
 <template>
-  <v-dialog v-model="dialog" max-width="350px">
+  <v-dialog
+    v-model="dialog"
+    max-width="350px"
+  >
     <template v-slot:activator="{ on }">
       <v-btn v-on="on" class="register" text block large>
         {{ $t("user.register.title") }}
@@ -76,23 +79,23 @@ export default {
   },
   methods: {
     register() {
-      this.$store.dispatch("user/register", this.user);
+      this.$store.dispatch('user/register', this.user);
       this.dialog = false;
     },
     checkLength(value) {
       if (value) {
         if (value.length < 5) {
-          return this.$t("user.register.rules.min");
+          return this.$t('user.register.rules.min');
         }
 
         if (value.length > 50) {
-          return this.$t("user.register.rules.max");
+          return this.$t('user.register.rules.max');
         }
 
         return true;
       }
 
-      return this.$t("field.required");
+      return this.$t('field.required');
     },
   },
   computed: {
@@ -100,19 +103,17 @@ export default {
       if (Object.keys(this.user).length) {
         const total = Object.values(this.user).reduce(
           (t, value) => t + (this.checkLength(value) === true),
-          0
+          0,
         );
-
         if (total === 3) return false;
       }
-
       return true;
     },
   },
   watch: {
     dialog(value) {
       if (value) {
-        this.$emit("close");
+        this.$emit('close');
       }
     },
   },
