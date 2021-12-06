@@ -19,20 +19,29 @@
       outlined
     >
       <template v-slot:prepend-inner>
-        <v-icon
+        <v-btn
           :title="$t('button.search')"
           @click="submit"
+          small
+          icon
         >
-          mdi-magnify
-        </v-icon>
-        <v-icon
+          <v-icon>
+            mdi-magnify
+          </v-icon>
+        </v-btn>
+
+        <v-btn
           id="search-random"
           :title="$t('search.random')"
           class="ml-1"
           @click="submit($event, random=true)"
+          small
+          icon
         >
-          mdi-slot-machine-outline
-        </v-icon>
+          <v-icon>
+            mdi-slot-machine-outline
+          </v-icon>
+        </v-btn>
       </template>
 
       <template v-slot:append>
@@ -47,6 +56,7 @@
           solo
           flat
         ></v-select>
+
         <ModalSearch @search="submit" />
       </template>
 
@@ -407,7 +417,7 @@ header .v-autocomplete .v-text-field.v-text-field--solo .v-input__control input 
   color: rgba(0, 0, 0, 0.54);
 }
 
-.v-main .theme--light.v-text-field--outlined:not(.v-input--is-focused):not(.v-input--has-state)>.v-input__control>.v-input__slot fieldset {
+.v-main .theme--light.v-text-field--outlined:not(.v-input--is-focused):not(.v-input--has-state) > .v-input__control > .v-input__slot fieldset {
   border: 3px solid;
   color: #f5f5f5;
 }
@@ -417,7 +427,7 @@ header .v-autocomplete .v-text-field.v-text-field--solo .v-input__control input 
   border: 3px solid;
 }
 
-header .theme--light.v-text-field--outlined:not(.v-input--is-focused):not(.v-input--has-state)>.v-input__control>.v-input__slot fieldset {
+header .theme--light.v-text-field--outlined:not(.v-input--is-focused):not(.v-input--has-state) > .v-input__control > .v-input__slot fieldset {
   border: 0px solid;
 }
 
@@ -426,9 +436,9 @@ header .v-text-field--outlined.v-input--is-focused fieldset {
   border: 0px solid;
 }
 
-header .v-text-field--filled>.v-input__control>.v-input__slot,
-header .v-text-field--full-width>.v-input__control>.v-input__slot,
-header .v-text-field--outlined>.v-input__control>.v-input__slot {
+header .v-text-field--filled > .v-input__control > .v-input__slot,
+header .v-text-field--full-width > .v-input__control > .v-input__slot,
+header .v-text-field--outlined > .v-input__control > .v-input__slot {
   min-height: 48px;
 }
 
@@ -442,11 +452,11 @@ header .v-text-field--outlined>.v-input__control>.v-input__slot {
   width: min-content;
 }
 
-.v-input.lang>.v-input__control>.v-input__slot {
+.v-input.lang > .v-input__control > .v-input__slot {
   padding: 0 6px !important;
 }
 
-.v-input.lang>.v-input__control .v-select__selections>input {
+.v-input.lang > .v-input__control .v-select__selections > input {
   display: none;
 }
 

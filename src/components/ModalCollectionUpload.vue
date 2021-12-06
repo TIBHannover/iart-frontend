@@ -52,7 +52,6 @@
           :placeholder="$t('modal.collection.upload.metafile.label')"
           prepend-icon="mdi-text-box-outline"
           :rules="[checkMetaFile]"
-          :error="errorMessage"
           :error-messages="errorMessage"
           show-size
         >
@@ -98,7 +97,10 @@ export default {
     errorMessage() {
       if (this.keyInObj('status', this.upload) && this.upload.status === 'error') {
         const errorTypes = this.$t('modal.collection.upload.error');
-        if (this.keyInObj(this.upload.error.type, errorTypes)) {
+        if (
+          this.keyInObj('error', this.upload)
+          && this.keyInObj(this.upload.error.type, errorTypes)
+        ) {
           if (this.upload.error.type === 'unknown_fields') {
             return this.$t('modal.collection.upload.metafile.unknown', {
               field_names: this.upload.unknown_fields.join(', '),

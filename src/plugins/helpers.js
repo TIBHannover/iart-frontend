@@ -20,9 +20,7 @@ export function isMobile() {
   return false;
 }
 export function vectorToJts(points) {
-  return points.map(([x, y]) => {
-    return new jsts.geom.Coordinate(x, y);
-  });
+  return points.map(([x, y]) => new jsts.geom.Coordinate(x, y));
 }
 export function inflatePolygon(points, spacing) {
   try {

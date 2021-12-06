@@ -22,10 +22,6 @@ const collection = {
       commit('loading/update', true, { root: true });
       axios.post(`${config.API_LOCATION}/collection_upload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        onUploadProgress: (progressEvent) => {
-          console.log(progressEvent.loaded);
-          console.log(progressEvent.total);
-        },
       })
         .then((res) => {
           commit('updateUpload', res.data);
@@ -41,9 +37,7 @@ const collection = {
     list({ commit }) {
       axios.get(`${config.API_LOCATION}/collection_list`)
         .then((res) => {
-          if (res.data.status === 'ok') {
-            commit('updateCollections', res.data.collections);
-          }
+          commit('updateCollections', res.data.collections);
         })
         .catch((error) => {
           const info = { date: Date(), error, origin: 'collection' };
@@ -53,9 +47,7 @@ const collection = {
     delete({ commit, dispatch }, params) {
       axios.post(`${config.API_LOCATION}/collection_delete`, { params })
         .then((res) => {
-          if (res.data.status === 'ok') {
-            dispatch('list');
-          }
+          dispatch('list');
         })
         .catch((error) => {
           const info = { date: Date(), error, origin: 'collection' };

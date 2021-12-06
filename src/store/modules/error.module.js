@@ -7,6 +7,8 @@ const error = {
   },
   mutations: {
     update(state, { date, text, origin }) {
+      console.log(text);
+
       state.date = date;
       state.text = text;
       state.origin = origin;

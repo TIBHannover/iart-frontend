@@ -20,6 +20,7 @@
         </v-badge>
       </v-btn>
     </template>
+
     <v-card>
       <v-card-title class="mb-2">
         {{ $t("modal.collection.list.title") }}
@@ -40,6 +41,7 @@
           :headers="headers"
           :footer-props="footerProps"
           :items="data"
+          hide-default-footer
           multi-sort
         >
           <template v-slot:item.status="{ item }">

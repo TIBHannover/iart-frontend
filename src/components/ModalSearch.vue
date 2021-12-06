@@ -4,14 +4,19 @@
     max-width="350px"
   >
     <template v-slot:activator="{ on }">
-      <v-icon
+      <v-btn
         id="search-image"
         @click="dialog=true"
         v-on="on"
         :title="$t('modal.search.title')"
+        class="my-auto"
+        small
+        icon
       >
-        mdi-image-outline
-      </v-icon>
+        <v-icon>
+          mdi-image-outline
+        </v-icon>
+      </v-btn>
     </template>
 
     <v-card>

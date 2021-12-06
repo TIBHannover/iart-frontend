@@ -252,8 +252,8 @@ export default {
           this.ctx.lineWidth = 5;
           this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
           this.ctx.fillStyle = Colors[groupID];
-          this.ctx.strokeText(parseInt(groupID) + 1, xC, yC);
-          this.ctx.fillText(parseInt(groupID) + 1, xC, yC);
+          this.ctx.strokeText(parseInt(groupID, 10) + 1, xC, yC);
+          this.ctx.fillText(parseInt(groupID, 10) + 1, xC, yC);
         });
       }
     },

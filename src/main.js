@@ -7,7 +7,7 @@ import App from '@/App.vue';
 import store from '@/store';
 import router from '@/router';
 import mixins from '@/mixins';
-// import 'intro.js/introjs.css';
+import 'intro.js/introjs.css';
 import '@/styles/custom.css';
 import '@/styles/introjs.css';
 
