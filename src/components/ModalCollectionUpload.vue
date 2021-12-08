@@ -13,6 +13,7 @@
         {{ $t("modal.collection.upload.title") }}
       </v-btn>
     </template>
+
     <v-card>
       <v-card-title class="mb-2">
         {{ $t("modal.collection.upload.title") }}

@@ -184,7 +184,8 @@
         "upload": "An error has occurred while processing your upload. Please try again later or contact support.",
         "login": "You could not be logged in. Please check your credentials. If this message continues to appear, try again later or contact support.",
         "logout": "You could not be logged out. If this message continues to appear, try again later or contact support.",
-        "register": "You could not be registered. Please check your credentials. If this message continues to appear, try again later or contact support."
+        "register": "You could not be registered. Please check your credentials. If this message continues to appear, try again later or contact support.",
+        "collection": "An error has occurred while processing your collection. Please try again later or contact support."
       }
     },
     "collection": {

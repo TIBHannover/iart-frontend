@@ -67,9 +67,11 @@
               mdi-alert-circle-outline
             </v-icon>
           </template>
+
           <template v-slot:item.date="{ item }">
             {{ toDate(item.date) }}
           </template>
+
           <template v-slot:item.actions="{ item }">
             <v-icon
               @click="showCollection(item)"
@@ -115,8 +117,11 @@ export default {
     toDate(item) {
       return new Date(item).toLocaleDateString();
     },
-    showCollection() {
-      // TODO
+    showCollection(item) {
+      const { hash_id, name } = item;
+      const filter = { positive: true, hash_id, name };
+      this.$store.commit('api/addFilter', { field: 'collection', filter });
+      this.dialog = false;
     },
     deleteCollection(item) {
       this.$store.dispatch('collection/delete', item);

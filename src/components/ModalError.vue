@@ -34,6 +34,9 @@
         <div v-if="origin==='register'" class="mb-4">
           {{ $t("modal.error.text.register") }}
         </div>
+        <div v-if="origin==='collection'" class="mb-4">
+          {{ $t("modal.error.text.collection") }}
+        </div>
 
         <v-btn
           color="primary"

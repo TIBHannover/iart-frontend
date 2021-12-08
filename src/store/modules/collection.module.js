@@ -46,7 +46,7 @@ const collection = {
     },
     delete({ commit, dispatch }, params) {
       axios.post(`${config.API_LOCATION}/collection_delete`, { params })
-        .then((res) => {
+        .then(() => {
           dispatch('list');
         })
         .catch((error) => {
