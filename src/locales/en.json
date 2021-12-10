@@ -65,7 +65,8 @@
         "meta.genre": "Genre",
         "meta.period": "Period",
         "origin.name": "Data Set",
-        "full.text": "Full-Text"
+        "full.text": "Full-Text",
+        "collection": "Collection"
       }
     },
     "settings": {

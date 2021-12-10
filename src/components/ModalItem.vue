@@ -549,11 +549,16 @@ export default {
           }
         }
       });
-      const origin = {};
-      this.entry.origin.forEach(({ name, value_str }) => {
-        origin[name] = value_str;
-      });
-      meta['origin.name'] = [origin];
+      const { id, name, user } = this.entry.collection;
+      if (user) {
+        meta['collection'] = [{ hash_id: id, name }];
+      } else {
+        this.entry.origin.forEach(({ name, value_str }) => {
+          if (name === 'name') {
+            meta['origin.name'] = [{ name: value_str, disable: false }];
+          }
+        });
+      }
       return meta;
     },
     references() {
@@ -610,7 +615,8 @@ export default {
 .v-dialog .text-h5 > span,
 .v-dialog .text-h6 > span,
 .v-dialog .v-expansion-panel .capitalize,
-.v-dialog .v-chip.origin-name {
+.v-dialog .v-chip.origin-name,
+.v-dialog .v-chip.collection {
   text-transform: capitalize;
 }
 

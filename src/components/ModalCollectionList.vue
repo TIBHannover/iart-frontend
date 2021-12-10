@@ -120,7 +120,7 @@ export default {
     showCollection(item) {
       const { hash_id, name } = item;
       const filter = { positive: true, hash_id, name };
-      this.$store.commit('api/addFilter', { field: 'collection', filter });
+      this.$store.commit('api/updateFilters', { 'collection': [filter] });
       this.dialog = false;
     },
     deleteCollection(item) {

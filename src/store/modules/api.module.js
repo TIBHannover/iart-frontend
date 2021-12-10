@@ -262,7 +262,10 @@ const api = {
                   fullText = values.split(',');
                   break;
                 default:
-                  if (config.DEFAULT_AGGREGATION_FIELDS.includes(field)) {
+                  if (
+                    config.DEFAULT_AGGREGATION_FIELDS.includes(field)
+                    || field === 'collection'
+                  ) {
                     values.split(',').forEach((name) => {
                       let positive = true;
                       if (['+', '-'].includes(name.charAt(0))) {
@@ -272,9 +275,17 @@ const api = {
                         name = name.slice(1);
                       }
                       if (mixins.methods.keyInObj(field, filters)) {
-                        filters[field].push({ positive, name });
+                        if (field === 'collection') {
+                          filters[field].push({ positive, hash_id: name });
+                        } else {
+                          filters[field].push({ positive, name });
+                        }
                       } else {
-                        filters[field] = [{ positive, name }];
+                        if (field === 'collection') {
+                          filters[field] = [{ positive, hash_id: name }];
+                        } else {
+                          filters[field] = [{ positive, name }];
+                        }
                       }
                     });
                   }
@@ -335,6 +346,9 @@ const api = {
             const names = state.filters[field].map((n) => {
               let prefix = '+';
               if (!n.positive) prefix = '-';
+              if (field === 'collection') {
+                return `${prefix}${n.hash_id}`;
+              }
               return `${prefix}${n.name}`;
             });
             params.append(field, names.join(','));
