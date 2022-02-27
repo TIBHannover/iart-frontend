@@ -167,7 +167,7 @@
       "toggle": "Upload Image from Computer",
       "file": {
         "label": "Select Image File",
-        "rule": "Image size should be less than {file_size} MB."
+        "rule": "File size should be less than {n} MB."
       },
       "url": {
         "label": "Paste URL to Image",
@@ -180,13 +180,23 @@
     },
     "error": {
       "title": "Error",
-      "text": {
+      "detail": {
+        "not_authenticated": "You could not be authenticated. If this message continues to appear, try again later or contact support.",
+        "unknown_user": "Please check your credentials. If this message continues to appear, try again later or contact support.",
+        "username_not_provided": "Please check your credentials. If this message continues to appear, try again later or contact support.",
+        "password_not_provided": "Please check your credentials. If this message continues to appear, try again later or contact support.",
+        "email_not_provided": "Please check your credentials. If this message continues to appear, try again later or contact support.",
+        "username_already_taken": "This username is already in use. Please try another one.",
+        "collection_name_not_defined": "Please define a collection name.",
+        "collection_name_too_short": "The specified collection name is too short.",
+        "collection_name_too_long": "The specified collection name is too long.",
+        "no_images": "Please upload an archive file with at least one image.",
+        "no_valid_colnames": "No valid column names could be found in the given metadata file.",
+        "corrupt_archives_file": "The given archive file is corrupt and could not be read.",
+        "no_matching_images": "Metadata could not be mapped to given image files.",
+        "unknown_error": "An error has occurred while processing your request. Please try again later or contact support.",
         "search": "An error has occurred while processing your search. Please try again later or contact support.",
-        "upload": "An error has occurred while processing your upload. Please try again later or contact support.",
-        "login": "You could not be logged in. Please check your credentials. If this message continues to appear, try again later or contact support.",
-        "logout": "You could not be logged out. If this message continues to appear, try again later or contact support.",
-        "register": "You could not be registered. Please check your credentials. If this message continues to appear, try again later or contact support.",
-        "collection": "An error has occurred while processing your collection. Please try again later or contact support."
+        "upload": "An error has occurred while processing your upload. Please try again later or contact support."
       }
     },
     "collection": {
@@ -198,12 +208,6 @@
         },
         "metafile": {
           "label": "Metadata Files"
-        },
-        "error": {
-          "default": "Unknown error.",
-          "file_too_large": "File is too large.",
-          "wrong_file_extension": "Wrong file extension.",
-          "unknown_fields": "Some fields cannot be assigned ({field_names})."
         }
       },
       "list": {
@@ -223,14 +227,14 @@
     "email": "E-Mail",
     "menu": {
       "title": "Account",
-      "joined": "Joined {n_days} days ago"
+      "joined": "Joined {n} days ago|Joined {n} day ago|Joined {n} days ago"
     },
     "login": {
       "title": "Login",
       "text": "Don't have an account?",
       "rules": {
-        "min": "Min. 5 characters.",
-        "max": "Max. 50 characters."
+        "min": "Min. {n} characters.",
+        "max": "Max. {n} characters."
       }
     },
     "logout": {
@@ -239,8 +243,8 @@
     "register": {
       "title": "Register",
       "rules": {
-        "min": "Min. 5 characters.",
-        "max": "Max. 50 characters."
+        "min": "Min. {n} characters.",
+        "max": "Max. {n} characters."
       }
     }
   },

@@ -8,49 +8,40 @@
         {{ $t("modal.error.title") }}
 
         <v-btn
-          icon
-          @click.native="dialog=false"
+          @click.native="dialog = false"
           absolute
-          top
           right
+          icon
+          top
         >
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
 
       <v-card-text>
-        <div v-if="origin==='search'" class="mb-4">
-          {{ $t("modal.error.text.search") }}
-        </div>
-        <div v-if="origin==='upload'" class="mb-4">
-          {{ $t("modal.error.text.upload") }}
-        </div>
-        <div v-if="origin==='login'" class="mb-4">
-          {{ $t("modal.error.text.login") }}
-        </div>
-        <div v-if="origin==='logout'" class="mb-4">
-          {{ $t("modal.error.text.logout") }}
-        </div>
-        <div v-if="origin==='register'" class="mb-4">
-          {{ $t("modal.error.text.register") }}
-        </div>
-        <div v-if="origin==='collection'" class="mb-4">
-          {{ $t("modal.error.text.collection") }}
-        </div>
+        <p>
+          <span
+            v-for="detail in details"
+            :key="detail"
+          >
+            {{ keyInObj(detail, $t("modal.error.detail")) ? $t("modal.error.detail")[detail] : $t("modal.error.detail.unknown_error") }}
+          </span>
+        </p>
 
         <v-btn
+          @click="reload"
           color="primary"
           width="50%"
           plain
-          @click="reload"
         >
           {{ $t("button.reload") }}
         </v-btn>
+
         <v-btn
+          @click="dialog = false"
           color="grey"
           width="50%"
           plain
-          @click="dialog=false"
         >
           {{ $t("button.cancel") }}
         </v-btn>
@@ -73,15 +64,15 @@ export default {
     },
   },
   computed: {
-    update() {
-      return this.$store.state.error.date;
+    timestamp() {
+      return this.$store.state.utils.message.timestamp;
     },
-    origin() {
-      return this.$store.state.error.origin;
+    details() {
+      return this.$store.state.utils.message.details;
     },
   },
   watch: {
-    update() {
+    timestamp() {
       this.dialog = true;
     },
   },

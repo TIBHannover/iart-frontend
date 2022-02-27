@@ -1,6 +1,5 @@
 import mixins from '@/mixins';
 import axios from '@/plugins/axios';
-import config from '@/../app.config';
 
 const bookmark = {
   namespaced: true,
@@ -12,44 +11,21 @@ const bookmark = {
   actions: {
     add({ commit, rootState }, params) {
       if (rootState.user.loggedIn) {
-        axios.post(`${config.API_LOCATION}/add_bookmark`, { id: params })
-          .then((res) => {
-            if (res.data.status === 'ok') {
-              commit('add', params);
-            }
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      } else {
-        commit('add', params);
+        axios.post('/add_bookmark', { params });
       }
+      commit('add', params);
     },
     remove({ commit, rootState }, params) {
       if (rootState.user.loggedIn) {
-        axios.post(`${config.API_LOCATION}/remove_bookmark`, { id: params })
-          .then((res) => {
-            if (res.data.status === 'ok') {
-              commit('remove', params);
-            }
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      } else {
-        commit('remove', params);
+        axios.post('/remove_bookmark', { params });
       }
+      commit('remove', params);
     },
     list({ commit, rootState }, params) {
       if (rootState.user.loggedIn) {
-        axios.post(`${config.API_LOCATION}/list_bookmark`, { params })
-          .then((res) => {
-            if (res.data.status === 'ok') {
-              commit('set', res.data.data);
-            }
-          })
-          .catch((error) => {
-            console.log(error);
+        axios.post('/list_bookmark', { params })
+          .then(({ data }) => {
+            commit('set', data);
           });
       }
     },
@@ -58,28 +34,38 @@ const bookmark = {
     update(state, value) {
       state.toggle = value;
     },
-    add(state, values) {
-      let index = state.bookmarks.indexOf(values);
+    add(state, { id }) {
+      let index = state.bookmarks.indexOf(id);
       if (index === -1) {
-        state.bookmarks.push(values);
+        state.bookmarks.push(id);
       }
-      index = state.history[0].bookmarks.indexOf(values);
+      index = state.history[0].bookmarks.indexOf(id);
       if (index === -1) {
-        state.history[0].bookmarks.push(values);
+        state.history[0].bookmarks.push(id);
       }
     },
-    remove(state, values) {
-      let index = state.bookmarks.indexOf(values);
+    remove(state, { id }) {
+      let index = state.bookmarks.indexOf(id);
       if (index !== -1) {
         state.bookmarks.splice(index, 1);
       }
-      index = state.history[0].bookmarks.indexOf(values);
+      index = state.history[0].bookmarks.indexOf(id);
       if (index !== -1) {
         state.history[0].bookmarks.splice(index, 1);
       }
     },
+    set(state, values) {
+      state.bookmarks = [];
+      values.forEach(({ id }) => {
+        const index = state.bookmarks.indexOf(id);
+        if (index === -1) {
+          state.bookmarks.push(id);
+        }
+      });
+    },
     addHistory(state, params) {
-      params = JSON.parse(JSON.stringify(params));
+      params = mixins.methods.stringify(params);
+      params = JSON.parse(params);
       const validKeys = [
         'query', 'random', 'filters',
         'full_text', 'date_range',
@@ -111,4 +97,5 @@ const bookmark = {
     },
   },
 };
+
 export default bookmark;

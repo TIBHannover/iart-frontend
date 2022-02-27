@@ -32,7 +32,7 @@ export default {
 </script>
 
 <style scoped>
-  .v-bottom-navigation {
-    box-shadow: none;
-  }
+.v-bottom-navigation {
+  box-shadow: none !important;
+}
 </style>

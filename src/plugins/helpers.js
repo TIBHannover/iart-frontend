@@ -8,6 +8,7 @@ export function lsplit(x, sep, maxsplit) {
   }
   return result;
 }
+
 export function isMobile() {
   const devices = [
     'Android', 'webOS', 'iPhone', 'iPod',
@@ -19,9 +20,11 @@ export function isMobile() {
   }
   return false;
 }
+
 export function vectorToJts(points) {
   return points.map(([x, y]) => new jsts.geom.Coordinate(x, y));
 }
+
 export function inflatePolygon(points, spacing) {
   try {
     const input = vectorToJts(points); input.push(input[0]);
@@ -35,6 +38,7 @@ export function inflatePolygon(points, spacing) {
     return points;
   }
 }
+
 export function getCentroid(points) {
   const input = vectorToJts(points); input.push(input[0]);
   const geometryFactory = new jsts.geom.GeometryFactory();

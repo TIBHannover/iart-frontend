@@ -1,16 +1,20 @@
 <template>
   <div
+    @click="showDetails"
     class="grid-item"
     :disabled="disabled"
     :title="$t('griditem.view')"
     :style="getCss"
-    @click="showDetails"
   >
     <ModalItem
       v-model="dialog"
+      @previous="previous"
+      @next="next"
       :entry="entry"
-      :entries="entries"
+      :isFirst="isFirst"
+      :isLast="isLast"
     />
+
     <img
       :src="entry.preview"
       v-on:error="onError"
@@ -25,39 +29,27 @@
         >
           <template v-slot:activator="{ attrs, on: menu }">
             <v-btn
-              icon
+              :title="$t('search.object')"
               v-bind="attrs"
               v-on="menu"
-              :title="$t('search.object')"
+              icon
             >
               <v-icon
                 color="white"
                 class="shadow"
-              >mdi-magnify</v-icon>
+              >
+                mdi-magnify
+              </v-icon>
             </v-btn>
           </template>
 
           <v-list class="pa-0">
-            <v-list-item class="px-0 h44">
-              <v-btn
-                @click="query(false)"
-                text
-                block
-                large
-              >
-                {{ $t("search.new") }}
-              </v-btn>
+            <v-list-item @click="query(false)">
+              {{ $t("search.new") }}
             </v-list-item>
 
-            <v-list-item class="px-0 h44">
-              <v-btn
-                @click="query(true)"
-                text
-                block
-                large
-              >
-                {{ $t("search.append") }}
-              </v-btn>
+            <v-list-item @click="query(true)">
+              {{ $t("search.append") }}
             </v-list-item>
           </v-list>
         </v-menu>
@@ -67,11 +59,16 @@
         <div
           class="text-subtitle-1"
           :title="title"
-        >{{ title }}</div>
+        >
+          {{ title }}
+        </div>
+
         <div
           class="text-caption"
           :title="artist"
-        >{{ artist }}</div>
+        >
+          {{ artist }}
+        </div>
       </div>
     </div>
 
@@ -83,13 +80,14 @@
         icon
       >
         <v-icon
+          :title="$t('griditem.bookmark.remove')"
           color="accent"
           class="shadow"
-          :title="$t('griditem.bookmark.remove')"
         >
           mdi-bookmark-remove-outline
         </v-icon>
       </v-btn>
+
       <v-btn
         v-else
         @click="bookmark"
@@ -112,16 +110,21 @@
 import ModalItem from '@/components/ModalItem.vue';
 
 export default {
+  props: {
+    entry: Object,
+    isFirst: Boolean,
+    isLast: Boolean,
+    showDialog: Boolean,
+  },
   data() {
     return {
       width: 'auto',
-      height: '200px',
       dialog: false,
+      height: '200px',
       disabled: false,
       bookmarked: false,
     };
   },
-  props: ['entry', 'entries'],
   methods: {
     query(append) {
       const query = {
@@ -144,9 +147,9 @@ export default {
     bookmark(event) {
       if (event.target.nodeName === 'I') {
         if (!this.bookmarked) {
-          this.$store.dispatch('bookmark/add', this.entry.id);
+          this.$store.dispatch('bookmark/add', { id: this.entry.id });
         } else {
-          this.$store.dispatch('bookmark/remove', this.entry.id);
+          this.$store.dispatch('bookmark/remove', { id: this.entry.id });
         }
         this.bookmarked = !this.bookmarked;
       }
@@ -181,6 +184,14 @@ export default {
         return check;
       }
       return false;
+    },
+    next() {
+      this.$emit('next', this.entry);
+      this.dialog = false;
+    },
+    previous() {
+      this.$emit('previous', this.entry);
+      this.dialog = false;
     },
   },
   computed: {
@@ -227,6 +238,9 @@ export default {
         this.updateSize();
       },
       deep: true,
+    },
+    showDialog(value) {
+      this.dialog = value;
     },
   },
   created() {

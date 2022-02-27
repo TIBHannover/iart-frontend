@@ -6,8 +6,8 @@
     <template v-slot:activator="{ on }">
       <v-btn
         id="search-image"
-        @click="dialog=true"
         v-on="on"
+        @click="clicked"
         :title="$t('modal.search.title')"
         class="my-auto"
         small
@@ -26,43 +26,46 @@
         </div>
 
         <v-btn
-          icon
-          @click.native="dialog=false"
+          @click.native="dialog = false"
           absolute
-          top
           right
+          icon
+          top
         >
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
 
       <v-card-text>
-        <v-switch
-          v-model="selectFile"
-          class="pt-1 pb-2"
-          :label="$t('modal.search.toggle')"
-          color="secondary"
-          inset
-          hide-details
-        ></v-switch>
+        <v-form v-model="isFormValid">
+          <v-switch
+            v-model="selectFile"
+            class="pt-1 pb-2"
+            :label="$t('modal.search.toggle')"
+            color="secondary"
+            hide-details
+            inset
+          />
 
-        <v-file-input
-          v-if="selectFile"
-          v-model="user.file"
-          accept="image/png, image/jpeg, image/gif"
-          :placeholder="$t('modal.search.file.label')"
-          prepend-icon="mdi-camera"
-          :rules="[checkFile]"
-          show-size
-        ></v-file-input>
-        <v-text-field
-          v-else
-          v-model="user.url"
-          :rules="[checkURL]"
-          :placeholder="$t('modal.search.url.label')"
-          prepend-icon="mdi-link-variant"
-          clearable
-        ></v-text-field>
+          <v-file-input
+            v-if="selectFile"
+            v-model="user.file"
+            accept="image/png, image/jpeg, image/gif"
+            :rules="checkFile"
+            :placeholder="$t('modal.search.file.label')"
+            prepend-icon="mdi-camera"
+            show-size
+          />
+
+          <v-text-field
+            v-else
+            v-model="user.url"
+            :rules="checkURL"
+            :placeholder="$t('modal.search.url.label')"
+            prepend-icon="mdi-link-variant"
+            clearable
+          />
+        </v-form>
       </v-card-text>
 
       <v-card-actions class="px-6 pb-6">
@@ -75,7 +78,7 @@
             <v-btn
               v-bind="attrs"
               v-on="menu"
-              :disabled="disabled"
+              :disabled="!isFormValid"
               color="accent"
               block
               rounded
@@ -86,26 +89,12 @@
           </template>
 
           <v-list class="pa-0">
-            <v-list-item class="px-0 h44">
-              <v-btn
-                @click="search(false)"
-                text
-                block
-                large
-              >
-                {{ $t("search.new") }}
-              </v-btn>
+            <v-list-item @click="search(false)">
+              {{ $t("search.new") }}
             </v-list-item>
 
-            <v-list-item class="px-0 h44">
-              <v-btn
-                @click="search(true)"
-                text
-                block
-                large
-              >
-                {{ $t("search.append") }}
-              </v-btn>
+            <v-list-item @click="search(true)">
+              {{ $t("search.append") }}
             </v-list-item>
           </v-list>
         </v-menu>
@@ -116,17 +105,24 @@
 
 <script>
 import isURL from 'validator/lib/isURL';
+import router from '@/router';
 
 export default {
   data() {
     return {
-      user: {},
+      user: {
+        url: null,
+        file: null,
+      },
       dialog: false,
       selectFile: false,
+      isFormValid: false,
     };
   },
-  props: ['value'],
   methods: {
+    clicked() {
+      this.$emit('clicked');
+    },
     search(append) {
       const query = { positive: true, append };
       if (this.selectFile) {
@@ -136,41 +132,34 @@ export default {
         query.type = 'url';
         query.value = this.user.url;
       }
-      this.$store.dispatch('api/upload', query);
-      this.dialog = false;
-      this.user = {};
-    },
-    checkFile() {
-      const value = this.user.file;
-      if (value) {
-        if (value.size < 2000000) {
-          return true;
+      this.$store.dispatch('api/upload', query).then(() => {
+        this.user = { url: null, file: null };
+        this.dialog = false;
+        if (router.currentRoute.path !== '/search') {
+          router.push('/search');
         }
-        const text = this.$t('modal.search.file.rule');
-        return this.repPlace({ file_size: 2 }, text);
-      }
-      return this.$t('field.required');
-    },
-    checkURL() {
-      const value = this.user.url;
-      if (value) {
-        if (value.length && isURL(value)) {
-          return true;
-        }
-        return this.$t('modal.search.url.rule');
-      }
-      return this.$t('field.required');
+      });
     },
   },
   computed: {
-    disabled() {
-      if (this.user && Object.keys(this.user).length) {
-        if (this.selectFile && this.checkFile() === true) {
-          return false;
-        }
-        if (!this.selectFile && this.checkURL() === true) {
-          return false;
-        }
+    checkURL() {
+      if (!this.selectFile) {
+        return [
+          (v) => !!v || this.$t('field.required'),
+          (v) => (v && v.length && isURL(v))
+            || this.$t('modal.search.url.rule'),
+        ];
+      }
+      return true;
+    },
+    checkFile() {
+      if (this.selectFile) {
+        const fileSize = 5; // in MB
+        return [
+          (v) => !!v || this.$t('field.required'),
+          (v) => (v && v.size < fileSize * 1000000)
+            || this.$tc('modal.search.file.rule', fileSize),
+        ];
       }
       return true;
     },

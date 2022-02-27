@@ -1,20 +1,11 @@
 import Vue from 'vue';
+import store from '@/store';
 import router from '@/router';
 import mixins from '@/mixins';
 import axios from '@/plugins/axios';
 import config from '@/../app.config';
 import { lsplit } from '@/plugins/helpers';
 
-function generateRandomStr(length) {
-  const result = [];
-  const characters = 'abcdef0123456789';
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i += 1) {
-    const random = Math.random() * charactersLength;
-    result.push(characters.charAt(Math.floor(random)));
-  }
-  return result.join('');
-}
 const api = {
   namespaced: true,
   state: {
@@ -58,60 +49,43 @@ const api = {
       };
       if (!mixins.methods.isEqual(params, state.prevParams)) {
         commit('updateParams', params);
-        commit('loading/update', true, { root: true });
         commit('bookmark/addHistory', params, { root: true });
         if (!state.backBtn) {
           dispatch('getState');
         } else {
           commit('toggleBackBtn');
         }
-        axios.post(`${config.API_LOCATION}/search`, { params })
-          .then((res) => {
-            if (res.data.job_id !== undefined) {
-              commit('updateJobID', res.data.job_id);
+        const status = { loading: true, error: false, timestamp: null };
+        store.dispatch('utils/setStatus', status, { root: true });
+        axios.post('/search', { params })
+          .then(({ data }) => {
+            if (data.job_id !== undefined) {
+              commit('updateJobID', data.job_id);
               setTimeout(() => dispatch('checkLoad'), 500);
             } else {
-              if (mixins.methods.keyInObj('entries', res.data)) {
-                commit('updateHits', res.data.entries);
-                commit('updateCounts', res.data.aggregations);
-              } else {
-                const info = { date: Date(), text: '', origin: 'search' };
-                commit('error/update', info, { root: true });
-              }
-              commit('loading/update', false, { root: true });
+              commit('updateHits', data.entries);
+              commit('updateCounts', data.aggregations);
               window.scrollTo(0, 0);
+              const status = { loading: false, error: false, timestamp: new Date() };
+              store.dispatch('utils/setStatus', status, { root: true });
             }
-          })
-          .catch((error) => {
-            const info = { date: Date(), error, origin: 'search' };
-            commit('error/update', info, { root: true });
-            commit('loading/update', false, { root: true });
           });
       }
     },
     checkLoad({ commit, dispatch, state }) {
       const params = { job_id: state.jobID };
-      axios.post(`${config.API_LOCATION}/search`, { params })
-        .then((res) => {
-          if (res.data.job_id !== undefined) {
-            commit('updateJobID', res.data.job_id);
+      axios.post('/search', { params })
+        .then(({ data }) => {
+          if (data.job_id !== undefined) {
+            commit('updateJobID', data.job_id);
             setTimeout(() => dispatch('checkLoad'), 500);
           } else {
-            if (mixins.methods.keyInObj('entries', res.data)) {
-              commit('updateHits', res.data.entries);
-              commit('updateCounts', res.data.aggregations);
-            } else {
-              const info = { date: Date(), error: '', origin: 'search' };
-              commit('error/update', info, { root: true });
-            }
-            commit('loading/update', false, { root: true });
+            commit('updateHits', data.entries);
+            commit('updateCounts', data.aggregations);
             window.scrollTo(0, 0);
+            const status = { loading: false, error: false, timestamp: new Date() };
+            store.dispatch('utils/setStatus', status, { root: true });
           }
-        })
-        .catch((error) => {
-          const info = { date: Date(), error, origin: 'search' };
-          commit('error/update', info, { root: true });
-          commit('loading/update', false, { root: true });
         });
     },
     upload({ commit }, params) {
@@ -121,75 +95,62 @@ const api = {
       } else if (params.type === 'url') {
         formData.append('url', params.value);
       }
-      commit('loading/update', true, { root: true });
-      axios.post(`${config.API_LOCATION}/upload`, formData, {
+      axios.post('/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
-        .then((res) => {
-          if (res.data.status === 'ok') {
-            if (params.append) {
-              res.data.entries.forEach(({ id, meta, preview }) => {
-                const query = {
-                  type: 'idx',
-                  positive: true,
-                  value: id,
-                  weights: {},
-                  roi: null,
-                  label: meta.title,
-                  preview,
-                };
-                commit('addQuery', query);
-              });
-            } else {
-              const queries = [];
-              res.data.entries.forEach(({ id, meta, preview }) => {
-                queries.push({
-                  type: 'idx',
-                  positive: true,
-                  value: id,
-                  weights: {},
-                  roi: null,
-                  label: meta.title,
-                  preview,
-                });
-              });
-              commit('updateQuery', queries);
-              commit('removeAllFilters');
-            }
+        .then(({ data }) => {
+          if (params.append) {
+            data.entries.forEach(({ id, meta, path, preview }) => {
+              const query = {
+                type: 'idx',
+                positive: true,
+                value: id,
+                weights: {},
+                roi: null,
+                label: meta.title,
+                path,
+                preview,
+              };
+              commit('addQuery', query);
+            });
           } else {
-            const info = { date: Date(), error: '', origin: 'upload' };
-            commit('error/update', info, { root: true });
-            commit('loading/update', false, { root: true });
+            const queries = [];
+            data.entries.forEach(({ id, meta, path, preview }) => {
+              queries.push({
+                type: 'idx',
+                positive: true,
+                value: id,
+                weights: {},
+                roi: null,
+                label: meta.title,
+                path,
+                preview,
+              });
+            });
+            commit('updateQuery', queries);
+            commit('removeAllFilters');
           }
-        })
-        .catch((error) => {
-          const info = { date: Date(), error, origin: 'upload' };
-          commit('error/update', info, { root: true });
-          commit('loading/update', false, { root: true });
         });
     },
-    async fetchIDXQuery(params) {
+    async fetchIDXQuery(context, params) {
       let res;
       try {
         res = await axios.post(
-          `${config.API_LOCATION}/get`,
-          { id: params.value },
+          '/get',
+          { params: { id: params.value } },
         );
       } catch (error) {
-        return params;
+        return { ...params };
       }
-      if (res.data.status === 'ok') {
-        const title = [];
-        const { preview } = res.data.entry;
-        res.data.entry.meta.forEach(({ name, value_str }) => {
-          if (name === 'title' && value_str) {
-            title.push(value_str);
-          }
-        });
-        if (!title.length) title.push('No title');
-        return { ...params, label: title[0], preview };
-      }
-      return params;
+      const title = [];
+      const { preview } = res.data.entry;
+      res.data.entry.meta.forEach(({ name, value_str }) => {
+        if (name === 'title' && value_str) {
+          title.push(value_str);
+        }
+      });
+      if (!title.length) title.push('No title');
+      return { ...params, label: title[0], preview };
     },
     async setState({ commit, dispatch }, params) {
       const queries = [];
@@ -280,12 +241,10 @@ const api = {
                         } else {
                           filters[field].push({ positive, name });
                         }
+                      } else if (field === 'collection') {
+                        filters[field] = [{ positive, hash_id: name }];
                       } else {
-                        if (field === 'collection') {
-                          filters[field] = [{ positive, hash_id: name }];
-                        } else {
-                          filters[field] = [{ positive, name }];
-                        }
+                        filters[field] = [{ positive, name }];
                       }
                     });
                   }
@@ -377,7 +336,7 @@ const api = {
     updateRandom(state, random) {
       if (typeof random === 'boolean') {
         if (random) {
-          state.random = generateRandomStr(16);
+          state.random = mixins.methods.getHash(new Date());
           state.query = [];
         } else {
           state.random = null;
@@ -396,8 +355,8 @@ const api = {
       state.fullText = fullText;
     },
     updateParams(state, params) {
-      const clone = JSON.stringify(params);
-      state.prevParams = JSON.parse(clone);
+      params = mixins.methods.stringify(params);
+      state.prevParams = JSON.parse(params);
     },
     toggleBackBtn(state) {
       state.backBtn = !state.backBtn;
@@ -474,4 +433,5 @@ const api = {
     },
   },
 };
+
 export default api;

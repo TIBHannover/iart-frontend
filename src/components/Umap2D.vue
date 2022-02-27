@@ -4,8 +4,10 @@
       v-model="itemDialog"
       v-if="entries.length"
       :entry="entries[0]"
-      :entries="data"
+      :isFirst="true"
+      :isLast="true"
     />
+
     <ModalGrid
       v-model="gridDialog"
       v-if="entries.length"

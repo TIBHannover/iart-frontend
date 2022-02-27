@@ -15,6 +15,13 @@ module.exports = {
         'introJs': ['intro.js']
       })
     ],
+    optimization: {
+      splitChunks: {
+        chunks: 'all',
+        minSize: 10000,
+        maxSize: 250000,
+      },
+    },
   },
   devServer: {
     disableHostCheck: true,

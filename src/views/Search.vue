@@ -5,8 +5,14 @@
       flat
     >
       <v-layout row>
-        <div class="logo ml-3 mr-5" @click="reset">
-          <img :title="appName" src="/assets/images/logo.png" />
+        <div
+          class="logo ml-3 mr-5"
+          @click="reset"
+        >
+          <img
+            :title="appName"
+            src="/assets/images/logo.png"
+          />
         </div>
 
         <SearchBar />
@@ -18,7 +24,11 @@
           icon
         >
           <span id="filter-general">
-            <v-badge v-if="nFilters" color="accent" :content="nFilters">
+            <v-badge
+              v-if="nFilters"
+              color="accent"
+              :content="nFilters"
+            >
               <v-icon>mdi-tune</v-icon>
             </v-badge>
             <v-icon v-else>mdi-tune</v-icon>
@@ -49,14 +59,6 @@
 </template>
 
 <script>
-import Main from '@/components/Main.vue';
-import History from '@/components/History.vue';
-import UserMenu from '@/components/UserMenu.vue';
-import SearchBar from '@/components/SearchBar.vue';
-import HelpButton from '@/components/HelpButton.vue';
-import DrawerFilter from '@/components/DrawerFilter.vue';
-import DrawerSettings from '@/components/DrawerSettings.vue';
-
 export default {
   data() {
     return {
@@ -162,13 +164,13 @@ export default {
     };
   },
   components: {
-    Main,
-    History,
-    UserMenu,
-    SearchBar,
-    HelpButton,
-    DrawerFilter,
-    DrawerSettings,
+    Main: () => import('@/components/Main.vue'),
+    History: () => import('@/components/History.vue'),
+    UserMenu: () => import('@/components/UserMenu.vue'),
+    SearchBar: () => import('@/components/SearchBar.vue'),
+    HelpButton: () => import('@/components/HelpButton.vue'),
+    DrawerFilter: () => import('@/components/DrawerFilter.vue'),
+    DrawerSettings: () => import('@/components/DrawerSettings.vue'),
   },
 };
 </script>

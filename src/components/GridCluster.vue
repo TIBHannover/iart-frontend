@@ -1,12 +1,12 @@
 <template>
   <div class="cluster-view mb-n6">
     <div
-      v-for="(entries, index) in convertedEntries"
-      :key="entries"
+      v-for="(entries, cluster) in convertedEntries"
+      :key="entries[0].id"
       class="mt-4 mb-6"
     >
       <div class="text-h6 mx-3 mb-4">
-        {{ $t("field.cluster") }} {{ parseInt(index) + 1 }}
+        {{ $t("field.cluster") }} {{ parseInt(cluster) + 1 }}
 
         <span class="v-label theme--light ml-1 mr-4">
            · {{ entries.length }}
@@ -20,15 +20,17 @@
         </span>
 
         <v-chip
-          v-for="(tag, index) in clusterTags[index]"
-          :key="index"
+          v-for="(tag, cluster) in clusterTags[cluster]"
+          :key="cluster"
           class="ml-1"
           outlined
         >
           <span
             class="tag clip"
             :title="tag.name"
-          >{{ tag.name }}</span>
+          >
+            {{ tag.name }}
+          </span>
           <v-icon
             class="ml-1"
             size="18"
@@ -40,25 +42,30 @@
       </div>
 
       <v-slide-group
-        v-model="slide[index]"
-        @click:next="next(index)"
-        @click:prev="prev(index)"
+        v-model="slide[cluster]"
+        @click:next="next(cluster)"
+        @click:prev="prev(cluster)"
         show-arrows
       >
         <v-slide-item
-          v-for="entry in reducedEntries[index]"
+          v-for="(entry, index) in reducedEntries[cluster]"
           :key="entry.id"
         >
           <GridItem
             :entry="entry"
-            :entries="reducedEntries[index]"
+            :isFirst="index === 0"
+            :isLast="index === reducedEntries[cluster].length - 1"
+            :showDialog="currentDialog === entry.id"
+            @next="nextEntry(cluster, ...arguments)"
+            @previous="previousEntry(cluster, ...arguments)"
           />
         </v-slide-item>
 
         <div
-          v-if="reducedEntries[index].length<4"
+          v-if="reducedEntries[cluster].length < 4"
           class="grid-item-fill"
-        ></div>
+        >
+        </div>
       </v-slide-group>
     </div>
   </div>
@@ -76,6 +83,7 @@ export default {
       slide: {},
       clusterTags: {},
       reducedEntries: {},
+      currentDialog: null,
       pluginIcons: PLUGIN_ICONS,
     };
   },
@@ -87,6 +95,22 @@ export default {
     prev(index) {
       this.slide[index] -= 5;
       this.reduceEntries(index);
+    },
+    nextEntry(cluster, entry) {
+      const entries = this.reducedEntries[cluster];
+      const index = entries.indexOf(entry);
+      if (index + 1 < entries.length) {
+        const entry = entries[index + 1];
+        this.currentDialog = entry.id;
+      }
+    },
+    previousEntry(cluster, entry) {
+      const entries = this.reducedEntries[cluster];
+      const index = entries.indexOf(entry);
+      if (index > 0) {
+        const entry = entries[index - 1];
+        this.currentDialog = entry.id;
+      }
     },
     reduceEntries(cluster) {
       const nEntries = 25 + this.slide[cluster];

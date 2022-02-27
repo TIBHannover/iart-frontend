@@ -1,32 +1,31 @@
 <template>
-  <v-dialog
-    v-model="dialog"
-    max-width="350px"
+  <v-card
+    max-width="450"
+    flat
   >
-    <template v-slot:activator="{ on }">
-      <v-btn v-on="on" class="login" text block large>
-        {{ $t("user.login.title") }}
+    <v-card-title>
+      {{ $t("user.login.title") }}
+
+      <v-btn
+        @click="close"
+        absolute
+        right
+        icon
+      >
+        <v-icon>mdi-close</v-icon>
       </v-btn>
-    </template>
+    </v-card-title>
 
-    <v-card class="login">
-      <v-card-title>
-        {{ $t("user.login.title") }}
-
-        <v-btn icon @click="dialog = false" absolute right>
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-      </v-card-title>
-
-      <v-card-text>
+    <v-card-text>
+      <v-form v-model="isFormValid">
         <v-text-field
           v-model="user.name"
           :placeholder="$t('user.name')"
           prepend-icon="mdi-account"
-          counter="50"
           :rules="[checkLength]"
+          counter="75"
           clearable
-        ></v-text-field>
+        />
 
         <v-text-field
           v-model="user.password"
@@ -37,105 +36,116 @@
           prepend-icon="mdi-lock"
           @click:append="showPassword = !showPassword"
           :type="showPassword ? 'text' : 'password'"
-          counter="50"
           :rules="[checkLength]"
+          counter="75"
           clearable
-        ></v-text-field>
-      </v-card-text>
+        />
+      </v-form>
+    </v-card-text>
 
-      <v-card-actions class="px-6 pt-2">
-        <v-btn
-          @click="login"
-          :disabled="disabled"
-          color="accent"
-          block
-          rounded
-          depressed
+    <v-card-actions class="px-6 pb-6">
+      <v-btn
+        @click="login"
+        :disabled="!isFormValid"
+        color="accent"
+        depressed
+        rounded
+        block
+      >
+        {{ $t("user.login.title") }}
+      </v-btn>
+
+      <div
+        class="grey--text pt-2"
+        style="text-align: center"
+      >
+        {{ $t("user.login.text") }}
+
+        <v-dialog
+          v-model="dialog.register"
+          max-width="400"
         >
-          {{ $t("user.login.title") }}
-        </v-btn>
-      </v-card-actions>
+          <template v-slot:activator="{ on }">
+            <v-btn
+              v-on="on"
+              small
+              text
+            >
+              {{ $t("user.register.title") }}
+            </v-btn>
+          </template>
 
-      <div class="grey--text px-6 pb-6" style="text-align: center">
-        {{ $t("user.login.text") }} <UserRegister @close="dialog = false" />.
+          <UserRegister v-model="dialog.register" />
+        </v-dialog>
       </div>
-    </v-card>
-  </v-dialog>
+    </v-card-actions>
+  </v-card>
 </template>
 
 <script>
-import UserRegister from '@/components/UserRegister.vue';
-
 export default {
+  props: {
+    value: Boolean,
+  },
   data() {
     return {
-      user: {},
-      dialog: false,
       showPassword: false,
+      isFormValid: false,
+      dialog: {
+        register: false,
+      },
+      user: {},
     };
   },
   methods: {
     login() {
       this.$store.dispatch('user/login', this.user);
-      this.dialog = false;
+    },
+    close() {
+      this.$emit('input', false);
     },
     checkLength(value) {
       if (value) {
         if (value.length < 5) {
-          return this.$t('user.login.rules.min');
+          return this.$tc('user.login.rules.min', 5);
         }
-
-        if (value.length > 50) {
-          return this.$t('user.login.rules.max');
+        if (value.length > 75) {
+          return this.$tc('user.login.rules.max', 75);
         }
-
         return true;
       }
-
       return this.$t('field.required');
     },
   },
   computed: {
-    disabled() {
-      if (Object.keys(this.user).length) {
-        const total = Object.values(this.user).reduce(
-          (t, value) => t + (this.checkLength(value) === true),
-          0,
-        );
-
-        if (total === 2) return false;
-      }
-
-      return true;
+    status() {
+      const { error, loading } = this.$store.state.utils.status;
+      return !loading && !error;
+    },
+    timestamp() {
+      return this.$store.state.utils.status.timestamp;
     },
   },
   watch: {
-    dialog(value) {
+    'dialog.register'(value) {
       if (value) {
-        this.$emit('close');
+        this.close();
+      }
+    },
+    timestamp() {
+      if (this.status) {
+        this.close();
       }
     },
   },
   components: {
-    UserRegister,
+    UserRegister: () => import('@/components/UserRegister.vue'),
   },
 };
 </script>
 
-<style>
-.v-card.login .v-btn.register {
-  min-width: auto !important;
-  text-transform: capitalize;
-  display: inline-block;
-  letter-spacing: 0;
-  font-size: 1rem;
-  padding: 0 2px;
-  height: 20px;
-}
-
-.v-card.login .v-btn.register:before,
-.v-card.login .v-btn.register:hover:before,
-.v-card.login .v-btn.register:focus:before {
-  background-color: transparent;
+<style scoped>
+.v-card__actions {
+  display: block;
 }
 </style>

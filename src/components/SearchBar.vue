@@ -21,7 +21,7 @@
       <template v-slot:prepend-inner>
         <v-btn
           :title="$t('button.search')"
-          @click="submit"
+          @click.stop="submit"
           small
           icon
         >
@@ -34,7 +34,7 @@
           id="search-random"
           :title="$t('search.random')"
           class="ml-1"
-          @click="submit($event, random=true)"
+          @click.stop="submit($event, random=true)"
           small
           icon
         >
@@ -55,9 +55,9 @@
           hide-details
           solo
           flat
-        ></v-select>
+        />
 
-        <ModalSearch @search="submit" />
+        <ModalSearch @clicked="hideMenu" />
       </template>
 
       <template v-slot:item="{ attrs, item }">
@@ -268,10 +268,14 @@ export default {
     };
   },
   methods: {
+    hideMenu() {
+      this.$refs.combobox.isMenuActive = false;
+      document.activeElement.blur();
+    },
     submit(event, random = false) {
       this.$store.commit('api/updateRandom', random);
       this.$store.dispatch('api/load');
-      this.$refs.combobox.isMenuActive = false;
+      this.hideMenu();
     },
     submitQueryStore() {
       this.queryStore.forEach(({ index, value, type }) => {

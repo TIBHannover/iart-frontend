@@ -7,7 +7,22 @@ export default {
       return Object.prototype.hasOwnProperty.call(obj, key);
     },
     isEqual(x, y) {
-      return JSON.stringify(x) === JSON.stringify(y);
+      return this.stringify(x) === this.stringify(y);
+    },
+    stringify(x) {
+      // const circularReplacer = () => {
+      //   const seen = new WeakSet();
+      //   return (key, value) => {
+      //     if (typeof value === 'object' && value !== null) {
+      //       if (seen.has(value)) {
+      //         return;
+      //       }
+      //       seen.add(value);
+      //     }
+      //     return value;
+      //   };
+      // };
+      return JSON.stringify(x);
     },
     isArray(obj) {
       return !!obj && obj.constructor === Array;
@@ -17,7 +32,8 @@ export default {
     },
     getHash(x) {
       const md5 = crypto.createHash('md5');
-      return md5.update(JSON.stringify(x)).digest('hex');
+      const hash = md5.update(JSON.stringify(x));
+      return hash.digest('hex').substring(0, 10);
     },
     repPlace(x, y) {
       const string = y.replace(

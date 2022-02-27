@@ -1,10 +1,14 @@
 <template>
   <div class="flex-view">
     <GridItem
-      v-for="entry in pageEntries"
+      v-for="(entry, index) in pageEntries"
       :key="entry.id"
       :entry="entry"
-      :entries="pageEntries"
+      :isFirst="index === 0"
+      :isLast="index === pageEntries.length - 1"
+      :showDialog="currentDialog === entry.id"
+      @next="nextEntry"
+      @previous="previousEntry"
     />
 
     <div class="grid-item-fill"></div>
@@ -17,7 +21,7 @@
       class="mt-4"
       color="accent"
       circle
-    ></v-pagination>
+    />
   </div>
 </template>
 
@@ -28,9 +32,26 @@ export default {
   props: ['entries'],
   data() {
     return {
-      perPage: 150,
       page: 1,
+      perPage: 150,
+      currentDialog: null,
     };
+  },
+  methods: {
+    nextEntry(entry) {
+      const index = this.pageEntries.indexOf(entry);
+      if (index + 1 < this.pageEntries.length) {
+        const entry = this.pageEntries[index + 1];
+        this.currentDialog = entry.id;
+      }
+    },
+    previousEntry(entry) {
+      const index = this.pageEntries.indexOf(entry);
+      if (index > 0) {
+        const entry = this.pageEntries[index - 1];
+        this.currentDialog = entry.id;
+      }
+    },
   },
   computed: {
     nPages() {

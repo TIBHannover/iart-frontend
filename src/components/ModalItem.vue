@@ -10,16 +10,18 @@
       class="middle"
       @click="getPrevious"
       :disabled="isFirst"
-      icon
       absolute
-      top
-      left
       x-large
+      icon
+      left
+      top
     >
       <v-icon
         color="white"
         size="56"
-      >mdi-chevron-left</v-icon>
+      >
+        mdi-chevron-left
+      </v-icon>
     </v-btn>
 
     <v-btn
@@ -35,7 +37,9 @@
       <v-icon
         color="white"
         size="56"
-      >mdi-chevron-right</v-icon>
+      >
+        mdi-chevron-right
+      </v-icon>
     </v-btn>
 
     <v-card>
@@ -56,36 +60,24 @@
                 align="center"
                 justify="center"
               >
-                <v-progress-circular indeterminate></v-progress-circular>
+                <v-progress-circular indeterminate />
               </v-row>
             </template>
+
             <template v-slot:context>
               <v-list class="pa-0">
-                <v-list-item class="px-0 h44">
-                  <v-btn
-                    @click="query(null, false, 'idx')"
-                    text
-                    block
-                    large
-                  >
-                    {{ $t('search.new') }}
-                  </v-btn>
+                <v-list-item @click="query(null, false, 'idx')">
+                  {{ $t('search.new') }}
                 </v-list-item>
 
-                <v-list-item class="px-0 h44">
-                  <v-btn
-                    @click="query(null, true, 'idx')"
-                    text
-                    block
-                    large
-                  >
-                    {{ $t('search.append') }}
-                  </v-btn>
+                <v-list-item @click="query(null, true, 'idx')">
+                  {{ $t('search.append') }}
                 </v-list-item>
               </v-list>
             </template>
           </ROISelector>
         </div>
+
         <v-btn
           @click.native="$emit('input')"
           icon
@@ -108,12 +100,12 @@
                 v-on="menu"
                 :title="$t('search.object')"
                 color="accent"
-                fab
+                depressed
                 absolute
                 bottom
                 right
                 large
-                depressed
+                fab
               >
                 <v-icon color="white">mdi-magnify</v-icon>
               </v-btn>
@@ -121,26 +113,12 @@
           </template>
 
           <v-list class="pa-0">
-            <v-list-item class="px-0 h44">
-              <v-btn
-                @click="query(null, false, 'idx')"
-                text
-                block
-                large
-              >
-                {{ $t('search.new') }}
-              </v-btn>
+            <v-list-item @click="query(null, false, 'idx')">
+              {{ $t('search.new') }}
             </v-list-item>
 
-            <v-list-item class="px-0 h44">
-              <v-btn
-                @click="query(null, true, 'idx')"
-                text
-                block
-                large
-              >
-                {{ $t('search.append') }}
-              </v-btn>
+            <v-list-item @click="query(null, true, 'idx')">
+              {{ $t('search.append') }}
             </v-list-item>
           </v-list>
         </v-menu>
@@ -163,7 +141,10 @@
             <v-icon
               color="grey darken-1"
               left
-            >mdi-clock-time-four-outline</v-icon>
+            >
+              mdi-clock-time-four-outline
+            </v-icon>
+
             <span>{{ date }}</span>
           </v-chip>
         </div>
@@ -194,7 +175,10 @@
             <span
               class="tag clip"
               :title="tag.name"
-            >{{ tag.name }}</span>
+            >
+              {{ tag.name }}
+            </span>
+
             <v-icon
               class="ml-1"
               size="18"
@@ -202,11 +186,14 @@
             >
               {{ pluginIcons[tag.plugin] }}
             </v-icon>
+
             <v-icon
               v-if="tag.disable"
               class="ml-1 mr-n1"
               size="14"
-            >mdi-help</v-icon>
+            >
+              mdi-help
+            </v-icon>
           </v-chip>
 
           <v-btn
@@ -221,6 +208,7 @@
           >
             <v-icon>mdi-tag-plus</v-icon>
           </v-btn>
+
           <v-btn
             v-else
             @click="moreTags=true"
@@ -236,16 +224,19 @@
         </div>
 
         <v-expansion-panels
-          flat
           accordion
           multiple
+          flat
         >
           <v-expansion-panel v-if="Object.keys(metadata).length">
             <v-expansion-panel-header class="pa-0">
               <v-icon
                 class="mr-3"
                 size="18"
-              >mdi-information-outline</v-icon>
+              >
+                mdi-information-outline
+              </v-icon>
+
               <span class="text-subtitle-1">
                 {{ $t('modal.item.information') }}
               </span>
@@ -287,7 +278,10 @@
               <v-icon
                 class="mr-3"
                 size="18"
-              >mdi-tag-text-outline</v-icon>
+              >
+                mdi-tag-text-outline
+              </v-icon>
+
               <span class="text-subtitle-1">
                 {{ $t('modal.item.iconclass.text') }}
               </span>
@@ -318,6 +312,7 @@
                     >
                       {{ tag.code }} {{ tag.label }}
                     </span>
+
                     <v-icon
                       class="ml-1"
                       size="18"
@@ -325,11 +320,14 @@
                     >
                       {{ pluginIcons[tag.plugin] }}
                     </v-icon>
+
                     <v-icon
                       v-if="tag.disable"
                       class="ml-1 mr-n1"
                       size="14"
-                    >mdi-help</v-icon>
+                    >
+                      mdi-help
+                    </v-icon>
                   </v-chip>
                 </v-col>
               </v-row>
@@ -341,7 +339,10 @@
               <v-icon
                 class="mr-3"
                 size="18"
-              >mdi-link-variant</v-icon>
+              >
+                mdi-link-variant
+              </v-icon>
+
               <span class="text-subtitle-1">{{ $t('modal.item.references') }}</span>
             </v-expansion-panel-header>
 
@@ -384,7 +385,12 @@ const scheme = new RegExp(
   'm',
 );
 export default {
-  props: ['value', 'entry', 'entries'],
+  props: {
+    value: Boolean,
+    entry: Object,
+    isFirst: Boolean,
+    isLast: Boolean,
+  },
   data() {
     return {
       pluginIcons: PLUGIN_ICONS,
@@ -420,16 +426,10 @@ export default {
       this.roi = value;
     },
     getNext() {
-      const index = this.entries.indexOf(this.entry);
-      if (index + 1 < this.entries.length) {
-        this.entry = this.entries[index + 1];
-      }
+      this.$emit('next');
     },
     getPrevious() {
-      const index = this.entries.indexOf(this.entry);
-      if (index > 0) {
-        this.entry = this.entries[index - 1];
-      }
+      this.$emit('previous');
     },
   },
   computed: {
@@ -551,7 +551,7 @@ export default {
       });
       const { id, name, user } = this.entry.collection;
       if (user) {
-        meta['collection'] = [{ hash_id: id, name }];
+        meta.collection = [{ hash_id: id, name }];
       } else {
         this.entry.origin.forEach(({ name, value_str }) => {
           if (name === 'name') {
@@ -574,14 +574,6 @@ export default {
         }
       });
       return references;
-    },
-    isFirst() {
-      const index = this.entries.indexOf(this.entry);
-      return index === 0;
-    },
-    isLast() {
-      const index = this.entries.indexOf(this.entry);
-      return index + 1 === this.entries.length;
     },
   },
   components: {

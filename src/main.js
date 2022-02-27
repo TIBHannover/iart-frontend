@@ -14,6 +14,7 @@ import '@/styles/introjs.css';
 Vue.use(VueIntro);
 Vue.use(AsyncComputed);
 Vue.mixin(mixins);
+
 const IART = Vue.extend({
   created() {
     this.$store.dispatch('user/getCSRFToken').then(() => {
@@ -31,6 +32,7 @@ const IART = Vue.extend({
     },
   },
 });
+
 new IART({
   vuetify,
   router,

@@ -1,41 +1,40 @@
 <template>
-  <v-dialog
-    v-model="dialog"
-    max-width="350px"
+  <v-card
+    max-width="450"
+    flat
   >
-    <template v-slot:activator="{ on }">
-      <v-btn v-on="on" class="register" text block large>
-        {{ $t("user.register.title") }}
+    <v-card-title>
+      {{ $t("user.register.title") }}
+
+      <v-btn
+        @click="close"
+        absolute
+        right
+        icon
+      >
+        <v-icon>mdi-close</v-icon>
       </v-btn>
-    </template>
+    </v-card-title>
 
-    <v-card class="register">
-      <v-card-title>
-        {{ $t("user.register.title") }}
-
-        <v-btn icon @click="dialog = false" absolute right>
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-      </v-card-title>
-
-      <v-card-text>
+    <v-card-text>
+      <v-form v-model="isFormValid">
         <v-text-field
           v-model="user.name"
           :placeholder="$t('user.name')"
           prepend-icon="mdi-account"
-          counter="50"
           :rules="[checkLength]"
+          counter="75"
           clearable
-        ></v-text-field>
+        />
 
         <v-text-field
           v-model="user.email"
           :placeholder="$t('user.email')"
           prepend-icon="mdi-email"
-          counter="50"
           :rules="[checkLength]"
+          counter="75"
           clearable
-        ></v-text-field>
+        />
 
         <v-text-field
           v-model="user.password"
@@ -46,74 +45,73 @@
           prepend-icon="mdi-lock"
           @click:append="showPassword = !showPassword"
           :type="showPassword ? 'text' : 'password'"
-          counter="50"
           :rules="[checkLength]"
+          counter="75"
           clearable
-        ></v-text-field>
-      </v-card-text>
+        />
+      </v-form>
+    </v-card-text>
 
-      <v-card-actions class="px-6 pb-6">
-        <v-btn
-          @click="register"
-          :disabled="disabled"
-          color="accent"
-          block
-          rounded
-          depressed
-        >
-          {{ $t("user.register.title") }}
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+    <v-card-actions class="px-6 pb-6">
+      <v-btn
+        @click="register"
+        :disabled="!isFormValid"
+        color="accent"
+        depressed
+        rounded
+        block
+      >
+        {{ $t("user.register.title") }}
+      </v-btn>
+    </v-card-actions>
+  </v-card>
 </template>
 
 <script>
 export default {
+  props: {
+    value: Boolean,
+  },
   data() {
     return {
       user: {},
-      dialog: false,
+      isFormValid: false,
       showPassword: false,
     };
   },
   methods: {
     register() {
       this.$store.dispatch('user/register', this.user);
-      this.dialog = false;
+    },
+    close() {
+      this.$emit('input', false);
     },
     checkLength(value) {
       if (value) {
         if (value.length < 5) {
-          return this.$t('user.register.rules.min');
+          return this.$tc('user.register.rules.min', 5);
         }
-
-        if (value.length > 50) {
-          return this.$t('user.register.rules.max');
+        if (value.length > 75) {
+          return this.$tc('user.register.rules.max', 75);
         }
-
         return true;
       }
-
       return this.$t('field.required');
     },
   },
   computed: {
-    disabled() {
-      if (Object.keys(this.user).length) {
-        const total = Object.values(this.user).reduce(
-          (t, value) => t + (this.checkLength(value) === true),
-          0,
-        );
-        if (total === 3) return false;
-      }
-      return true;
+    status() {
+      const { error, loading } = this.$store.state.utils.status;
+      return !loading && !error;
+    },
+    timestamp() {
+      return this.$store.state.utils.status.timestamp;
     },
   },
   watch: {
-    dialog(value) {
-      if (value) {
-        this.$emit('close');
+    timestamp() {
+      if (this.status) {
+        this.close();
       }
     },
   },

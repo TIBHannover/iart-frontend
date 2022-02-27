@@ -1,42 +1,28 @@
 <template>
-  <v-dialog
-    v-model="dialog"
-    max-width="350px"
-  >
-    <template v-slot:activator="{ on }">
+  <v-card>
+    <v-card-title class="mb-2">
+      {{ $t("modal.collection.upload.title") }}
+
       <v-btn
-        v-on="on"
-        text
-        block
-        large
+        @click.native="close"
+        absolute
+        top
+        right
+        icon
       >
-        {{ $t("modal.collection.upload.title") }}
+        <v-icon>mdi-close</v-icon>
       </v-btn>
-    </template>
+    </v-card-title>
 
-    <v-card>
-      <v-card-title class="mb-2">
-        {{ $t("modal.collection.upload.title") }}
-
-        <v-btn
-          @click.native="dialog = false"
-          absolute
-          top
-          right
-          icon
-        >
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-      </v-card-title>
-
-      <v-card-text>
+    <v-card-text>
+      <v-form v-model="isFormValid">
         <v-text-field
           v-model="collection.name"
           :placeholder="$t('modal.collection.upload.name')"
-          counter="25"
           :rules="[checkLength]"
+          counter="25"
           clearable
-        ></v-text-field>
+        />
 
         <v-file-input
           v-model="collection.image"
@@ -45,7 +31,7 @@
           prepend-icon="mdi-image-outline"
           :rules="[checkImageFile]"
           show-size
-        ></v-file-input>
+        />
 
         <v-file-input
           v-model="collection.meta"
@@ -55,46 +41,37 @@
           :rules="[checkMetaFile]"
           :error-messages="errorMessage"
           show-size
-        >
-        </v-file-input>
-      </v-card-text>
-      <v-card-actions class="px-6 pb-6">
-        <v-btn
-          :disabled="disabled"
-          @click="send"
-          color="accent"
-          block
-          rounded
-          depressed
-        >
-          {{ $t("button.upload") }}
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+        />
+      </v-form>
+    </v-card-text>
+
+    <v-card-actions class="px-6 pb-6">
+      <v-btn
+        :disabled="!isFormValid"
+        @click="upload"
+        color="accent"
+        depressed
+        rounded
+        block
+      >
+        {{ $t("button.upload") }}
+      </v-btn>
+    </v-card-actions>
+  </v-card>
 </template>
 
 <script>
 export default {
+  props: {
+    value: Boolean,
+  },
   data() {
     return {
-      dialog: false,
       collection: {},
+      isFormValid: false,
     };
   },
   computed: {
-    disabled() {
-      if (this.collection && Object.keys(this.collection).length) {
-        if (
-          this.collection.name
-          && this.checkImageFile() === true
-          && this.checkMetaFile() === true
-        ) {
-          return false;
-        }
-      }
-      return true;
-    },
     errorMessage() {
       if (this.keyInObj('status', this.upload) && this.upload.status === 'error') {
         const errorTypes = this.$t('modal.collection.upload.error');
@@ -113,13 +90,18 @@ export default {
       }
       return null;
     },
-    upload() {
-      return this.$store.state.collection.upload;
-    },
   },
   methods: {
-    send() {
-      this.$store.dispatch('collection/upload', this.collection);
+    upload() {
+      this.$store.dispatch('collection/upload', this.collection).then(() => {
+        this.close();
+        this.collection = {};
+        const update = { modal: 'list', value: true };
+        this.$store.commit('collection/updateModal', update);
+      });
+    },
+    close() {
+      this.$emit('input', false);
     },
     checkImageFile() {
       const value = this.collection.image;
@@ -127,8 +109,7 @@ export default {
         if (value.size < 200000000) {
           return true;
         }
-        const text = this.$t('modal.search.file.rule');
-        return this.repPlace({ file_size: 200 }, text);
+        return this.$tc('modal.search.file.rule', 200);
       }
       return this.$t('field.required');
     },
@@ -138,37 +119,21 @@ export default {
         if (value.size < 20000000) {
           return true;
         }
-        const text = this.$t('modal.search.file.rule');
-        return this.repPlace({ file_size: 200 }, text);
+        return this.$tc('modal.search.file.rule', 200);
       }
-      return this.$t('field.required');
+      return true;
     },
     checkLength(value) {
       if (value) {
         if (value.length < 5) {
-          return this.$t('user.register.rules.min');
+          return this.$tc('user.register.rules.min', 5);
         }
         if (value.length > 25) {
-          return this.$t('user.register.rules.max');
+          return this.$tc('user.register.rules.max', 25);
         }
         return true;
       }
       return this.$t('field.required');
-    },
-  },
-  watch: {
-    dialog(value) {
-      if (value) {
-        this.$emit('close');
-      }
-    },
-    upload({ status }) {
-      if (status === 'ok') {
-        this.dialog = false;
-        this.collection = {};
-        const update = { modal: 'list', value: true };
-        this.$store.commit('collection/updateModal', update);
-      }
     },
   },
 };

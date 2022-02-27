@@ -2,18 +2,18 @@
   <v-menu
     v-model="menu"
     min-width="175"
+    open-on-hover
     offset-y
     bottom
     left
-    open-on-hover
   >
-    <template v-slot:activator="{ attrs, on: menu }">
+    <template v-slot:activator="{ attrs, on }">
       <v-btn
-        icon
-        v-bind="attrs"
-        v-on="menu"
-        class="ml-n2"
         :title="$t('user.menu.title')"
+        v-bind="attrs"
+        v-on="on"
+        class="ml-n2"
+        icon
       >
         <v-badge
           v-if="loggedIn"
@@ -22,10 +22,13 @@
         >
           <v-icon color="primary">mdi-account-circle</v-icon>
         </v-badge>
+
         <v-icon
           v-else
           color="primary"
-        >mdi-account-circle</v-icon>
+        >
+          mdi-account-circle
+        </v-icon>
       </v-btn>
     </template>
 
@@ -36,15 +39,40 @@
       class="pa-0"
     >
       <v-list-item-group>
-        <v-list-item class="px-0" >
-          <ModalCollectionUpload @close="menu = false" />
-        </v-list-item>
-        <v-list-item
-          v-if="collections.length"
-          class="px-0"
+        <v-dialog
+          v-model="dialog.upload"
+          max-width="400"
         >
-          <ModalCollectionList @close="menu = false" />
-        </v-list-item>
+          <template v-slot:activator="{ on }">
+            <v-list-item v-on="on">
+              {{ $t("modal.collection.upload.title") }}
+            </v-list-item>
+          </template>
+
+          <CollectionUpload v-model="dialog.upload" />
+        </v-dialog>
+
+        <v-dialog
+          v-model="dialog.list"
+          max-width="800"
+        >
+          <template v-slot:activator="{ on }">
+            <v-list-item
+              v-if="collections.length"
+              v-on="on"
+            >
+              <v-badge
+                :content="collections.length"
+                color="accent"
+                inline
+              >
+                {{ $t("modal.collection.list.title") }}
+              </v-badge>
+            </v-list-item>
+          </template>
+
+          <CollectionList v-model="dialog.list" />
+        </v-dialog>
       </v-list-item-group>
     </v-list>
 
@@ -53,29 +81,53 @@
       class="pa-0"
     >
       <v-list-item-group>
-        <v-list-item class="px-0">
-          <UserLogin @close="menu = false" />
-        </v-list-item>
-        <v-list-item class="px-0">
-          <UserRegister @close="menu = false" />
-        </v-list-item>
+        <v-dialog
+          v-model="dialog.login"
+          max-width="400"
+        >
+          <template v-slot:activator="{ on }">
+            <v-list-item v-on="on">
+              {{ $t("user.login.title") }}
+            </v-list-item>
+          </template>
+
+          <UserLogin v-model="dialog.login" />
+        </v-dialog>
+
+        <v-dialog
+          v-model="dialog.register"
+          max-width="400"
+        >
+          <template v-slot:activator="{ on }">
+            <v-list-item v-on="on">
+              {{ $t("user.register.title") }}
+            </v-list-item>
+          </template>
+
+          <UserRegister v-model="dialog.register" />
+        </v-dialog>
       </v-list-item-group>
     </v-list>
   </v-menu>
 </template>
 
 <script>
-import UserLogin from '@/components/UserLogin.vue';
-import UserAccount from '@/components/UserAccount.vue';
-import UserRegister from '@/components/UserRegister.vue';
-import ModalCollectionList from '@/components/ModalCollectionList.vue';
-import ModalCollectionUpload from '@/components/ModalCollectionUpload.vue';
-
 export default {
   data() {
     return {
       menu: false,
+      dialog: {
+        list: false,
+        login: false,
+        upload: false,
+        register: false,
+      },
     };
+  },
+  methods: {
+    close() {
+      this.menu = false;
+    },
   },
   computed: {
     loggedIn() {
@@ -84,24 +136,31 @@ export default {
     collections() {
       return this.$store.state.collection.collections;
     },
+    toggleList() {
+      return this.$store.state.collection.modal.list;
+    },
+  },
+  watch: {
+    dialog: {
+      handler(dialogs) {
+        Object.values(dialogs).forEach((visible) => {
+          if (visible) {
+            this.close();
+          }
+        });
+      },
+      deep: true,
+    },
+    toggleList(value) {
+      this.dialog.list = value;
+    },
   },
   components: {
-    UserLogin,
-    UserAccount,
-    UserRegister,
-    ModalCollectionList,
-    ModalCollectionUpload,
+    UserLogin: () => import('@/components/UserLogin.vue'),
+    UserAccount: () => import('@/components/UserAccount.vue'),
+    UserRegister: () => import('@/components/UserRegister.vue'),
+    CollectionList: () => import('@/components/CollectionList.vue'),
+    CollectionUpload: () => import('@/components/CollectionUpload.vue'),
   },
 };
 </script>
-
-<style>
-.v-menu__content .v-btn:not(.accent) {
-  text-transform: capitalize;
-  justify-content: left;
-}
-
-.v-btn:not(.v-btn--round).v-size--large {
-  height: 48px;
-}
-</style>

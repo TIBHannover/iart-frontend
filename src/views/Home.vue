@@ -43,24 +43,36 @@
 </template>
 
 <script>
-import History from '@/components/History.vue';
-import UserMenu from '@/components/UserMenu.vue';
-import SearchBar from '@/components/SearchBar.vue';
-import HelpButton from '@/components/HelpButton.vue';
-import Footer from '@/components/Footer.vue';
-
 export default {
   data() {
     return {
       appName: process.env.VUE_APP_NAME,
     };
   },
+  methods: {
+    load() {
+      this.$store.dispatch('api/load');
+    },
+  },
+  computed: {
+    filters() {
+      return this.$store.state.api.filters;
+    },
+  },
+  watch: {
+    filters: {
+      handler() {
+        this.load();
+      },
+      deep: true,
+    },
+  },
   components: {
-    History,
-    UserMenu,
-    SearchBar,
-    HelpButton,
-    Footer,
+    Footer: () => import('@/components/Footer.vue'),
+    History: () => import('@/components/History.vue'),
+    UserMenu: () => import('@/components/UserMenu.vue'),
+    SearchBar: () => import('@/components/SearchBar.vue'),
+    HelpButton: () => import('@/components/HelpButton.vue'),
   },
 };
 </script>

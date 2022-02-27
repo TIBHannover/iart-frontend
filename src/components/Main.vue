@@ -2,7 +2,7 @@
   <v-main class="ma-1">
     <div
       v-if="entries"
-      style="height: calc(100% - 56px);"
+      style="height: 100%;"
     >
       <Umap
         v-if="layout==='umap'"
@@ -18,25 +18,14 @@
       />
     </div>
 
-    <Footer />
-
-    <Loader :updating="$asyncComputed.entries" />
+    <Loader />
     <ModalNoResults :entries="entries" />
-    <ModalError />
   </v-main>
 </template>
 
 <script>
-import Umap from '@/components/Umap2D.vue';
-import Loader from '@/components/Loader.vue';
-import Footer from '@/components/Footer.vue';
-import GridRanked from '@/components/GridRanked.vue';
-import GridCluster from '@/components/GridCluster.vue';
-import ModalError from '@/components/ModalError.vue';
-import ModalNoResults from '@/components/ModalNoResults.vue';
-
 export default {
-  asyncComputed: {
+  computed: {
     entries() {
       let { hits } = this.$store.state.api;
       const { settings } = this.$store.state.api;
@@ -82,13 +71,10 @@ export default {
           hits = [...hits].reverse();
         }
       }
-      return new Promise((resolve) => setTimeout(() => resolve(hits), 5));
+      return hits;
     },
-  },
-  computed: {
     layout() {
-      const { status } = this.$store.state.loading;
-      if (this.$asyncComputed.entries.success && !status) {
+      if (this.entries) {
         const { settings } = this.$store.state.api;
         if (Object.keys(settings).length) {
           if (
@@ -110,13 +96,11 @@ export default {
     },
   },
   components: {
-    Umap,
-    Loader,
-    Footer,
-    GridRanked,
-    GridCluster,
-    ModalError,
-    ModalNoResults,
+    Umap: () => import('@/components/Umap2D.vue'),
+    Loader: () => import('@/components/Loader.vue'),
+    GridRanked: () => import('@/components/GridRanked.vue'),
+    GridCluster: () => import('@/components/GridCluster.vue'),
+    ModalNoResults: () => import('@/components/ModalNoResults.vue'),
   },
 };
 </script>

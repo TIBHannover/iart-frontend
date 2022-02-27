@@ -1,7 +1,11 @@
 <template>
   <v-app>
-    <div class="logo" @click="reset" style="cursor: pointer;">
-        <img src="/assets/images/logo.png" />
+    <div
+      class="logo"
+      @click="reset"
+      style="cursor: pointer;"
+    >
+      <img src="/assets/images/logo.png" />
     </div>
   </v-app>
 </template>

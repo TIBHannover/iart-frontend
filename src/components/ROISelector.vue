@@ -2,7 +2,6 @@
   <v-img
     v-bind="computedProps"
     ref="imageElement"
-    v-on="listeners$"
     v-on:load="loaded"
   >
     <template v-slot:placeholder>

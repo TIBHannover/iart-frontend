@@ -6,7 +6,7 @@
     <v-progress-circular
       indeterminate
       color="accent"
-    ></v-progress-circular>
+    />
   </div>
 </template>
 
@@ -20,7 +20,7 @@ export default {
   props: ['updating'],
   computed: {
     status() {
-      return this.$store.state.loading.status;
+      return this.$store.state.utils.status.loading;
     },
   },
   watch: {

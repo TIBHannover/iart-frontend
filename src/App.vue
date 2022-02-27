@@ -1,8 +1,17 @@
 <template>
   <div id="app">
+    <ModalError />
     <router-view />
   </div>
 </template>
+
+<script>
+export default {
+  components: {
+    ModalError: () => import('@/components/ModalError.vue'),
+  },
+};
+</script>
 
 <style>
 #app {

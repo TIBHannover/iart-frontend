@@ -1,5 +1,4 @@
 import axios from '@/plugins/axios';
-import config from '@/../app.config';
 
 function getCookie(name) {
   let cookieValue = null;
@@ -16,6 +15,7 @@ function getCookie(name) {
   }
   return cookieValue;
 }
+
 const user = {
   namespaced: true,
   state: {
@@ -34,7 +34,7 @@ const user = {
   },
   actions: {
     getCSRFToken({ commit, state }, params) {
-      axios.get(`${config.API_LOCATION}/get_csrf_token`, {
+      axios.get('/get_csrf_token', {
         params, withCredentials: true,
       })
         .then(() => {
@@ -42,77 +42,35 @@ const user = {
           if (state.csrfToken !== csrftoken) {
             commit('updateCSRFToken', csrftoken);
           }
-        })
-        .catch((error) => {
-          console.log(error);
         });
     },
     getUserData({ commit }, params) {
-      axios.post(`${config.API_LOCATION}/get_user`, { params })
-        .then((res) => {
-          if (res.data.status === 'ok') {
-            commit('updateUserData', res.data.data);
-            commit('updateLoggedIn', true);
-          }
-        })
-        .catch((error) => {
-          console.log(error);
+      axios.post('/get_user', { params })
+        .then(({ data }) => {
+          commit('updateUserData', data);
+          commit('updateLoggedIn', true);
         });
     },
     login({ commit }, params) {
-      commit('loading/update', true, { root: true });
-      const info = { date: Date(), origin: 'login' };
-      axios.post(`${config.API_LOCATION}/login`, { params })
-        .then((res) => {
-          if (res.data.status === 'ok') {
-            commit('updateUserData', res.data.data);
-            commit('updateLoggedIn', true);
-          } else {
-            commit('error/update', info, { root: true });
-          }
-        })
-        .catch((error) => {
-          commit('error/update', { ...info, error }, { root: true });
-        })
-        .finally(() => {
-          commit('loading/update', false, { root: true });
+      axios.post('/login', { params })
+        .then(({ data }) => {
+          commit('updateUserData', data);
+          commit('updateLoggedIn', true);
         });
     },
     logout({ commit, state }) {
       const params = state.userData;
-      commit('loading/update', true, { root: true });
-      axios.post(`${config.API_LOCATION}/logout`, { params })
-        .then((res) => {
-          if (res.data.status === 'ok') {
-            commit('updateUserData', {});
-            commit('updateLoggedIn', false);
-          }
-        })
-        .catch((error) => {
-          const info = { date: Date(), error, origin: 'logout' };
-          commit('error/update', info, { root: true });
-        })
-        .finally(() => {
-          commit('loading/update', false, { root: true });
+      axios.post('/logout', { params })
+        .then(() => {
+          commit('updateUserData', {});
+          commit('updateLoggedIn', false);
         });
     },
     register({ commit }, params) {
-      commit('loading/update', true, { root: true });
-      const info = { date: Date(), origin: 'register' };
-      axios.post(`${config.API_LOCATION}/register`, { params })
-        .then((res) => {
-          if (res.data.status === 'ok') {
-            commit('updateUserData', res.data);
-            commit('updateLoggedIn', true);
-          } else {
-            commit('error/update', info, { root: true });
-          }
-        })
-        .catch((error) => {
-          commit('error/update', { ...info, error }, { root: true });
-        })
-        .finally(() => {
-          commit('loading/update', false, { root: true });
+      axios.post('/register', { params })
+        .then(({ data }) => {
+          commit('updateUserData', data);
+          commit('updateLoggedIn', true);
         });
     },
   },
@@ -150,4 +108,5 @@ const user = {
     },
   },
 };
+
 export default user;

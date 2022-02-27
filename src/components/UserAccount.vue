@@ -6,13 +6,17 @@
       </v-avatar>
 
       <h3 class="mt-5">{{ data.username }}</h3>
+
       <p
         class="text-caption clip mt-2 mb-0"
         style="max-width: 170px;"
       >
         {{ data.email }}
       </p>
-      <p class="text-caption mb-0"><i>{{ joined }}</i></p>
+
+      <p class="text-caption mb-0">
+        <i>{{ joined }}</i>
+      </p>
     </div>
 
     <div class="v-btn--absolute v-btn--right v-btn--top">
@@ -32,7 +36,9 @@
 export default {
   methods: {
     logout() {
-      this.$store.dispatch('user/logout');
+      this.$store.dispatch('user/logout').then(() => {
+        this.$store.commit('api/removeAllFilters');
+      });
     },
   },
   computed: {
@@ -45,8 +51,7 @@ export default {
       return Math.round(diffInMs / (1000 * 60 * 60 * 24));
     },
     joined() {
-      const text = this.$t('user.menu.joined');
-      return this.repPlace({ n_days: this.nDays }, text);
+      return this.$tc('user.menu.joined', this.nDays || 0);
     },
     initials() {
       return this.data.username.slice(0, 2);

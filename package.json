@@ -60,6 +60,7 @@
       "object-curly-newline": "off",
       "vue/no-unused-vars": "off",
       "no-param-reassign": "off",
+      "object-shorthand": "off",
       "arrow-body-style": "off",
       "no-console": "off",
       "func-names": "off",
