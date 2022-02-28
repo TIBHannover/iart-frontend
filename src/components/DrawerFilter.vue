@@ -158,7 +158,8 @@
 
               <span :title="item.name">{{ item.name }}</span>
             </v-chip>
-            <v-spacer></v-spacer>
+
+            <v-spacer />
           </template>
         </v-combobox>
       </div>
@@ -214,7 +215,7 @@
               single-line
               rounded
               flat
-            ></v-text-field>
+            />
           </template>
 
           <template v-slot:append>
@@ -229,7 +230,7 @@
               single-line
               rounded
               flat
-            ></v-text-field>
+            />
           </template>
         </v-range-slider>
       </div>
@@ -241,7 +242,7 @@
 export default {
   data() {
     return {
-      data: this.$store.state.api.filters,
+      data: {},
       fullText: this.$store.state.api.fullText,
       dateToggle: false,
       dateRange: [1400, 1900],
@@ -326,11 +327,26 @@ export default {
     },
   },
   watch: {
-    filters: {
-      handler(values) {
-        this.data = { ...values };
+    counts: {
+      handler(counts) {
+        counts.forEach(({ field, entries }) => {
+          if (field === 'collection' && this.data.collection) {
+            const mapper = entries.reduce((obj, x) => ({...obj, [x.hash_id]: x}), {});
+            this.data.collection.forEach((selection, i) => {
+              const name = mapper[selection.hash_id].name;
+              this.data.collection[i].name = name;
+            });
+          }
+        });
       },
       deep: true,
+    },
+    filters: {
+      handler(filter) {
+        this.data = { ...filter };
+      },
+      deep: true,
+      immediate: true,
     },
     drawer(value) {
       if (!value && this.$store.state.user.drawer.filter) {

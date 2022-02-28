@@ -38,6 +38,7 @@ export default {
     logout() {
       this.$store.dispatch('user/logout').then(() => {
         this.$store.commit('api/removeAllFilters');
+        this.$store.commit('api/removeAllQueries');
       });
     },
   },

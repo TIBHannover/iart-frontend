@@ -23,6 +23,7 @@
           :placeholder="$t('user.name')"
           prepend-icon="mdi-account"
           :rules="[checkLength]"
+          tabindex="1"
           counter="75"
           clearable
         />
@@ -32,6 +33,7 @@
           :placeholder="$t('user.email')"
           prepend-icon="mdi-email"
           :rules="[checkLength]"
+          tabindex="2"
           counter="75"
           clearable
         />
@@ -46,6 +48,7 @@
           @click:append="showPassword = !showPassword"
           :type="showPassword ? 'text' : 'password'"
           :rules="[checkLength]"
+          tabindex="3"
           counter="75"
           clearable
         />
@@ -56,6 +59,7 @@
       <v-btn
         @click="register"
         :disabled="!isFormValid"
+        tabindex="4"
         color="accent"
         depressed
         rounded

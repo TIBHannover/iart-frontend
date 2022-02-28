@@ -23,6 +23,7 @@
           :placeholder="$t('user.name')"
           prepend-icon="mdi-account"
           :rules="[checkLength]"
+          tabindex="1"
           counter="75"
           clearable
         />
@@ -37,6 +38,7 @@
           @click:append="showPassword = !showPassword"
           :type="showPassword ? 'text' : 'password'"
           :rules="[checkLength]"
+          tabindex="2"
           counter="75"
           clearable
         />
@@ -47,6 +49,7 @@
       <v-btn
         @click="login"
         :disabled="!isFormValid"
+        tabindex="3"
         color="accent"
         depressed
         rounded
@@ -135,6 +138,7 @@ export default {
     timestamp() {
       if (this.status) {
         this.close();
+        // TODO: reload
       }
     },
   },

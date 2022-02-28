@@ -20,6 +20,7 @@
           v-model="collection.name"
           :placeholder="$t('modal.collection.upload.name')"
           :rules="[checkLength]"
+          tabindex="1"
           counter="25"
           clearable
         />
@@ -30,6 +31,7 @@
           :placeholder="$t('modal.collection.upload.imagefile.label')"
           prepend-icon="mdi-image-outline"
           :rules="[checkImageFile]"
+          tabindex="2"
           show-size
         />
 
@@ -38,8 +40,9 @@
           accept=".csv, .json, .jsonl"
           :placeholder="$t('modal.collection.upload.metafile.label')"
           prepend-icon="mdi-text-box-outline"
-          :rules="[checkMetaFile]"
           :error-messages="errorMessage"
+          :rules="[checkMetaFile]"
+          tabindex="3"
           show-size
         />
       </v-form>
@@ -48,6 +51,7 @@
     <v-card-actions class="px-6 pb-6">
       <v-btn
         :disabled="!isFormValid"
+        tabindex="4"
         @click="upload"
         color="accent"
         depressed

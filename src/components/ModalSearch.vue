@@ -51,18 +51,20 @@
             v-if="selectFile"
             v-model="user.file"
             accept="image/png, image/jpeg, image/gif"
-            :rules="checkFile"
             :placeholder="$t('modal.search.file.label')"
             prepend-icon="mdi-camera"
+            :rules="checkFile"
+            tabindex="1"
             show-size
           />
 
           <v-text-field
             v-else
             v-model="user.url"
-            :rules="checkURL"
             :placeholder="$t('modal.search.url.label')"
             prepend-icon="mdi-link-variant"
+            :rules="checkURL"
+            tabindex="1"
             clearable
           />
         </v-form>
@@ -80,9 +82,10 @@
               v-on="menu"
               :disabled="!isFormValid"
               color="accent"
-              block
-              rounded
+              tabindex="2"
               depressed
+              rounded
+              block
             >
               {{ $t("button.submit") }}
             </v-btn>
