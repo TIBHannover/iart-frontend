@@ -154,6 +154,7 @@
       "method": {
         "type": {
           "kmeans": "K-Means Clustering",
+          "gm": "Gaussian Mixture Clustering",
           "agglomerative": "Hierarchical Clustering"
         },
         "highlight": {

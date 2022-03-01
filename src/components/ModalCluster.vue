@@ -128,6 +128,7 @@ export default {
         highlight: true,
         items: [
           { key: 'kmeans', name: this.$t('modal.cluster.method.type.kmeans') },
+          { key: 'gm', name: this.$t('modal.cluster.method.type.gm') },
           // { key: 'agglomerative', name: this.$t('modal.cluster.method.type.agglomerative') },
         ],
       },

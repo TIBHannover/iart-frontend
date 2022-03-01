@@ -30,6 +30,20 @@ export default {
       view: null,
     };
   },
+  methods: {
+    changeView() {
+      if (this.viewType === 'umap') {
+        this.view = 'umap';
+      } else {
+        const { cluster } = this.settings;
+        if (cluster.n > 1) {
+          this.view = 'cluster';
+        } else {
+          this.view = 'ranked';
+        }
+      }
+    }
+  },
   asyncComputed: {
     entries() {
       let data = this.data;
@@ -84,22 +98,18 @@ export default {
     layout() {
       return this.settings.layout;
     },
+    viewType() {
+      return this.layout.viewType;
+    },
   },
   watch: {
     entries() {
       this.$nextTick(() => {
-        const { viewType } = this.layout;
-        if (viewType === 'umap') {
-          this.view = 'umap';
-        } else {
-          const { cluster } = this.settings;
-          if (cluster.n > 1) {
-            this.view = 'cluster';
-          } else {
-            this.view = 'ranked';
-          }
-        }
+        this.changeView();
       });
+    },
+    viewType() {
+      this.changeView();
     },
   },
   components: {
