@@ -1,8 +1,5 @@
 <template>
-  <v-dialog
-    v-model="dialog"
-    max-width="350px"
-  >
+  <v-dialog v-model="dialog" max-width="350px">
     <template v-slot:activator="{ on }">
       <v-btn
         id="search-image"
@@ -13,9 +10,7 @@
         small
         icon
       >
-        <v-icon>
-          mdi-image-outline
-        </v-icon>
+        <v-icon> mdi-image-outline </v-icon>
       </v-btn>
     </template>
 
@@ -25,13 +20,7 @@
           {{ $t("modal.search.title") }}
         </div>
 
-        <v-btn
-          @click.native="dialog = false"
-          absolute
-          right
-          icon
-          top
-        >
+        <v-btn @click.native="dialog = false" absolute right icon top>
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
@@ -71,11 +60,7 @@
       </v-card-text>
 
       <v-card-actions class="px-6 pb-6">
-        <v-menu
-          offset-y
-          bottom
-          right
-        >
+        <v-menu offset-y bottom right>
           <template v-slot:activator="{ attrs, on: menu }">
             <v-btn
               v-bind="attrs"
@@ -107,8 +92,8 @@
 </template>
 
 <script>
-import isURL from 'validator/lib/isURL';
-import router from '@/router';
+import isURL from "validator/lib/isURL";
+import router from "@/router";
 
 export default {
   data() {
@@ -124,22 +109,22 @@ export default {
   },
   methods: {
     clicked() {
-      this.$emit('clicked');
+      this.$emit("clicked");
     },
     search(append) {
       const query = { positive: true, append };
       if (this.selectFile) {
-        query.type = 'file';
+        query.type = "file";
         query.value = this.user.file;
       } else {
-        query.type = 'url';
+        query.type = "url";
         query.value = this.user.url;
       }
-      this.$store.dispatch('api/upload', query).then(() => {
+      this.$store.dispatch("api/upload", query).then(() => {
         this.user = { url: null, file: null };
         this.dialog = false;
-        if (router.currentRoute.path !== '/search') {
-          router.push('/search');
+        if (router.currentRoute.path !== "/search") {
+          router.push("/search");
         }
       });
     },
@@ -148,20 +133,21 @@ export default {
     checkURL() {
       if (!this.selectFile) {
         return [
-          (v) => !!v || this.$t('field.required'),
-          (v) => (v && v.length && isURL(v))
-            || this.$t('modal.search.url.rule'),
+          (v) => !!v || this.$t("field.required"),
+          (v) =>
+            (v && v.length && isURL(v)) || this.$t("modal.search.url.rule"),
         ];
       }
       return true;
     },
     checkFile() {
       if (this.selectFile) {
-        const fileSize = 5; // in MB
+        const fileSize = 20; // in MB
         return [
-          (v) => !!v || this.$t('field.required'),
-          (v) => (v && v.size < fileSize * 1000000)
-            || this.$tc('modal.search.file.rule', fileSize),
+          (v) => !!v || this.$t("field.required"),
+          (v) =>
+            (v && v.size < fileSize * 1000000) ||
+            this.$tc("modal.search.file.rule", fileSize),
         ];
       }
       return true;
