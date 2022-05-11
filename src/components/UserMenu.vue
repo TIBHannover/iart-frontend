@@ -89,7 +89,7 @@ export default {
         list: false,
         login: false,
         upload: false,
-        register: true,
+        register: false,
       },
     };
   },

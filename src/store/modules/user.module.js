@@ -1,4 +1,5 @@
 import axios from '@/plugins/axios';
+import router from '@/router';
 
 function getCookie(name) {
   let cookieValue = null;
@@ -64,6 +65,7 @@ const user = {
         .then(() => {
           commit('updateUserData', {});
           commit('updateLoggedIn', false);
+          router.replace({ path: '/' })
         });
     },
     register({ commit }, params) {
