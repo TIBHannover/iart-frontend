@@ -110,10 +110,10 @@ export default {
     checkImageFile() {
       const value = this.collection.image;
       if (value) {
-        if (value.size < 200000000) {
+        if (value.size < 2000000000) {
           return true;
         }
-        return this.$tc('modal.search.file.rule', 200);
+        return this.$tc('modal.search.file.rule', 2000);
       }
       return this.$t('field.required');
     },
