@@ -66,6 +66,19 @@
                 University Library, TIB ensures that all faculties of Leibniz
                 Universität Hannover are supplied with information.
               </p>
+              <h3>Members</h3>
+              <p>
+                <a
+                  href="https://www.tib.eu/de/forschung-entwicklung/visual-analytics/mitarbeiterinnen-und-mitarbeiter/ralph-ewerth/"
+                  >Prof. Dr. Ralph Ewerth</a
+                >
+              </p>
+              <p>
+                <a
+                  href="https://www.tib.eu/de/forschung-entwicklung/visual-analytics/mitarbeiterinnen-und-mitarbeiter/matthias-springstein/"
+                  >Matthias Springstein</a
+                >
+              </p>
               <h3>Universität Paderborn</h3>
               <p style="text-align: justify">
                 Paderborn University is the University for the Information
@@ -80,6 +93,23 @@
                 sciences to the arts and humanities to complement and learn from
                 each other.
               </p>
+              <h3>Members</h3>
+              <p>
+                <a
+                  href="https://www.hni.uni-paderborn.de/ism/mitarbeiter/112491383000284/"
+                  >Prof. Dr. Eyke Hüllermeier</a
+                >
+                (<a
+                  href="https://www.mathematik-informatik-statistik.uni-muenchen.de/personen/professoren/huellermeier/index.html"
+                  >Now at the LMU</a
+                >)
+              </p>
+              <p>
+                <a
+                  href="https://www.hni.uni-paderborn.de/ism/mitarbeiter/155385986504753/"
+                  >Javad Rahnama</a
+                >
+              </p>
               <h3>Ludwig-Maximilians-Universität München</h3>
               <p style="text-align: justify">
                 The Ludwig-Maximilians-Universität München - the University in
@@ -89,7 +119,19 @@
                 students from all over the world, keeping the University at the
                 nexus of ideas that challenge and change our complex world.
               </p>
-
+              <h3>Members</h3>
+              <p>
+                <a
+                  href="https://www.kunstgeschichte.uni-muenchen.de/personen/professoren_innen/kohle/index.html"
+                  >Prof. Dr. Hubertus Kohle</a
+                >
+              </p>
+              <p>
+                <a
+                  href="https://www.kunstgeschichte.uni-muenchen.de/personen/wiss_ma/schneider/index.html"
+                  >Stefanie Schneider</a
+                >
+              </p>
               <h2>Acknowledgements</h2>
               <p style="text-align: justify">
                 This work was partly funded by the German Research Foundation
