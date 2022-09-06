@@ -96,6 +96,13 @@
                 (DFG) under project number 415796915. We thank the participants
                 in the retrieval study for their valuable contributions.
               </p>
+              <h2>Contacts</h2>
+              <p style="text-align: justify">
+                Matthias Springstein:
+                <a href="mailto:matthias.springstein@tib.eu">
+                  matthias.springstein@tib.eu</a
+                >
+              </p>
             </v-col>
           </v-row>
         </v-col>
