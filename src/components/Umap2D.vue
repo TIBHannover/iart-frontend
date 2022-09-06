@@ -76,6 +76,16 @@ export default {
     };
   },
   computed: {
+    nodesData() {
+      return this.data.map((entry) => {
+        entry.imageObject = new Image();
+        entry.imageObject.onload = () => {
+          console.log({ url: entry.preview });
+        };
+        entry.imageObject.src = entry.preview;
+        return entry;
+      });
+    },
     settings() {
       return this.$store.state.api.settings;
     },
@@ -288,7 +298,7 @@ export default {
         if (!settings) settings.layout = { itemSize: 0 };
         boxSize = (settings.layout.itemSize + 8) * 2;
       }
-      this.nodes = this.data.map((entry) => {
+      this.nodes = this.nodesData.map((entry) => {
         return {
           id: entry.id,
           shape: "custom",
@@ -298,19 +308,15 @@ export default {
           y: entry.coordinates[1] * minSize,
           entry,
           ctxRenderer: ({ ctx, x, y }) => {
-            const img = new Image();
-            img.onload = () => {
-              console.log({ url: entry.preview });
-            };
-            img.src = entry.preview;
-            let minImgSize = img.width;
-            let maxImgSize = img.height;
-            if (img.width > img.height) {
-              minImgSize = img.height;
-              maxImgSize = img.width;
-            }
+            const img = entry.imageObject;
             return {
               drawNode() {
+                let minImgSize = img.width;
+                let maxImgSize = img.height;
+                if (img.width > img.height) {
+                  minImgSize = img.height;
+                  maxImgSize = img.width;
+                }
                 console.log({ min: minImgSize, max: maxImgSize });
                 if (grid) {
                   ctx.drawImage(
