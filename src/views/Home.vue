@@ -1,30 +1,24 @@
 <template>
   <v-app>
-    <v-app-bar
-      color="white"
-      app
-      flat
-    >
-      <v-layout
-        class="mx-n2"
-        justify-end
-      >
+    <v-app-bar color="white" app flat>
+      <v-layout class="mx-n2" justify-end>
         <History />
         <UserMenu />
+        <v-btn
+          to="/about"
+          icon
+          class="ml-n2"
+          :title="$t('drawer.history.title')"
+        >
+          <v-icon>mdi-information</v-icon>
+        </v-btn>
       </v-layout>
     </v-app-bar>
 
     <v-main>
-      <v-layout
-        style="height: 100%"
-        justify-center
-        align-center
-      >
+      <v-layout style="height: 100%" justify-center align-center>
         <v-col cols="6">
-          <v-row
-            class="mb-10"
-            justify="center"
-          >
+          <v-row class="mb-10" justify="center">
             <div class="logo">
               <img :title="appName" src="/assets/images/logo.png" />
             </div>
@@ -51,7 +45,7 @@ export default {
   },
   methods: {
     load() {
-      this.$store.dispatch('api/load');
+      this.$store.dispatch("api/load");
     },
   },
   computed: {
@@ -68,11 +62,11 @@ export default {
     },
   },
   components: {
-    Footer: () => import('@/components/Footer.vue'),
-    History: () => import('@/components/History.vue'),
-    UserMenu: () => import('@/components/UserMenu.vue'),
-    SearchBar: () => import('@/components/SearchBar.vue'),
-    HelpButton: () => import('@/components/HelpButton.vue'),
+    Footer: () => import("@/components/Footer.vue"),
+    History: () => import("@/components/History.vue"),
+    UserMenu: () => import("@/components/UserMenu.vue"),
+    SearchBar: () => import("@/components/SearchBar.vue"),
+    HelpButton: () => import("@/components/HelpButton.vue"),
   },
 };
 </script>
