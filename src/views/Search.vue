@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-app-bar app flat>
-      <v-layout row>
+      <v-layout row style="flex-wrap: nowrap">
         <div class="logo ml-3 mr-5" @click="reset">
           <img :title="appName" src="/assets/images/logo.png" />
         </div>
