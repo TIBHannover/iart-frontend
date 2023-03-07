@@ -38,6 +38,9 @@
       "2d": "Cluster memberships are indicated by colored dots. Press and hold the right mouse button to select multiple objects."
     }
   },
+  "about": {
+    "button": "About the project"
+  },
   "drawer": {
     "filter": {
       "title": "Refine",

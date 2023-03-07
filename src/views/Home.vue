@@ -8,7 +8,7 @@
           to="/about"
           icon
           class="ml-n2"
-          :title="$t('drawer.history.title')"
+          :title="$t('about.button')"
         >
           <v-icon>mdi-information</v-icon>
         </v-btn>
