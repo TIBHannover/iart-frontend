@@ -92,16 +92,6 @@ export default {
     loaded(src) {
       const image = new Image();
       image.onload = () => {
-        /* istanbul ignore if */
-        if (image.decode) {
-          image.decode();
-        } else {
-          this.onLoad();
-        }
-      };
-      image.src = src;
-      this.image.base = image;
-      this.$nextTick(() => {
         if (this.client.height === 0) {
           this.client.height = this.$el.clientHeight;
         }
@@ -118,7 +108,9 @@ export default {
         }
         this.setROI(this.value);
         this.drawROI();
-      });
+      }
+      image.src = src;
+      this.image.base = image;
     },
     computeRect(pos1, pos2) {
       const x = Math.min(pos1.x, pos2.x);
